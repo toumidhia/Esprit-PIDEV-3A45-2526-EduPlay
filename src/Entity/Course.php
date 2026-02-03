@@ -29,7 +29,7 @@ class Course
     private ?string $pdfFile = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $statut = null;
+    private ?string $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'courses')]
     #[ORM\JoinColumn(nullable: false)]
@@ -100,14 +100,14 @@ class Course
         return $this;
     }
 
-    public function getStatut(): ?string
+    public function getstatus(): ?string
     {
-        return $this->statut;
+        return $this->status;
     }
 
-    public function setStatut(string $statut): static
+    public function setstatus(string $status): static
     {
-        $this->statut = $statut;
+        $this->status = $status;
 
         return $this;
     }

@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CourseRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CourseRepository::class)]
 class Course
@@ -14,22 +15,54 @@ class Course
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'The course title is required.')]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: 'The course title must be at least {{ limit }} characters long.',
+        maxMessage: 'The course title cannot be longer than {{ limit }} characters.'
+    )]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'The duration of training is required.')]
+    #[Assert\Regex(
+        pattern: '/^[0-9]+\s*(hour|hours|day|days|week|weeks|month|months)$/i',
+        message: 'Please enter a valid duration (e.g., "5 hours", "2 weeks", "1 month").'
+    )]
     private ?string $durationTraining = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'The course description is required.')]
+    #[Assert\Length(
+        min: 10,
+        max: 255,
+        minMessage: 'The description must be at least {{ limit }} characters long.',
+        maxMessage: 'The description cannot be longer than {{ limit }} characters.'
+    )]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'The course level is required.')]
+    #[Assert\Choice(
+        choices: ['Beginner', 'Intermediate', 'Advanced'],
+        message: 'Please choose a valid level: Beginner, Intermediate, or Advanced.'
+    )]
     private ?string $level = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Regex(
+        pattern: '/^.*\.(pdf|PDF)$/',
+        message: 'Please upload a valid PDF file.'
+    )]
     private ?string $pdfFile = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    #[Assert\Choice(
+        choices: ['pending', 'accepted', 'rejected'],
+        message: 'Invalid status. Must be pending, accepted, or rejected.'
+    )]
+    private ?string $status = 'pending';
 
     #[ORM\ManyToOne(inversedBy: 'courses')]
     #[ORM\JoinColumn(nullable: false)]

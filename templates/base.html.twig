@@ -58,7 +58,7 @@
 <a class="text-sm font-bold hover:text-primary transition-colors" href="#">Games</a>
 <a class="text-sm font-bold hover:text-primary transition-colors" href="#">Library</a>
 <a class="text-sm font-bold hover:text-primary transition-colors" href="#">Shop</a>
-<a class="text-sm font-bold hover:text-primary transition-colors" href="#">For Teachers</a>
+<a class="text-sm font-bold hover:text-primary transition-colors" href="{{ path('app_course_index') }}">Courses</a>
 <a class="text-sm font-bold hover:text-primary transition-colors" href="#">For Parents</a>
 </nav>
 <div class="flex items-center gap-4">
@@ -69,6 +69,7 @@
 </div>
 </header>
 <main class="flex-1">
+{% block body %}
 <!-- Hero Section -->
 <section class="px-6 md:px-20 lg:px-40 py-12 md:py-24">
 <div class="flex flex-col lg:flex-row items-center gap-12 max-w-[1280px] mx-auto">
@@ -224,6 +225,7 @@
 </div>
 </section>
 </main>
+{% endblock %}
 <!-- Footer -->
 <footer class="bg-white dark:bg-background-dark border-t border-[#dbe1e6] dark:border-gray-800 px-6 md:px-20 lg:px-40 py-16">
 <div class="max-w-[1280px] mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">

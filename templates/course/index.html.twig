@@ -1,0 +1,293 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Course Management{% endblock %}
+
+{% block body %}
+<div class="container mx-auto px-6 py-8">
+    <!-- Flash Messages -->
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="mb-4 p-4 rounded-lg {% if type == 'success' %}bg-green-100 text-green-800{% elseif type == 'error' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- Header with Statistics -->
+    <div class="flex justify-between items-start mb-8">
+        <div>
+            <h1 class="text-4xl font-extrabold text-[#111518] dark:text-white">Course Management</h1>
+            <p class="text-[#617989] dark:text-gray-400 mt-2">
+                {% if userRole is defined and userRole == 'ROLE_TEACHER' %}
+                    Manage your courses - New courses will be pending admin approval
+                {% elseif userRole is defined and userRole == 'ROLE_ADMIN' %}
+                    Review and manage all courses
+                {% else %}
+                    Browse available courses
+                {% endif %}
+            </p>
+        </div>
+        {% if userRole is not defined or userRole == 'ROLE_TEACHER' or userRole == 'ROLE_ADMIN' %}
+        <a href="{{ path('app_course_new') }}" class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform shadow-lg">
+            <span class="material-symbols-outlined">add_circle</span>
+            Create New Course
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Statistics Cards (Admin Only) -->
+    {% if statistics is defined and statistics %}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-primary">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#617989] dark:text-gray-400 uppercase font-bold">Total Courses</p>
+                    <p class="text-3xl font-extrabold text-[#111518] dark:text-white">{{ statistics.total }}</p>
+                </div>
+                <span class="material-symbols-outlined text-primary text-4xl">school</span>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-yellow-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#617989] dark:text-gray-400 uppercase font-bold">Pending</p>
+                    <p class="text-3xl font-extrabold text-[#111518] dark:text-white">{{ statistics.pending }}</p>
+                </div>
+                <span class="material-symbols-outlined text-yellow-500 text-4xl">pending</span>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-green-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#617989] dark:text-gray-400 uppercase font-bold">Accepted</p>
+                    <p class="text-3xl font-extrabold text-[#111518] dark:text-white">{{ statistics.accepted }}</p>
+                </div>
+                <span class="material-symbols-outlined text-green-500 text-4xl">check_circle</span>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-red-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-[#617989] dark:text-gray-400 uppercase font-bold">Rejected</p>
+                    <p class="text-3xl font-extrabold text-[#111518] dark:text-white">{{ statistics.rejected }}</p>
+                </div>
+                <span class="material-symbols-outlined text-red-500 text-4xl">cancel</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Advanced Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <form method="get" action="{{ path('app_course_index') }}" class="space-y-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-[#111518] dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined">filter_list</span>
+                    Filters & Search
+                </h3>
+                <a href="{{ path('app_course_index') }}" class="text-sm text-primary font-bold hover:underline">
+                    Clear All Filters
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Search -->
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">search</span>
+                        Search
+                    </label>
+                    <input type="text" name="search" value="{{ filters.search }}" 
+                           placeholder="Search by title or description..." 
+                           class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">check_circle</span>
+                        Status
+                    </label>
+                    <select name="status" class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                        <option value="">All Statuses</option>
+                        <option value="pending" {% if filters.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="accepted" {% if filters.status == 'accepted' %}selected{% endif %}>Accepted</option>
+                        <option value="rejected" {% if filters.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+
+                <!-- Level Filter -->
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">signal_cellular_alt</span>
+                        Level
+                    </label>
+                    <select name="level" class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                        <option value="">All Levels</option>
+                        <option value="Beginner" {% if filters.level == 'Beginner' %}selected{% endif %}>Beginner</option>
+                        <option value="Intermediate" {% if filters.level == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                        <option value="Advanced" {% if filters.level == 'Advanced' %}selected{% endif %}>Advanced</option>
+                    </select>
+                </div>
+
+                <!-- Sort By -->
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">sort</span>
+                        Sort By
+                    </label>
+                    <select name="sort" class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                        <option value="id" {% if sortBy == 'id' %}selected{% endif %}>Newest First</option>
+                        <option value="title" {% if sortBy == 'title' %}selected{% endif %}>Title (A-Z)</option>
+                        <option value="level" {% if sortBy == 'level' %}selected{% endif %}>Level</option>
+                        <option value="status" {% if sortBy == 'status' %}selected{% endif %}>Status</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit" class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform">
+                    <span class="material-symbols-outlined">search</span>
+                    Apply Filters
+                </button>
+                <select name="order" class="px-4 py-2 rounded-full border-2 border-primary/20 bg-white dark:bg-gray-800 font-bold">
+                    <option value="DESC" {% if sortOrder == 'DESC' %}selected{% endif %}>Descending</option>
+                    <option value="ASC" {% if sortOrder == 'ASC' %}selected{% endif %}>Ascending</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Courses Grid -->
+    {% if courses|length > 0 %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for course in courses %}
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
+                    <!-- Status Badge -->
+                    <div class="p-4 flex justify-between items-start">
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold
+                            {% if course.status == 'accepted' %}bg-green-100 text-green-800
+                            {% elseif course.status == 'rejected' %}bg-red-100 text-red-800
+                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            <span class="material-symbols-outlined text-sm">
+                                {% if course.status == 'accepted' %}check_circle
+                                {% elseif course.status == 'rejected' %}cancel
+                                {% else %}pending{% endif %}
+                            </span>
+                            {{ course.status|upper }}
+                        </span>
+                        <span class="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold">
+                            {{ course.level }}
+                        </span>
+                    </div>
+
+                    <!-- Course Content -->
+                    <div class="px-6 pb-6">
+                        <h3 class="text-xl font-bold mb-2 text-[#111518] dark:text-white">{{ course.title }}</h3>
+                        <p class="text-sm text-[#617989] dark:text-gray-400 mb-4 line-clamp-2">{{ course.description }}</p>
+                        
+                        <div class="flex items-center gap-2 text-sm text-[#617989] dark:text-gray-400 mb-4">
+                            <span class="material-symbols-outlined text-sm">schedule</span>
+                            {{ course.durationTraining }}
+                        </div>
+
+                        {% if course.teacherId %}
+                            <div class="flex items-center gap-2 text-sm text-[#617989] dark:text-gray-400 mb-4">
+                                <span class="material-symbols-outlined text-sm">person</span>
+                                {{ course.teacherId.firstName }} {{ course.teacherId.lastName }}
+                            </div>
+                        {% endif %}
+
+                        {% if course.pdfFile %}
+                            <a href="{{ path('app_course_pdf', {'id': course.id}) }}" 
+                               class="flex items-center gap-2 text-sm text-accent-pink font-bold hover:underline mb-4">
+                                <span class="material-symbols-outlined text-sm">download</span>
+                                Download Course Materials
+                            </a>
+                        {% endif %}
+
+                        <!-- Actions -->
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <a href="{{ path('app_course_show', {'id': course.id}) }}" 
+                               class="flex-1 text-center px-4 py-2 bg-primary/10 text-primary rounded-lg font-bold hover:bg-primary/20 transition-colors">
+                                View
+                            </a>
+                            
+                            {% if userRole is defined and (userRole == 'ROLE_ADMIN' or (userRole == 'ROLE_TEACHER' and course.status == 'pending')) %}
+                                <a href="{{ path('app_course_edit', {'id': course.id}) }}" 
+                                   class="flex-1 text-center px-4 py-2 bg-accent-yellow/10 text-[#111518] rounded-lg font-bold hover:bg-accent-yellow/20 transition-colors">
+                                    Edit
+                                </a>
+                            {% endif %}
+
+                            {% if userRole is defined and userRole == 'ROLE_ADMIN' and course.status == 'pending' %}
+                                <form method="post" action="{{ path('app_course_accept', {'id': course.id}) }}" class="inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ course.id) }}">
+                                    <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition-colors">
+                                        Accept
+                                    </button>
+                                </form>
+                                <form method="post" action="{{ path('app_course_reject', {'id': course.id}) }}" class="inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ course.id) }}">
+                                    <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors">
+                                        Reject
+                                    </button>
+                                </form>
+                            {% endif %}
+                            
+                            {% if userRole is defined and userRole == 'ROLE_ADMIN' and course.status == 'accepted' %}
+                                <a href="{{ path('app_seance_new') }}?course={{ course.id }}" 
+                                   class="flex-1 text-center px-4 py-2 bg-primary text-white rounded-lg font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">add_circle</span>
+                                    Create Seance
+                                </a>
+                            {% endif %}
+
+                            {% if userRole is defined and userRole == 'ROLE_PARENT' and kids is defined %}
+                                <div class="w-full mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                    <h4 class="text-sm font-bold mb-3 text-[#111518] dark:text-white">Subscribe Your Kids</h4>
+                                    {% for kid in kids %}
+                                        <div class="flex items-center justify-between mb-2 last:mb-0">
+                                            <span class="text-sm text-[#617989] dark:text-gray-300">{{ kid.firstName }} {{ kid.lastName }}</span>
+                                            {% if subscriptions[course.id][kid.id] is defined and subscriptions[course.id][kid.id] %}
+                                                <form method="post" action="{{ path('app_course_unsubscribe', {'id': course.id}) }}" class="inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('unsubscribe' ~ course.id) }}">
+                                                    <input type="hidden" name="kid_id" value="{{ kid.id }}">
+                                                    <button type="submit" class="px-3 py-1 bg-gray-400 text-white text-xs rounded-lg font-bold hover:bg-gray-500 transition-colors flex items-center gap-1">
+                                                        <span class="material-symbols-outlined text-xs">check_circle</span>
+                                                        Subscribed
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <form method="post" action="{{ path('app_course_subscribe', {'id': course.id}) }}" class="inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('subscribe' ~ course.id) }}">
+                                                    <input type="hidden" name="kid_id" value="{{ kid.id }}">
+                                                    <button type="submit" class="px-3 py-1 bg-primary text-white text-xs rounded-lg font-bold hover:bg-primary/90 transition-colors flex items-center gap-1">
+                                                        <span class="material-symbols-outlined text-xs">add_circle</span>
+                                                        Subscribe
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl">
+            <span class="material-symbols-outlined text-6xl text-[#617989] dark:text-gray-400 mb-4">school</span>
+            <h3 class="text-xl font-bold text-[#617989] dark:text-gray-400 mb-2">No Courses Found</h3>
+            <p class="text-[#617989] dark:text-gray-400 mb-4">Try adjusting your filters or create a new course!</p>
+            {% if filters.search or filters.status or filters.level %}
+                <a href="{{ path('app_course_index') }}" class="inline-block px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform">
+                    Clear Filters
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

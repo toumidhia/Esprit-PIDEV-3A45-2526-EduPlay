@@ -1,0 +1,75 @@
+{{ form_start(form, {'attr': {'class': 'space-y-6', 'novalidate': 'novalidate'}}) }}
+
+<div class="space-y-4">
+    <div>
+        {{ form_label(form.title, null, {'label_attr': {'class': 'block text-sm font-bold text-[#111518] dark:text-white mb-2'}}) }}
+        {{ form_widget(form.title, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent'}}) }}
+        <div class="text-red-600 text-sm mt-1">{{ form_errors(form.title) }}</div>
+        {% if form.title.vars.help is defined %}
+            <p class="text-xs text-[#617989] dark:text-gray-400 mt-1">{{ form.title.vars.help }}</p>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            {{ form_label(form.durationTraining, null, {'label_attr': {'class': 'block text-sm font-bold text-[#111518] dark:text-white mb-2'}}) }}
+            {{ form_widget(form.durationTraining, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent'}}) }}
+            <div class="text-red-600 text-sm mt-1">{{ form_errors(form.durationTraining) }}</div>
+            {% if form.durationTraining.vars.help is defined %}
+                <p class="text-xs text-[#617989] dark:text-gray-400 mt-1">{{ form.durationTraining.vars.help }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form_label(form.level, null, {'label_attr': {'class': 'block text-sm font-bold text-[#111518] dark:text-white mb-2'}}) }}
+            {{ form_widget(form.level, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent'}}) }}
+            <div class="text-red-600 text-sm mt-1">{{ form_errors(form.level) }}</div>
+        </div>
+    </div>
+
+    <div>
+        {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-bold text-[#111518] dark:text-white mb-2'}}) }}
+        {{ form_widget(form.description, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent'}}) }}
+        <div class="text-red-600 text-sm mt-1">{{ form_errors(form.description) }}</div>
+        {% if form.description.vars.help is defined %}
+            <p class="text-xs text-[#617989] dark:text-gray-400 mt-1">{{ form.description.vars.help }}</p>
+        {% endif %}
+    </div>
+
+    <div>
+        {{ form_label(form.pdfFile, null, {'label_attr': {'class': 'block text-sm font-bold text-[#111518] dark:text-white mb-2'}}) }}
+        {{ form_widget(form.pdfFile, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent'}}) }}
+        <div class="text-red-600 text-sm mt-1">{{ form_errors(form.pdfFile) }}</div>
+        {% if form.pdfFile.vars.help is defined %}
+            <p class="text-xs text-[#617989] dark:text-gray-400 mt-1">{{ form.pdfFile.vars.help }}</p>
+        {% endif %}
+    </div>
+
+    {% if form.status is defined %}
+        <div>
+            {{ form_label(form.status, null, {'label_attr': {'class': 'block text-sm font-bold text-[#111518] dark:text-white mb-2'}}) }}
+            {{ form_widget(form.status, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent'}}) }}
+            <div class="text-red-600 text-sm mt-1">{{ form_errors(form.status) }}</div>
+        </div>
+    {% endif %}
+
+    {% if form.teacherId is defined %}
+        <div>
+            {{ form_label(form.teacherId, null, {'label_attr': {'class': 'block text-sm font-bold text-[#111518] dark:text-white mb-2'}}) }}
+            {{ form_widget(form.teacherId, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent'}}) }}
+            <div class="text-red-600 text-sm mt-1">{{ form_errors(form.teacherId) }}</div>
+        </div>
+    {% endif %}
+</div>
+
+<div class="flex gap-4 mt-6">
+    <button type="submit" class="flex-1 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform shadow-lg">
+        <span class="material-symbols-outlined text-sm inline">save</span>
+        Save Course
+    </button>
+    <a href="{{ path('app_course_index') }}" class="flex-1 text-center px-6 py-3 bg-gray-200 dark:bg-gray-700 text-[#111518] dark:text-white rounded-full font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+        Cancel
+    </a>
+</div>
+
+{{ form_end(form) }}

@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\EventResource;
+use App\Form\EventResourceMainType;
 use App\Entity\SchoolEvent;
 use App\Form\EventResourceType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,13 +19,30 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class EventResourceAdminController extends AbstractController
 {
+    // ✅ Limite (PDF/LINK) par événement
+    private const MAX_MAIN_RESOURCES = 10;
+
     #[Route('/admin/events/{id}/resources', name: 'admin_event_resource_index', methods: ['GET'])]
-    public function index(SchoolEvent $event, EntityManagerInterface $em): Response
+    public function index(SchoolEvent $event, Request $request, EntityManagerInterface $em): Response
     {
-        $resources = $em->getRepository(EventResource::class)->findBy(
-            ['event' => $event],
-            ['createdAt' => 'DESC']
-        );
+        $type = $request->query->get('type'); // PDF|LINK|CHECKLIST|PLANNING|...
+        $sort = $request->query->get('sort', 'date'); // date|type
+        $order = strtolower((string) $request->query->get('order', 'desc')) === 'asc' ? 'ASC' : 'DESC';
+
+        $criteria = ['event' => $event];
+        if ($type) {
+            $criteria['type'] = $type;
+        }
+
+        // tri
+        $orderBy = ['createdAt' => 'DESC'];
+        if ($sort === 'type') {
+            $orderBy = ['type' => $order, 'createdAt' => 'DESC'];
+        } elseif ($sort === 'date') {
+            $orderBy = ['createdAt' => $order];
+        }
+
+        $resources = $em->getRepository(EventResource::class)->findBy($criteria, $orderBy);
 
         return $this->render('admin/event_resource/index.html.twig', [
             'event' => $event,
@@ -47,29 +65,118 @@ class EventResourceAdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            $type = $resource->getType();
+            $type = (string) $resource->getType();
             $pdf  = $form->get('pdfFile')->getData();
 
+            // ✅ Max 10 ressources (PDF/LINK)
+            if (in_array($type, ['PDF', 'LINK'], true)) {
+                $countMain = (int) $em->createQueryBuilder()
+                    ->select('COUNT(r.id)')
+                    ->from(EventResource::class, 'r')
+                    ->where('r.event = :event')
+                    ->andWhere('r.type IN (:types)')
+                    ->setParameter('event', $event)
+                    ->setParameter('types', ['PDF', 'LINK'])
+                    ->getQuery()
+                    ->getSingleScalarResult();
+
+                if ($countMain >= self::MAX_MAIN_RESOURCES) {
+                    $form->addError(new FormError('Limite atteinte : maximum ' . self::MAX_MAIN_RESOURCES . ' ressources (PDF/LINK) par événement.'));
+                }
+            }
+
+            // ✅ validations dépendantes du type
             if ($type === 'PDF' && !$pdf) {
                 $form->addError(new FormError("Pour une ressource de type PDF, le fichier est obligatoire."));
             }
 
-            if ($type === 'LINK' && !$resource->getUrl()) {
-                $form->addError(new FormError("Pour une ressource de type LINK, l'URL est obligatoire."));
+            if ($type === 'LINK') {
+                $url = trim((string) $resource->getUrl());
+                if ($url === '') {
+                    $form->addError(new FormError("Pour une ressource de type LINK, l'URL est obligatoire."));
+                } else {
+                    $normalized = $this->normalizeUrl($url);
+                    // doublon URL
+                    $exists = $em->getRepository(EventResource::class)->findOneBy([
+                        'event' => $event,
+                        'type' => 'LINK',
+                        'url' => $normalized,
+                    ]);
+                    if ($exists) {
+                        $form->addError(new FormError("Cette URL existe déjà pour cet événement."));
+                    }
+                    // on stocke normalisée pour rendre la règle stricte
+                    $resource->setUrl($normalized);
+                }
+            }
+
+            // ✅ Auto create checklist/planning if filled (optionnel)
+            $checklistText = trim((string) $form->get('checklistText')->getData());
+            $planningText  = trim((string) $form->get('planningText')->getData());
+
+            // ⚠️ ici on ne persiste pas encore, on le fera quand le form est valid
+            // mais on peut déjà préparer les règles "un seul checklist/planning"
+            if ($checklistText !== '') {
+                $existingChecklist = $em->getRepository(EventResource::class)->findOneBy([
+                    'event' => $event,
+                    'type' => 'CHECKLIST'
+                ]);
+                if ($existingChecklist) {
+                    $form->addError(new FormError("Checklist déjà existante pour cet événement (1 seule autorisée)."));
+                }
+            }
+
+            if ($planningText !== '') {
+                $existingPlanning = $em->getRepository(EventResource::class)->findOneBy([
+                    'event' => $event,
+                    'type' => 'PLANNING'
+                ]);
+                if ($existingPlanning) {
+                    $form->addError(new FormError("Planning déjà existant pour cet événement (1 seul autorisé)."));
+                }
             }
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $pdf = $form->get('pdfFile')->getData();
+            $type = (string) $resource->getType();
+            $pdf  = $form->get('pdfFile')->getData();
 
+            // ✅ Nettoyage : garder cohérence selon type
+            if ($type === 'PDF') {
+                $resource->setUrl(null);
+            }
+            if ($type === 'LINK') {
+                $resource->setFilePath(null);
+            }
+
+            // ✅ Upload PDF + anti-doublon strict par nom (par event)
             if ($pdf) {
-                $original = pathinfo($pdf->getClientOriginalName(), PATHINFO_FILENAME);
-                $safe = $slugger->slug($original);
-                $newName = $safe . '-' . uniqid('', true) . '.' . $pdf->guessExtension();
+                $originalName = pathinfo($pdf->getClientOriginalName(), PATHINFO_FILENAME);
+                $safe = (string) $slugger->slug($originalName);
+                $ext = $pdf->guessExtension() ?: 'pdf';
+
+                // nom stable => interdit doublons
+                $newName = 'event' . $event->getId() . '-' . $safe . '.' . $ext;
+                $relativePath = 'uploads/event-resources/' . $newName;
+
+                // doublon DB
+                $exists = $em->getRepository(EventResource::class)->findOneBy([
+                    'event' => $event,
+                    'type' => 'PDF',
+                    'filePath' => $relativePath,
+                ]);
+
+                if ($exists) {
+                    $form->addError(new FormError("Un PDF avec le même nom existe déjà pour cet événement."));
+                    return $this->render('admin/event_resource/new.html.twig', [
+                        'event' => $event,
+                        'form' => $form->createView(),
+                    ]);
+                }
 
                 try {
                     $pdf->move($this->getParameter('event_resources_dir'), $newName);
-                    $resource->setFilePath('uploads/event-resources/' . $newName);
+                    $resource->setFilePath($relativePath);
                 } catch (FileException $e) {
                     $form->addError(new FormError("Erreur lors de l'upload du fichier PDF."));
                     return $this->render('admin/event_resource/new.html.twig', [
@@ -81,7 +188,7 @@ class EventResourceAdminController extends AbstractController
 
             $em->persist($resource);
 
-            // ✅ Auto create checklist/planning if filled (always optional)
+            // ✅ Auto create checklist/planning (1 seul chacun)
             $checklist = trim((string) $form->get('checklistText')->getData());
             $planning  = trim((string) $form->get('planningText')->getData());
 
@@ -90,7 +197,7 @@ class EventResourceAdminController extends AbstractController
                 $r->setEvent($event);
                 $r->setCreatedAt(new \DateTimeImmutable());
                 $r->setType('CHECKLIST');
-                $r->setTitle('Checklist - ' . ($resource->getTitle() ?: $event->getTitle()));
+                $r->setTitle('Checklist - ' . ($event->getTitle()));
                 $r->setContext($checklist);
                 $em->persist($r);
             }
@@ -100,7 +207,7 @@ class EventResourceAdminController extends AbstractController
                 $r->setEvent($event);
                 $r->setCreatedAt(new \DateTimeImmutable());
                 $r->setType('PLANNING');
-                $r->setTitle('Planning - ' . ($resource->getTitle() ?: $event->getTitle()));
+                $r->setTitle('Planning - ' . ($event->getTitle()));
                 $r->setContext($planning);
                 $em->persist($r);
             }
@@ -135,49 +242,109 @@ class EventResourceAdminController extends AbstractController
             throw $this->createNotFoundException('Ressource introuvable pour cet événement.');
         }
 
-        // ✅ On récupère la checklist/planning existants de cet EVENT (les plus récents)
-        $checklistExisting = $em->getRepository(EventResource::class)->findOneBy(
-            ['event' => $event, 'type' => 'CHECKLIST'],
-            ['createdAt' => 'DESC']
-        );
-        $planningExisting = $em->getRepository(EventResource::class)->findOneBy(
-            ['event' => $event, 'type' => 'PLANNING'],
-            ['createdAt' => 'DESC']
-        );
-
-        $form = $this->createForm(EventResourceType::class, $resource, [
-            'checklist_data' => $checklistExisting?->getContext() ?? '',
-            'planning_data' => $planningExisting?->getContext() ?? '',
-        ]);
-
+        $form = $this->createForm(EventResourceType::class, $resource);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            $type = $resource->getType();
+            $type = (string) $resource->getType();
             $pdf  = $form->get('pdfFile')->getData();
 
-            // En edit: si type PDF et aucun fichier uploadé, OK si filePath existe déjà
-            if ($type === 'PDF' && !$pdf && !$resource->getFilePath()) {
-                $form->addError(new FormError("Pour une ressource de type PDF, le fichier est obligatoire."));
+            // ✅ Max 10 ressources (PDF/LINK) en edit (on exclut la ressource courante)
+            if (in_array($type, ['PDF', 'LINK'], true)) {
+                $countMain = (int) $em->createQueryBuilder()
+                    ->select('COUNT(r.id)')
+                    ->from(EventResource::class, 'r')
+                    ->where('r.event = :event')
+                    ->andWhere('r.type IN (:types)')
+                    ->andWhere('r.id != :current')
+                    ->setParameter('event', $event)
+                    ->setParameter('types', ['PDF', 'LINK'])
+                    ->setParameter('current', $resource->getId())
+                    ->getQuery()
+                    ->getSingleScalarResult();
+
+                if ($countMain >= self::MAX_MAIN_RESOURCES) {
+                    $form->addError(new FormError('Limite atteinte : maximum ' . self::MAX_MAIN_RESOURCES . ' ressources (PDF/LINK) par événement.'));
+                }
             }
 
-            if ($type === 'LINK' && !$resource->getUrl()) {
-                $form->addError(new FormError("Pour une ressource de type LINK, l'URL est obligatoire."));
+            // LINK => url obligatoire + pas de doublon (hors current)
+            if ($type === 'LINK') {
+                $url = trim((string) $resource->getUrl());
+                if ($url === '') {
+                    $form->addError(new FormError("Pour une ressource de type LINK, l'URL est obligatoire."));
+                } else {
+                    $normalized = $this->normalizeUrl($url);
+                    $qb = $em->createQueryBuilder()
+                        ->select('COUNT(r.id)')
+                        ->from(EventResource::class, 'r')
+                        ->where('r.event = :event')
+                        ->andWhere('r.type = :type')
+                        ->andWhere('r.url = :url')
+                        ->andWhere('r.id != :current')
+                        ->setParameter('event', $event)
+                        ->setParameter('type', 'LINK')
+                        ->setParameter('url', $normalized)
+                        ->setParameter('current', $resource->getId());
+
+                    if ((int) $qb->getQuery()->getSingleScalarResult() > 0) {
+                        $form->addError(new FormError("Cette URL existe déjà pour cet événement."));
+                    }
+                    $resource->setUrl($normalized);
+                }
+            }
+
+            // PDF => si pas de nouveau fichier, OK si filePath existe
+            if ($type === 'PDF' && !$pdf && !$resource->getFilePath()) {
+                $form->addError(new FormError("Pour une ressource de type PDF, le fichier est obligatoire."));
             }
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // ✅ Upload si un nouveau PDF est donné
-            $pdf = $form->get('pdfFile')->getData();
+            $type = (string) $resource->getType();
+            $pdf  = $form->get('pdfFile')->getData();
 
+            // ✅ Nettoyage cohérent
+            if ($type === 'PDF') {
+                $resource->setUrl(null);
+            }
+            if ($type === 'LINK') {
+                $resource->setFilePath(null);
+            }
+
+            // ✅ upload nouveau PDF + anti doublon strict
             if ($pdf) {
-                $original = pathinfo($pdf->getClientOriginalName(), PATHINFO_FILENAME);
-                $safe = $slugger->slug($original);
-                $newName = $safe . '-' . uniqid('', true) . '.' . $pdf->guessExtension();
+                $originalName = pathinfo($pdf->getClientOriginalName(), PATHINFO_FILENAME);
+                $safe = (string) $slugger->slug($originalName);
+                $ext = $pdf->guessExtension() ?: 'pdf';
+
+                $newName = 'event' . $event->getId() . '-' . $safe . '.' . $ext;
+                $relativePath = 'uploads/event-resources/' . $newName;
+
+                $qb = $em->createQueryBuilder()
+                    ->select('COUNT(r.id)')
+                    ->from(EventResource::class, 'r')
+                    ->where('r.event = :event')
+                    ->andWhere('r.type = :type')
+                    ->andWhere('r.filePath = :fp')
+                    ->andWhere('r.id != :current')
+                    ->setParameter('event', $event)
+                    ->setParameter('type', 'PDF')
+                    ->setParameter('fp', $relativePath)
+                    ->setParameter('current', $resource->getId());
+
+                if ((int) $qb->getQuery()->getSingleScalarResult() > 0) {
+                    $form->addError(new FormError("Un PDF avec le même nom existe déjà pour cet événement."));
+                    return $this->render('admin/event_resource/edit.html.twig', [
+                        'event' => $event,
+                        'resource' => $resource,
+                        'form' => $form->createView(),
+                    ]);
+                }
 
                 try {
                     $pdf->move($this->getParameter('event_resources_dir'), $newName);
-                    $resource->setFilePath('uploads/event-resources/' . $newName);
+                    $resource->setFilePath($relativePath);
                 } catch (FileException $e) {
                     $form->addError(new FormError("Erreur lors de l'upload du fichier PDF."));
                     return $this->render('admin/event_resource/edit.html.twig', [
@@ -188,47 +355,7 @@ class EventResourceAdminController extends AbstractController
                 }
             }
 
-            // ✅ Checklist/Planning (update/create/delete)
-            $checklistText = trim((string) $form->get('checklistText')->getData());
-            $planningText  = trim((string) $form->get('planningText')->getData());
-
-            // CHECKLIST
-            if ($checklistText !== '') {
-                if (!$checklistExisting) {
-                    $checklistExisting = new EventResource();
-                    $checklistExisting->setEvent($event);
-                    $checklistExisting->setCreatedAt(new \DateTimeImmutable());
-                    $checklistExisting->setType('CHECKLIST');
-                    $em->persist($checklistExisting);
-                }
-                $checklistExisting->setTitle('Checklist - ' . ($event->getTitle()));
-                $checklistExisting->setContext($checklistText);
-            } else {
-                // si champ vide => supprimer l'existant (logique)
-                if ($checklistExisting) {
-                    $em->remove($checklistExisting);
-                }
-            }
-
-            // PLANNING
-            if ($planningText !== '') {
-                if (!$planningExisting) {
-                    $planningExisting = new EventResource();
-                    $planningExisting->setEvent($event);
-                    $planningExisting->setCreatedAt(new \DateTimeImmutable());
-                    $planningExisting->setType('PLANNING');
-                    $em->persist($planningExisting);
-                }
-                $planningExisting->setTitle('Planning - ' . ($event->getTitle()));
-                $planningExisting->setContext($planningText);
-            } else {
-                if ($planningExisting) {
-                    $em->remove($planningExisting);
-                }
-            }
-
             $em->flush();
-
             $this->addFlash('success', 'Ressource modifiée.');
             return $this->redirectToRoute('admin_event_resource_index', ['id' => $event->getId()]);
         }
@@ -238,8 +365,7 @@ class EventResourceAdminController extends AbstractController
             'resource' => $resource,
             'form' => $form->createView(),
         ]);
-        }
-
+    }
 
     #[Route('/admin/events/{eventId}/resources/{resourceId}/delete', name: 'admin_event_resource_delete', methods: ['POST'])]
     public function delete(
@@ -267,19 +393,12 @@ class EventResourceAdminController extends AbstractController
         return $this->redirectToRoute('admin_event_resource_index', ['id' => $event->getId()]);
     }
 
-
-
+    // ✅ Edition checklist/planning séparées (comme tu as déjà fait)
     #[Route('/admin/events/{eventId}/resources/{resourceId}/checklist/edit', name: 'admin_event_checklist_edit', methods: ['GET','POST'])]
-    public function editChecklist(
-        int $eventId,
-        int $resourceId,
-        Request $request,
-        EntityManagerInterface $em
-    ): Response {
+    public function editChecklist(int $eventId, int $resourceId, Request $request, EntityManagerInterface $em): Response
+    {
         $event = $em->getRepository(SchoolEvent::class)->find($eventId);
-        if (!$event) {
-            throw $this->createNotFoundException('Event introuvable.');
-        }
+        if (!$event) throw $this->createNotFoundException('Event introuvable.');
 
         $resource = $em->getRepository(EventResource::class)->find($resourceId);
         if (!$resource || $resource->getEvent()?->getId() !== $event->getId() || $resource->getType() !== 'CHECKLIST') {
@@ -287,10 +406,7 @@ class EventResourceAdminController extends AbstractController
         }
 
         $form = $this->createFormBuilder($resource)
-            ->add('title', TextType::class, [
-                'label' => 'Titre',
-                'required' => true,
-            ])
+            ->add('title', TextType::class, ['label' => 'Titre', 'required' => true])
             ->add('context', TextareaType::class, [
                 'label' => 'Checklist',
                 'required' => true,
@@ -314,16 +430,10 @@ class EventResourceAdminController extends AbstractController
     }
 
     #[Route('/admin/events/{eventId}/resources/{resourceId}/planning/edit', name: 'admin_event_planning_edit', methods: ['GET','POST'])]
-    public function editPlanning(
-        int $eventId,
-        int $resourceId,
-        Request $request,
-        EntityManagerInterface $em
-    ): Response {
+    public function editPlanning(int $eventId, int $resourceId, Request $request, EntityManagerInterface $em): Response
+    {
         $event = $em->getRepository(SchoolEvent::class)->find($eventId);
-        if (!$event) {
-            throw $this->createNotFoundException('Event introuvable.');
-        }
+        if (!$event) throw $this->createNotFoundException('Event introuvable.');
 
         $resource = $em->getRepository(EventResource::class)->find($resourceId);
         if (!$resource || $resource->getEvent()?->getId() !== $event->getId() || $resource->getType() !== 'PLANNING') {
@@ -331,10 +441,7 @@ class EventResourceAdminController extends AbstractController
         }
 
         $form = $this->createFormBuilder($resource)
-            ->add('title', TextType::class, [
-                'label' => 'Titre',
-                'required' => true,
-            ])
+            ->add('title', TextType::class, ['label' => 'Titre', 'required' => true])
             ->add('context', TextareaType::class, [
                 'label' => 'Planning',
                 'required' => true,
@@ -357,5 +464,11 @@ class EventResourceAdminController extends AbstractController
         ]);
     }
 
-
+    private function normalizeUrl(string $url): string
+    {
+        $url = trim($url);
+        // petit nettoyage : enlever espaces + uniformiser
+        // (on peut ajouter https:// si absent, mais je le laisse simple)
+        return $url;
+    }
 }

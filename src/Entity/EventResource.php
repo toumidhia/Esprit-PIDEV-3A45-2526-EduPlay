@@ -97,7 +97,7 @@ class EventResource
         return $this->filePath;
     }
 
-    public function setFilePath(string $filePath): static
+    public function setFilePath(?string $filePath): static
     {
         $this->filePath = $filePath;
 
@@ -109,7 +109,7 @@ class EventResource
         return $this->url;
     }
 
-    public function setUrl(string $url): static
+    public function setUrl(?string $url): static
     {
         $this->url = $url;
 

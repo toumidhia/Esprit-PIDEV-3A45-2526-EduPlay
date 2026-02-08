@@ -17,7 +17,7 @@ class EventResourceType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            // ✅ Ressource principale seulement
+            // ✅ Ressource principale
             ->add('type', ChoiceType::class, [
                 'label' => 'Type',
                 'choices' => [
@@ -27,6 +27,9 @@ class EventResourceType extends AbstractType
             ])
             ->add('title', TextType::class, [
                 'label' => 'Titre',
+                'attr' => [
+                    'placeholder' => 'Ex: Autorisation parentale / Programme / Lien Drive ...',
+                ],
             ])
             ->add('context', TextareaType::class, [
                 'label' => 'Description / Notes',
@@ -41,6 +44,8 @@ class EventResourceType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'placeholder' => 'https://...',
+                    'inputmode' => 'url',
+                    'autocomplete' => 'off',
                 ],
             ])
             ->add('pdfFile', FileType::class, [
@@ -52,11 +57,11 @@ class EventResourceType extends AbstractType
                         'maxSize' => '5M',
                         'mimeTypes' => ['application/pdf'],
                         'mimeTypesMessage' => 'Veuillez uploader un fichier PDF valide.',
-                    ])
+                    ]),
                 ],
             ])
 
-            // ✅ Toujours disponibles (unmapped) + pré-remplissage via options
+            // ✅ Checklist & Planning (unmapped) + pré-remplissage via options
             ->add('checklistText', TextareaType::class, [
                 'label' => 'Checklist',
                 'mapped' => false,
@@ -76,8 +81,7 @@ class EventResourceType extends AbstractType
                     'rows' => 6,
                     'placeholder' => "08:30 - Accueil\n09:00 - Atelier 1\n10:30 - Pause\n11:00 - Atelier 2\n12:30 - Fin",
                 ],
-            ])
-        ;
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

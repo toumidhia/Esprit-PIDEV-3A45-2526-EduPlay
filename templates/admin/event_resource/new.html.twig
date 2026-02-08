@@ -43,37 +43,39 @@
     </div>
   </div>
 
-  {# ✅ Checklist & Planning toujours disponibles #}
-  <div class="mb-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-extrabold">Checklist & Planning</h2>
-      <span class="text-xs font-bold text-[#617989] dark:text-gray-400">Optionnel — sera créé automatiquement</span>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="bg-accent-yellow/20 dark:bg-white/10 rounded-xl p-4 border border-black/5 dark:border-white/10">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="material-symbols-outlined">checklist</span>
-          <p class="font-extrabold">Checklist</p>
-        </div>
-        <p class="text-xs text-[#617989] dark:text-gray-400 mb-3">
-          Une ligne = un élément (commence par “-” pour une belle liste)
-        </p>
-        {{ form_row(form.checklistText) }}
+  {# ✅ Checklist & Planning : affichés seulement si le form les contient #}
+  {% if form.checklistText is defined and form.planningText is defined %}
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-extrabold">Checklist & Planning</h2>
+        <span class="text-xs font-bold text-[#617989] dark:text-gray-400">Optionnel — sera créé automatiquement</span>
       </div>
 
-      <div class="bg-primary/10 dark:bg-white/10 rounded-xl p-4 border border-black/5 dark:border-white/10">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="material-symbols-outlined">event</span>
-          <p class="font-extrabold">Planning</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-accent-yellow/20 dark:bg-white/10 rounded-xl p-4 border border-black/5 dark:border-white/10">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined">checklist</span>
+            <p class="font-extrabold">Checklist</p>
+          </div>
+          <p class="text-xs text-[#617989] dark:text-gray-400 mb-3">
+            Une ligne = un élément (commence par “-” pour une belle liste)
+          </p>
+          {{ form_row(form.checklistText) }}
         </div>
-        <p class="text-xs text-[#617989] dark:text-gray-400 mb-3">
-          Format conseillé : “HH:MM - Activité”
-        </p>
-        {{ form_row(form.planningText) }}
+
+        <div class="bg-primary/10 dark:bg-white/10 rounded-xl p-4 border border-black/5 dark:border-white/10">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined">event</span>
+            <p class="font-extrabold">Planning</p>
+          </div>
+          <p class="text-xs text-[#617989] dark:text-gray-400 mb-3">
+            Format conseillé : “HH:MM - Activité”
+          </p>
+          {{ form_row(form.planningText) }}
+        </div>
       </div>
     </div>
-  </div>
+  {% endif %}
 
   <button class="mt-2 px-6 py-3 rounded-full bg-primary text-white font-extrabold hover:scale-105 transition-transform">
     Enregistrer

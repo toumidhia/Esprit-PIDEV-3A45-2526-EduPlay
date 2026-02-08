@@ -13,7 +13,7 @@
 
   <div class="mb-8">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-extrabold">Ressource principale</h2>
+      <h2 class="text-xl font-extrabold">Ressource</h2>
       <span class="text-xs font-bold text-[#617989] dark:text-gray-400">PDF ou Lien</span>
     </div>
 
@@ -28,10 +28,14 @@
 
       <div class="md:col-span-2 bg-black/5 dark:bg-white/10 rounded-xl p-4" data-field="url">
         {{ form_row(form.url) }}
+        <p class="text-xs text-[#617989] dark:text-gray-400 mt-2">
+          Exemple : lien vers une page d’information, un Drive, ou un formulaire.
+        </p>
       </div>
 
       <div class="md:col-span-2 bg-black/5 dark:bg-white/10 rounded-xl p-4" data-field="pdf">
         {{ form_row(form.pdfFile) }}
+
         {% if resource.filePath %}
           <p class="text-xs text-[#617989] dark:text-gray-400 mt-2">
             PDF actuel :
@@ -39,36 +43,14 @@
               Ouvrir
             </a>
           </p>
+          <p class="text-xs text-[#617989] dark:text-gray-400 mt-1">
+            (Si tu ne choisis pas un nouveau PDF, l’ancien reste.)
+          </p>
         {% endif %}
       </div>
 
       <div class="md:col-span-2 bg-black/5 dark:bg-white/10 rounded-xl p-4">
         {{ form_row(form.context) }}
-      </div>
-    </div>
-  </div>
-
-  <div class="mb-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-extrabold">Checklist & Planning</h2>
-      {#<span class="text-xs font-bold text-[#617989] dark:text-gray-400">Tu peux modifier ici directement</span>#}
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="bg-accent-yellow/20 dark:bg-white/10 rounded-xl p-4 border border-black/5 dark:border-white/10">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="material-symbols-outlined">checklist</span>
-          <p class="font-extrabold">Checklist</p>
-        </div>
-        {{ form_row(form.checklistText) }}
-      </div>
-
-      <div class="bg-primary/10 dark:bg-white/10 rounded-xl p-4 border border-black/5 dark:border-white/10">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="material-symbols-outlined">event</span>
-          <p class="font-extrabold">Planning</p>
-        </div>
-        {{ form_row(form.planningText) }}
       </div>
     </div>
   </div>

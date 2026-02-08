@@ -61,12 +61,29 @@ class EventResourceAdminController extends AbstractController
         $resource->setEvent($event);
         $resource->setCreatedAt(new \DateTimeImmutable());
 
-        $form = $this->createForm(EventResourceType::class, $resource);
+        // ✅ vérifier si checklist + planning existent déjà
+        $existingChecklist = $em->getRepository(EventResource::class)->findOneBy([
+            'event' => $event,
+            'type' => 'CHECKLIST'
+        ]);
+        $existingPlanning = $em->getRepository(EventResource::class)->findOneBy([
+            'event' => $event,
+            'type' => 'PLANNING'
+        ]);
+
+        // ✅ si checklist ET planning existent -> form simple (sans checklist/planning)
+        // sinon -> form complet (avec checklist/planning)
+        $useSimpleForm = ($existingChecklist && $existingPlanning);
+
+        $form = $useSimpleForm
+            ? $this->createForm(EventResourceMainType::class, $resource)
+            : $this->createForm(EventResourceType::class, $resource);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
             $type = (string) $resource->getType();
-            $pdf  = $form->get('pdfFile')->getData();
+            $pdf  = $form->has('pdfFile') ? $form->get('pdfFile')->getData() : null;
 
             // ✅ Max 10 ressources (PDF/LINK)
             if (in_array($type, ['PDF', 'LINK'], true)) {
@@ -96,7 +113,7 @@ class EventResourceAdminController extends AbstractController
                     $form->addError(new FormError("Pour une ressource de type LINK, l'URL est obligatoire."));
                 } else {
                     $normalized = $this->normalizeUrl($url);
-                    // doublon URL
+
                     $exists = $em->getRepository(EventResource::class)->findOneBy([
                         'event' => $event,
                         'type' => 'LINK',
@@ -105,33 +122,20 @@ class EventResourceAdminController extends AbstractController
                     if ($exists) {
                         $form->addError(new FormError("Cette URL existe déjà pour cet événement."));
                     }
-                    // on stocke normalisée pour rendre la règle stricte
+
                     $resource->setUrl($normalized);
                 }
             }
 
-            // ✅ Auto create checklist/planning if filled (optionnel)
-            $checklistText = trim((string) $form->get('checklistText')->getData());
-            $planningText  = trim((string) $form->get('planningText')->getData());
+            // ✅ Checklist/Planning : seulement si le form complet est utilisé
+            if (!$useSimpleForm && $form->has('checklistText') && $form->has('planningText')) {
+                $checklistText = trim((string) $form->get('checklistText')->getData());
+                $planningText  = trim((string) $form->get('planningText')->getData());
 
-            // ⚠️ ici on ne persiste pas encore, on le fera quand le form est valid
-            // mais on peut déjà préparer les règles "un seul checklist/planning"
-            if ($checklistText !== '') {
-                $existingChecklist = $em->getRepository(EventResource::class)->findOneBy([
-                    'event' => $event,
-                    'type' => 'CHECKLIST'
-                ]);
-                if ($existingChecklist) {
+                if ($checklistText !== '' && $existingChecklist) {
                     $form->addError(new FormError("Checklist déjà existante pour cet événement (1 seule autorisée)."));
                 }
-            }
-
-            if ($planningText !== '') {
-                $existingPlanning = $em->getRepository(EventResource::class)->findOneBy([
-                    'event' => $event,
-                    'type' => 'PLANNING'
-                ]);
-                if ($existingPlanning) {
+                if ($planningText !== '' && $existingPlanning) {
                     $form->addError(new FormError("Planning déjà existant pour cet événement (1 seul autorisé)."));
                 }
             }
@@ -139,7 +143,7 @@ class EventResourceAdminController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $type = (string) $resource->getType();
-            $pdf  = $form->get('pdfFile')->getData();
+            $pdf  = $form->has('pdfFile') ? $form->get('pdfFile')->getData() : null;
 
             // ✅ Nettoyage : garder cohérence selon type
             if ($type === 'PDF') {
@@ -155,11 +159,9 @@ class EventResourceAdminController extends AbstractController
                 $safe = (string) $slugger->slug($originalName);
                 $ext = $pdf->guessExtension() ?: 'pdf';
 
-                // nom stable => interdit doublons
                 $newName = 'event' . $event->getId() . '-' . $safe . '.' . $ext;
                 $relativePath = 'uploads/event-resources/' . $newName;
 
-                // doublon DB
                 $exists = $em->getRepository(EventResource::class)->findOneBy([
                     'event' => $event,
                     'type' => 'PDF',
@@ -188,28 +190,30 @@ class EventResourceAdminController extends AbstractController
 
             $em->persist($resource);
 
-            // ✅ Auto create checklist/planning (1 seul chacun)
-            $checklist = trim((string) $form->get('checklistText')->getData());
-            $planning  = trim((string) $form->get('planningText')->getData());
+            // ✅ Auto create checklist/planning UNIQUEMENT si on est en form complet (donc première fois)
+            if (!$useSimpleForm && $form->has('checklistText') && $form->has('planningText')) {
+                $checklist = trim((string) $form->get('checklistText')->getData());
+                $planning  = trim((string) $form->get('planningText')->getData());
 
-            if ($checklist !== '') {
-                $r = new EventResource();
-                $r->setEvent($event);
-                $r->setCreatedAt(new \DateTimeImmutable());
-                $r->setType('CHECKLIST');
-                $r->setTitle('Checklist - ' . ($event->getTitle()));
-                $r->setContext($checklist);
-                $em->persist($r);
-            }
+                if ($checklist !== '' && !$existingChecklist) {
+                    $r = new EventResource();
+                    $r->setEvent($event);
+                    $r->setCreatedAt(new \DateTimeImmutable());
+                    $r->setType('CHECKLIST');
+                    $r->setTitle('Checklist - ' . ($event->getTitle()));
+                    $r->setContext($checklist);
+                    $em->persist($r);
+                }
 
-            if ($planning !== '') {
-                $r = new EventResource();
-                $r->setEvent($event);
-                $r->setCreatedAt(new \DateTimeImmutable());
-                $r->setType('PLANNING');
-                $r->setTitle('Planning - ' . ($event->getTitle()));
-                $r->setContext($planning);
-                $em->persist($r);
+                if ($planning !== '' && !$existingPlanning) {
+                    $r = new EventResource();
+                    $r->setEvent($event);
+                    $r->setCreatedAt(new \DateTimeImmutable());
+                    $r->setType('PLANNING');
+                    $r->setTitle('Planning - ' . ($event->getTitle()));
+                    $r->setContext($planning);
+                    $em->persist($r);
+                }
             }
 
             $em->flush();
@@ -221,6 +225,7 @@ class EventResourceAdminController extends AbstractController
         return $this->render('admin/event_resource/new.html.twig', [
             'event' => $event,
             'form' => $form->createView(),
+            'useSimpleForm' => $useSimpleForm, // optionnel si tu veux l’utiliser dans twig
         ]);
     }
 
@@ -242,7 +247,16 @@ class EventResourceAdminController extends AbstractController
             throw $this->createNotFoundException('Ressource introuvable pour cet événement.');
         }
 
-        $form = $this->createForm(EventResourceType::class, $resource);
+        // ✅ checklist/planning ont leurs pages dédiées
+        if ($resource->getType() === 'CHECKLIST') {
+            return $this->redirectToRoute('admin_event_checklist_edit', ['eventId' => $eventId, 'resourceId' => $resourceId]);
+        }
+        if ($resource->getType() === 'PLANNING') {
+            return $this->redirectToRoute('admin_event_planning_edit', ['eventId' => $eventId, 'resourceId' => $resourceId]);
+        }
+
+        // ✅ IMPORTANT : ici on utilise TOUJOURS le form simple (sans checklist/planning)
+        $form = $this->createForm(EventResourceMainType::class, $resource);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
@@ -275,6 +289,7 @@ class EventResourceAdminController extends AbstractController
                     $form->addError(new FormError("Pour une ressource de type LINK, l'URL est obligatoire."));
                 } else {
                     $normalized = $this->normalizeUrl($url);
+
                     $qb = $em->createQueryBuilder()
                         ->select('COUNT(r.id)')
                         ->from(EventResource::class, 'r')
@@ -393,7 +408,7 @@ class EventResourceAdminController extends AbstractController
         return $this->redirectToRoute('admin_event_resource_index', ['id' => $event->getId()]);
     }
 
-    // ✅ Edition checklist/planning séparées (comme tu as déjà fait)
+    // ✅ Edition checklist/planning séparées (inchangé)
     #[Route('/admin/events/{eventId}/resources/{resourceId}/checklist/edit', name: 'admin_event_checklist_edit', methods: ['GET','POST'])]
     public function editChecklist(int $eventId, int $resourceId, Request $request, EntityManagerInterface $em): Response
     {
@@ -410,7 +425,7 @@ class EventResourceAdminController extends AbstractController
             ->add('context', TextareaType::class, [
                 'label' => 'Checklist',
                 'required' => true,
-                'attr' => ['rows' => 10, 'placeholder' => "- Autorisation signée\n- Tenue de sport\n- Gourde"],
+                'attr' => ['rows' => 10],
             ])
             ->getForm();
 
@@ -445,7 +460,7 @@ class EventResourceAdminController extends AbstractController
             ->add('context', TextareaType::class, [
                 'label' => 'Planning',
                 'required' => true,
-                'attr' => ['rows' => 10, 'placeholder' => "08:30 - Accueil\n09:00 - Atelier 1\n10:30 - Pause\n11:00 - Atelier 2\n12:30 - Fin"],
+                'attr' => ['rows' => 10],
             ])
             ->getForm();
 
@@ -466,9 +481,6 @@ class EventResourceAdminController extends AbstractController
 
     private function normalizeUrl(string $url): string
     {
-        $url = trim($url);
-        // petit nettoyage : enlever espaces + uniformiser
-        // (on peut ajouter https:// si absent, mais je le laisse simple)
-        return $url;
+        return trim($url);
     }
 }

@@ -45,7 +45,7 @@ class EventResourceMainType extends AbstractType
                         'maxSize' => '5M',
                         'mimeTypes' => ['application/pdf'],
                         'mimeTypesMessage' => 'Veuillez uploader un fichier PDF valide.',
-                    ])
+                    ]),
                 ],
             ]);
     }

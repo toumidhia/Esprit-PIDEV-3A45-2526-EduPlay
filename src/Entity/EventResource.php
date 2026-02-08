@@ -39,7 +39,7 @@ class EventResource
     private ?string $context = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $filePath = null;
+    private ?string $filePath = null; 
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $url = null;

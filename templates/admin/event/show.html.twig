@@ -1,0 +1,30 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Voir événement{% endblock %}
+
+{% block admin_content %}
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-3xl font-extrabold">{{ event.title }}</h1>
+        <p class="text-[#617989] dark:text-gray-400 font-medium mt-1">{{ event.location }}</p>
+    </div>
+
+    <a href="{{ path('admin_event_index') }}" class="px-5 py-3 rounded-full bg-black/5 dark:bg-white/10 font-bold">
+        ← Retour
+    </a>
+</div>
+
+<div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-xl p-6">
+    {% if event.imagePath %}
+        <img src="{{ asset(event.imagePath) }}" class="w-full max-h-80 object-cover rounded-xl mb-6" alt="{{ event.title }}">
+    {% endif %}
+
+    <div class="space-y-2 font-bold">
+        <div>📅 {{ event.startDate|date('d/m/Y H:i') }} → {{ event.endDate|date('d/m/Y H:i') }}</div>
+        {% if event.location %}<div>📍 {{ event.location }}</div>{% endif %}
+    </div>
+
+    <p class="mt-6 text-[#617989] dark:text-gray-400 font-medium leading-relaxed">
+        {{ event.description }}
+    </p>
+</div>
+{% endblock %}

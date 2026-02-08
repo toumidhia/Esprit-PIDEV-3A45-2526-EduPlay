@@ -1,0 +1,122 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Modifier ressource{% endblock %}
+
+{% block admin_content %}
+<h1 class="text-3xl font-extrabold mb-2">Modifier une ressource</h1>
+<p class="text-[#617989] dark:text-gray-400 font-medium mb-6">
+  Événement : <b>{{ event.title }}</b>
+</p>
+
+<div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-2xl p-6">
+  {{ form_start(form, { attr: { enctype: 'multipart/form-data' } }) }}
+  {{ form_errors(form) }}
+
+  <div class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-extrabold">Ressource principale</h2>
+      <span class="text-xs font-bold text-[#617989] dark:text-gray-400">PDF ou Lien</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-black/5 dark:bg-white/10 rounded-xl p-4">
+        {{ form_row(form.type) }}
+      </div>
+
+      <div class="bg-black/5 dark:bg-white/10 rounded-xl p-4">
+        {{ form_row(form.title) }}
+      </div>
+
+      <div class="md:col-span-2 bg-black/5 dark:bg-white/10 rounded-xl p-4" data-field="url">
+        {{ form_row(form.url) }}
+      </div>
+
+      <div class="md:col-span-2 bg-black/5 dark:bg-white/10 rounded-xl p-4" data-field="pdf">
+        {{ form_row(form.pdfFile) }}
+        {% if resource.filePath %}
+          <p class="text-xs text-[#617989] dark:text-gray-400 mt-2">
+            PDF actuel :
+            <a class="text-primary hover:underline" href="{{ asset(resource.filePath) }}" target="_blank" rel="noopener">
+              Ouvrir
+            </a>
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="md:col-span-2 bg-black/5 dark:bg-white/10 rounded-xl p-4">
+        {{ form_row(form.context) }}
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-extrabold">Checklist & Planning</h2>
+      {#<span class="text-xs font-bold text-[#617989] dark:text-gray-400">Tu peux modifier ici directement</span>#}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-accent-yellow/20 dark:bg-white/10 rounded-xl p-4 border border-black/5 dark:border-white/10">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined">checklist</span>
+          <p class="font-extrabold">Checklist</p>
+        </div>
+        {{ form_row(form.checklistText) }}
+      </div>
+
+      <div class="bg-primary/10 dark:bg-white/10 rounded-xl p-4 border border-black/5 dark:border-white/10">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined">event</span>
+          <p class="font-extrabold">Planning</p>
+        </div>
+        {{ form_row(form.planningText) }}
+      </div>
+    </div>
+  </div>
+
+  <button class="mt-2 px-6 py-3 rounded-full bg-primary text-white font-extrabold hover:scale-105 transition-transform">
+    Enregistrer les modifications
+  </button>
+
+  {{ form_end(form) }}
+</div>
+
+<a class="inline-block mt-6 px-5 py-3 rounded-full bg-black/5 dark:bg-white/10 font-bold hover:scale-105 transition-transform"
+   href="{{ path('admin_event_resource_index', {id: event.id}) }}">
+  ← Retour
+</a>
+
+<script>
+(function () {
+  const typeSelect = document.getElementById('{{ form.type.vars.id }}');
+
+  const urlBlock = document.querySelector('[data-field="url"]');
+  const pdfBlock = document.querySelector('[data-field="pdf"]');
+
+  const urlInput = document.getElementById('{{ form.url.vars.id }}');
+  const pdfInput = document.getElementById('{{ form.pdfFile.vars.id }}');
+
+  function hideAllMain() {
+    urlBlock.style.display = 'none';
+    pdfBlock.style.display = 'none';
+    urlInput.disabled = true;
+    pdfInput.disabled = true;
+  }
+
+  function refreshMain() {
+    hideAllMain();
+    const v = typeSelect.value;
+
+    if (v === 'LINK') {
+      urlBlock.style.display = '';
+      urlInput.disabled = false;
+    } else if (v === 'PDF') {
+      pdfBlock.style.display = '';
+      pdfInput.disabled = false;
+    }
+  }
+
+  typeSelect.addEventListener('change', refreshMain);
+  refreshMain();
+})();
+</script>
+{% endblock %}

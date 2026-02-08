@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Entity;
-
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\SchoolEventRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -25,8 +25,13 @@ class SchoolEvent
     #[ORM\Column]
     private ?\DateTime $startDate = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'datetime')]
+    #[Assert\GreaterThanOrEqual(
+        propertyPath: 'startDate',
+        message: 'La date de fin doit être supérieure ou égale à la date de début.'
+    )]
     private ?\DateTime $endDate = null;
+
 
     #[ORM\Column(length: 255)]
     private ?string $location = null;

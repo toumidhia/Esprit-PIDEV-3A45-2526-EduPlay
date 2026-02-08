@@ -1,0 +1,70 @@
+{# templates/base_dashboard.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tableau de bord{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+
+    {# Sidebar #}
+    <aside class="w-72 bg-white shadow-lg flex flex-col p-6 gap-8">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl">
+                {{ user.firstName|slice(0,1) }}
+            </div>
+            <div>
+                <h2 class="text-xl font-bold">{{ user.firstName }} {{ user.lastName }}</h2>
+                <p class="text-gray-500 text-sm">{{ user.type|capitalize }}</p>
+            </div>
+        </div>
+
+        <nav class="flex flex-col gap-2">
+            {% if 'ROLE_PARENT' in user.roles %}
+                <a href="{{ path('app_parent_dashboard') }}" class="nav-item px-4 py-2 rounded hover:bg-gray-100">Mes Enfants</a>
+                <a href="{{ path('app_parent_stats') }}" class="nav-item px-4 py-2 rounded hover:bg-gray-100">Mes Statistiques</a>
+            {% endif %}
+
+            {% if 'ROLE_ENFANT' in user.roles %}
+                <a href="{{ path('app_child_dashboard') }}" class="nav-item px-4 py-2 rounded hover:bg-gray-100">Mon Profil</a>
+                <a href="{{ path('app_child_games') }}" class="nav-item px-4 py-2 rounded hover:bg-gray-100">Mes Jeux</a>
+            {% endif %}
+
+            {% if 'ROLE_TEACHER' in user.roles %}
+                <a href="{{ path('app_teacher_dashboard') }}" class="nav-item px-4 py-2 rounded hover:bg-gray-100">Mes Cours</a>
+                <a href="{{ path('app_teacher_sessions') }}" class="nav-item px-4 py-2 rounded hover:bg-gray-100">Mes Sessions</a>
+            {% endif %}
+
+            <a href="{{ path('app_logout') }}" class="nav-item px-4 py-2 rounded hover:bg-gray-100 text-red-600">Déconnexion</a>
+        </nav>
+    </aside>
+
+    {# Main Content #}
+    <div class="flex-1 flex flex-col">
+
+        {# Header #}
+        <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">
+                Bonjour, {{ user.firstName }}
+            </h1>
+            <div class="relative">
+                <div class="w-12 h-12 rounded-full border-2 border-gray-200 overflow-hidden">
+                    <img src="{{ user.avatar ?? '/images/default-avatar.png' }}" alt="Avatar" class="w-full h-full object-cover">
+                </div>
+            </div>
+        </header>
+
+        {# Main dynamic content #}
+        <main class="flex-1 p-6 overflow-y-auto">
+            {% block main_content %}
+                <div class="text-center text-gray-500">
+                    Sélectionnez une option dans la sidebar pour commencer.
+                </div>
+            {% endblock %}
+        </main>
+
+    </div>
+</body>
+</html>

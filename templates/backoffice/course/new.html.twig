@@ -1,0 +1,164 @@
+{% extends 'backoffice/base.html.twig' %}
+
+{% block title %}{{ course.id ? 'Edit Course' : 'Create New Course' }}{% endblock %}
+
+{% block body %}
+{% set currentRole = app.request.query.get('role', 'admin')|lower %}
+<!-- [ page-header ] start -->
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">{{ course.id ? 'Edit Course' : 'Create New Course' }}</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_dashboard', {role: currentRole}) }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_course_index', {role: currentRole}) }}">Courses</a></li>
+            <li class="breadcrumb-item">{{ course.id ? 'Edit' : 'Create' }}</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                <a href="{{ path('app_course_index', {role: currentRole}) }}" class="btn btn-light-brand">
+                    <i class="feather-arrow-left me-2"></i>
+                    <span>Back to List</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ page-header ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="main-content">
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-xl-8">
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title">Course Information</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Course Title -->
+                    <div class="mb-4">
+                        {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                        <span class="text-danger">*</span>
+                        {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.title) }}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                        <span class="text-danger">*</span>
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '6'}}) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+
+                    <!-- Level and Duration -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            {{ form_label(form.level, null, {'label_attr': {'class': 'form-label'}}) }}
+                            <span class="text-danger">*</span>
+                            {{ form_widget(form.level, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.level) }}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            {{ form_label(form.durationTraining, null, {'label_attr': {'class': 'form-label'}}) }}
+                            <span class="text-danger">*</span>
+                            {{ form_widget(form.durationTraining, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.durationTraining) }}
+                        </div>
+                    </div>
+
+                    <!-- PDF File Upload -->
+                    <div class="mb-4">
+                        {{ form_label(form.pdfFile, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.pdfFile, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.pdfFile) }}
+                        {% if course.pdfFile %}
+                        <div class="mt-2">
+                            <small class="text-muted d-block">Current file:</small>
+                            <a href="{{ asset('uploads/courses/' ~ course.pdfFile) }}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+                                <i class="feather-file-text me-2"></i>View Current PDF
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-xl-4">
+            <!-- Status & Actions -->
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title">Course Settings</h5>
+                </div>
+                <div class="card-body">
+                    {% if form.status is defined %}
+                    <!-- Status (Admin Only) -->
+                    <div class="mb-4">
+                        {{ form_label(form.status, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.status) }}
+                        <small class="text-muted form-text">Only admins can change course status</small>
+                    </div>
+                    {% endif %}
+
+                    {% if form.teacherId is defined %}
+                    <!-- Teacher Selection (Admin Only) -->
+                    <div class="mb-4">
+                        {{ form_label(form.teacherId, 'Assign Teacher', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.teacherId, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.teacherId) }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Course Metadata -->
+                    {% if course.id %}
+                    <div class="border-top pt-3 mt-3">
+                        <h6 class="mb-3">Course Details</h6>
+                        <div class="mb-2">
+                            <small class="text-muted">Status:</small>
+                            <div>
+                                {% if course.status == 'pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% elseif course.status == 'accepted' %}
+                                <span class="badge bg-success">Accepted</span>
+                                {% elseif course.status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Submit Actions -->
+            <div class="card stretch stretch-full">
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="feather-save me-2"></i>
+                            {{ course.id ? 'Update Course' : 'Create Course' }}
+                        </button>
+                        <a href="{{ path('app_course_index') }}" class="btn btn-light-brand">
+                            <i class="feather-x me-2"></i>Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ form_end(form) }}
+</div>
+<!-- [ Main Content ] end -->
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+{% endblock %}

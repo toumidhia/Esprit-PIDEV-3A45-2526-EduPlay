@@ -98,7 +98,12 @@ final class CourseController extends AbstractController
         // Get all teachers for filter dropdown
         $teachers = $userRepository->findAll(); // TODO: Filter by role = 'ROLE_TEACHER'
         
-        return $this->render('course/index.html.twig', [
+        // Route to backoffice for admin/teacher, frontoffice for parent/kid
+        $template = in_array($userRole, ['ROLE_ADMIN', 'ROLE_TEACHER']) 
+            ? 'backoffice/course/index.html.twig' 
+            : 'course/index.html.twig';
+        
+        return $this->render($template, [
             'courses' => $courses,
             'userRole' => $userRole,
             'filters' => $filters,
@@ -116,8 +121,15 @@ final class CourseController extends AbstractController
     #[Route('/new', name: 'app_course_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
     {
-        // TODO: Add security check - only teachers can create courses
-        // $this->denyAccessUnlessGranted('ROLE_TEACHER');
+        // TODO: Get from authentication
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Only teachers can create courses
+        if ($userRole !== 'ROLE_TEACHER') {
+            $this->addFlash('error', 'Only teachers can create courses.');
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
         
         $course = new Course();
         $course->setStatus('pending'); // Always pending when created by teacher
@@ -163,22 +175,32 @@ final class CourseController extends AbstractController
             return $this->redirectToRoute('app_course_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('course/new.html.twig', [
+        return $this->render('backoffice/course/new.html.twig', [
             'course' => $course,
             'form' => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_course_show', methods: ['GET'])]
-    public function show(Course $course): Response
+    public function show(Request $request, Course $course): Response
     {
         // TODO: Add proper access control
         // Teachers can see their own courses
         // Parents can see accepted courses
         // Admin can see all
         
-        return $this->render('course/show.html.twig', [
+        // Determine role from request (temporary until auth is implemented)
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Route to backoffice for admin/teacher, frontoffice for parent/kid
+        $template = in_array($userRole, ['ROLE_ADMIN', 'ROLE_TEACHER']) 
+            ? 'backoffice/course/show.html.twig' 
+            : 'course/show.html.twig';
+        
+        return $this->render($template, [
             'course' => $course,
+            'userRole' => $userRole,
         ]);
     }
 
@@ -212,8 +234,14 @@ final class CourseController extends AbstractController
     #[Route('/{id}/edit', name: 'app_course_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Course $course, EntityManagerInterface $entityManager): Response
     {
-        // TODO: Add proper access control
-        $userRole = 'ROLE_ADMIN'; // Get from authenticated user
+        // TODO: Get from authentication
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Block parent/kid from editing courses
+        if (in_array($userRole, ['ROLE_PARENT', 'ROLE_KID'])) {
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
         
         // Teachers can only edit their own pending courses
         // if ($userRole === 'ROLE_TEACHER' && 
@@ -259,7 +287,7 @@ final class CourseController extends AbstractController
             return $this->redirectToRoute('app_course_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('course/edit.html.twig', [
+        return $this->render('backoffice/course/edit.html.twig', [
             'course' => $course,
             'form' => $form,
         ]);
@@ -269,8 +297,14 @@ final class CourseController extends AbstractController
     #[Route('/{id}/accept', name: 'app_course_accept', methods: ['POST'])]
     public function accept(Request $request, Course $course, EntityManagerInterface $entityManager): Response
     {
-        // TODO: Add security check - only admin
-        // $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        // TODO: Get from authentication
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Only admin can accept courses
+        if ($userRole !== 'ROLE_ADMIN') {
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
         
         if ($this->isCsrfTokenValid('accept'.$course->getId(), $request->request->get('_token'))) {
             $course->setStatus('accepted');
@@ -286,8 +320,14 @@ final class CourseController extends AbstractController
     #[Route('/{id}/reject', name: 'app_course_reject', methods: ['POST'])]
     public function reject(Request $request, Course $course, EntityManagerInterface $entityManager): Response
     {
-        // TODO: Add security check - only admin
-        // $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        // TODO: Get from authentication
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Only admin can reject courses
+        if ($userRole !== 'ROLE_ADMIN') {
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
         
         if ($this->isCsrfTokenValid('reject'.$course->getId(), $request->request->get('_token'))) {
             $course->setStatus('rejected');
@@ -308,8 +348,14 @@ final class CourseController extends AbstractController
         UserRepository $userRepository
     ): Response
     {
-        // TODO: Add security check - only parents
-        // $this->denyAccessUnlessGranted('ROLE_PARENT');
+        // TODO: Get from authentication
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Only parents can subscribe kids
+        if ($userRole !== 'ROLE_PARENT') {
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
         
         if ($this->isCsrfTokenValid('subscribe'.$course->getId(), $request->request->get('_token'))) {
             $kidId = $request->request->get('kid_id');
@@ -354,8 +400,14 @@ final class CourseController extends AbstractController
         SubscriptionRepository $subscriptionRepository
     ): Response
     {
-        // TODO: Add security check - only parents
-        // $this->denyAccessUnlessGranted('ROLE_PARENT');
+        // TODO: Get from authentication
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Only parents can unsubscribe kids
+        if ($userRole !== 'ROLE_PARENT') {
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
         
         if ($this->isCsrfTokenValid('unsubscribe'.$course->getId(), $request->request->get('_token'))) {
             $kidId = $request->request->get('kid_id');
@@ -382,8 +434,14 @@ final class CourseController extends AbstractController
     #[Route('/{id}', name: 'app_course_delete', methods: ['POST'])]
     public function delete(Request $request, Course $course, EntityManagerInterface $entityManager): Response
     {
-        // TODO: Add proper access control
-        // Only admin or the teacher who created it (if pending) can delete
+        // TODO: Get from authentication
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Block parent/kid from deleting courses
+        if (in_array($userRole, ['ROLE_PARENT', 'ROLE_KID'])) {
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
         
         if ($this->isCsrfTokenValid('delete'.$course->getId(), $request->getPayload()->getString('_token'))) {
             // Delete PDF file if exists

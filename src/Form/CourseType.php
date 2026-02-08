@@ -24,31 +24,32 @@ class CourseType extends AbstractType
         $builder
             ->add('title', TextType::class, [
                 'label' => 'Course Title',
+                'required' => false,
                 'attr' => [
                     'placeholder' => 'Enter course title (e.g., "Introduction to Programming")',
                     'class' => 'form-control'
                 ],
-                'help' => 'Minimum 3 characters required',
             ])
             ->add('durationTraining', TextType::class, [
                 'label' => 'Training Duration',
+                'required' => false,
                 'attr' => [
                     'placeholder' => 'e.g., "5 hours", "2 weeks", "1 month"',
                     'class' => 'form-control'
                 ],
-                'help' => 'Format: number + time unit (hours, days, weeks, months)',
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Course Description',
+                'required' => false,
                 'attr' => [
                     'placeholder' => 'Describe what students will learn in this course...',
                     'class' => 'form-control',
                     'rows' => 4
                 ],
-                'help' => 'Minimum 10 characters required',
             ])
             ->add('level', ChoiceType::class, [
                 'label' => 'Course Level',
+                'required' => false,
                 'choices' => [
                     'Beginner' => 'Beginner',
                     'Intermediate' => 'Intermediate',
@@ -75,7 +76,6 @@ class CourseType extends AbstractType
                         'mimeTypesMessage' => 'Please upload a valid PDF document',
                     ])
                 ],
-                'help' => 'Optional: Upload course materials (PDF only, max 10MB)',
             ]);
         
         // Only admin can change status

@@ -1,7 +1,9 @@
 {% block form_errors %}
     {% if errors|length > 0 %}
-        {% for error in errors %}
-            <div>{{ error.message }}</div>
-        {% endfor %}
+        <div class="invalid-feedback d-block">
+            {% for error in errors %}
+                {{ error.message }}{% if not loop.last %}<br>{% endif %}
+            {% endfor %}
+        </div>
     {% endif %}
 {% endblock form_errors %}

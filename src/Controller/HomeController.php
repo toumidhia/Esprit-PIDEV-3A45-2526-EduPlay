@@ -11,9 +11,7 @@ class HomeController extends AbstractController
     #[Route('/', name: 'app_home')]
     public function index(): Response
     {
-        return $this->render('home/index.html.twig', [
-            'titre' => 'Bienvenue sur mon site',
-            'description' => 'Ceci est un exemple',
-        ]);
+        // Redirect to parent course view by default
+        return $this->redirectToRoute('app_course_index', ['role' => 'parent']);
     }
 }

@@ -1,0 +1,159 @@
+{% extends 'backoffice/base.html.twig' %}
+
+{% block title %}Seances Management{% endblock %}
+
+{% block body %}
+<!-- [ page-header ] start -->
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Seances</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Home</a></li>
+            <li class="breadcrumb-item">Seances</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                <a href="{{ path('app_seance_index') }}?view=calendar" class="btn btn-light-brand">
+                    <i class="feather-calendar me-2"></i>
+                    <span>Calendar View</span>
+                </a>
+                {% if userRole == 'ROLE_ADMIN' %}
+                <a href="{{ path('app_seance_new') }}" class="btn btn-primary">
+                    <i class="feather-plus me-2"></i>
+                    <span>New Seance</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ page-header ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="main-content">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card stretch stretch-full">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="seancesList">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Course</th>
+                                    <th>Date</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for seance in seances %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ path('app_seance_show', {id: seance.id}) }}" class="fw-bold text-dark">
+                                            {{ seance.title ?? 'Session #' ~ seance.id }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if seance.courseId %}
+                                        <a href="{{ path('app_course_show', {id: seance.courseId.id}) }}">
+                                            {{ seance.courseId.title }}
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ seance.date ? seance.date|date('M d, Y') : 'Not set' }}</td>
+                                    <td>{{ seance.startTime ? seance.startTime|date('H:i') : 'N/A' }}</td>
+                                    <td>{{ seance.endTime ? seance.endTime|date('H:i') : 'N/A' }}</td>
+                                    <td>{{ seance.location ?? 'Not specified' }}</td>
+                                    <td>
+                                        {% if seance.status == 'scheduled' %}
+                                        <span class="badge bg-soft-primary text-primary">Scheduled</span>
+                                        {% elseif seance.status == 'completed' %}
+                                        <span class="badge bg-soft-success text-success">Completed</span>
+                                        {% elseif seance.status == 'cancelled' %}
+                                        <span class="badge bg-soft-danger text-danger">Cancelled</span>
+                                        {% else %}
+                                        <span class="badge bg-soft-secondary text-secondary">{{ seance.status|capitalize }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="hstack gap-2 justify-content-end">
+                                            <a href="{{ path('app_seance_show', {id: seance.id}) }}" class="avatar-text avatar-md" title="View">
+                                                <i class="feather-eye"></i>
+                                            </a>
+                                            {% if userRole == 'ROLE_ADMIN' %}
+                                            <div class="dropdown">
+                                                <a href="javascript:void(0)" class="avatar-text avatar-md" data-bs-toggle="dropdown">
+                                                    <i class="feather-more-horizontal"></i>
+                                                </a>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <a class="dropdown-item" href="{{ path('app_seance_edit', {id: seance.id}) }}">
+                                                            <i class="feather-edit-3 me-3"></i>
+                                                            <span>Edit</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form method="post" action="{{ path('app_seance_delete', {id: seance.id}) }}" onsubmit="return confirm('Are you sure?');">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ seance.id) }}">
+                                                            <button class="dropdown-item text-danger">
+                                                                <i class="feathertrash-2 me-3"></i>
+                                                                <span>Delete</span>
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="feather-calendar fs-1 mb-3 d-block"></i>
+                                            <p>No seances found</p>
+                                            {% if userRole == 'ROLE_ADMIN' %}
+                                            <a href="{{ path('app_seance_new') }}" class="btn btn-primary mt-2">
+                                                <i class="feather-plus me-2"></i>Create First Seance
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    $(document).ready(function() {
+        if ($.fn.DataTable) {
+            $('#seancesList').DataTable({
+                order: [[2, 'asc']], // Order by date
+                pageLength: 25
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -19,8 +19,17 @@ final class SeanceController extends AbstractController
     #[Route(name: 'app_seance_index', methods: ['GET'])]
     public function index(Request $request, SeanceRepository $seanceRepository, CourseRepository $courseRepository): Response
     {
-        // TODO: Add security check - only admin
-        // $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        // TODO: Get from authentication
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Block non-admin from accessing seance management
+        if ($userRole !== 'ROLE_ADMIN') {
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
+        
+        // Check if calendar view is requested
+        $view = $request->query->get('view', 'list');
         
         // Get filter parameters
         $filters = [
@@ -44,13 +53,44 @@ final class SeanceController extends AbstractController
         // Get all accepted courses for filter dropdown
         $courses = $courseRepository->findBy(['status' => 'accepted']);
         
-        return $this->render('seance/index.html.twig', [
+        // Determine role from request (temporary until auth is implemented)
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // If calendar view requested, render calendar template
+        if ($view === 'calendar') {
+            // Format seances for calendar JSON encoding
+            $formattedSeances = array_map(function($seance) {
+                $date = $seance->getDate();
+                $startTime = $seance->getStartTime();
+                $endTime = $seance->getEndTime();
+                
+                return [
+                    'id' => $seance->getId(),
+                    'title' => $seance->getTitle(),
+                    'start' => $date->format('Y-m-d') . 'T' . $startTime->format('H:i:s'),
+                    'end' => $date->format('Y-m-d') . 'T' . $endTime->format('H:i:s'),
+                    'status' => $seance->getStatus(),
+                    'location' => $seance->getLocation(),
+                    'courseId' => $seance->getCourseId() ? $seance->getCourseId()->getId() : null,
+                    'courseTitle' => $seance->getCourseId() ? $seance->getCourseId()->getTitle() : null,
+                ];
+            }, $seances);
+            
+            return $this->render('backoffice/seance/calendar.html.twig', [
+                'seances' => $formattedSeances,
+                'userRole' => $userRole,
+            ]);
+        }
+        
+        return $this->render('backoffice/seance/index.html.twig', [
             'seances' => $seances,
             'filters' => $filters,
             'sortBy' => $sortBy,
             'sortOrder' => $sortOrder,
             'statistics' => $statistics,
             'courses' => $courses,
+            'userRole' => $userRole,
         ]);
     }
 
@@ -58,8 +98,13 @@ final class SeanceController extends AbstractController
     #[Route('/new', name: 'app_seance_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, CourseRepository $courseRepository): Response
     {
-        // TODO: Add security check - only admin
-        // $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Block non-admin from creating seances
+        if ($userRole !== 'ROLE_ADMIN') {
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
         
         $seance = new Seance();
         
@@ -93,19 +138,25 @@ final class SeanceController extends AbstractController
             return $this->redirectToRoute('app_seance_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('seance/new.html.twig', [
+        return $this->render('backoffice/seance/new.html.twig', [
             'seance' => $seance,
             'form' => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_seance_show', methods: ['GET'])]
-    public function show(Seance $seance): Response
+    public function show(Request $request, Seance $seance): Response
     {
-        // TODO: Add security check - only admin
-        // $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        // TODO: Get from authentication
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
         
-        return $this->render('seance/show.html.twig', [
+        // Block non-admin from viewing seance details
+        if ($userRole !== 'ROLE_ADMIN') {
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
+        
+        return $this->render('backoffice/seance/show.html.twig', [
             'seance' => $seance,
         ]);
     }
@@ -114,8 +165,14 @@ final class SeanceController extends AbstractController
     #[Route('/{id}/edit', name: 'app_seance_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Seance $seance, EntityManagerInterface $entityManager): Response
     {
-        // TODO: Add security check - only admin
-        // $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        // TODO: Get from authentication
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Block non-admin from editing seances
+        if ($userRole !== 'ROLE_ADMIN') {
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
         
         $form = $this->createForm(SeanceType::class, $seance);
         $form->handleRequest($request);
@@ -137,7 +194,7 @@ final class SeanceController extends AbstractController
             return $this->redirectToRoute('app_seance_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('seance/edit.html.twig', [
+        return $this->render('backoffice/seance/edit.html.twig', [
             'seance' => $seance,
             'form' => $form,
         ]);
@@ -147,8 +204,14 @@ final class SeanceController extends AbstractController
     #[Route('/{id}', name: 'app_seance_delete', methods: ['POST'])]
     public function delete(Request $request, Seance $seance, EntityManagerInterface $entityManager): Response
     {
-        // TODO: Add security check - only admin
-        // $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        // TODO: Get from authentication
+        $testRole = $request->query->get('role', 'admin');
+        $userRole = 'ROLE_' . strtoupper($testRole);
+        
+        // Block non-admin from deleting seances
+        if ($userRole !== 'ROLE_ADMIN') {
+            return $this->redirectToRoute('app_course_index', ['role' => $testRole]);
+        }
         
         if ($this->isCsrfTokenValid('delete'.$seance->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($seance);

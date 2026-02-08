@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>EduPlay Library Explorer</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b7cee",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#101822",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .organic-shape {
+            position: fixed;
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.4;
+        }
+        .level-badge {
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 9999px;
+        }
+        .level-beginner { background-color: #d1fae5; color: #065f46; }
+        .level-intermediate { background-color: #fef3c7; color: #92400e; }
+        .level-advanced { background-color: #fee2e2; color: #991b1b; }
+        .level-expert { background-color: #e0e7ff; color: #3730a3; }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark min-h-screen relative overflow-x-hidden">
+    <!-- Playful Background Shapes -->
+    <div class="organic-shape bg-pink-300 w-[500px] h-[500px] rounded-full -top-40 -left-40"></div>
+    <div class="organic-shape bg-primary/30 w-[600px] h-[600px] rounded-full -bottom-40 -right-40"></div>
+    <div class="organic-shape bg-blue-200 w-[400px] h-[400px] rounded-full top-1/2 left-1/4"></div>
+    
+    <div class="layout-container flex h-full grow flex-col">
+        <!-- Top Navigation -->
+        <header class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 px-6 py-4 lg:px-20">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="size-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                        <span class="material-symbols-outlined text-2xl">auto_stories</span>
+                    </div>
+                    <h2 class="text-[#111418] dark:text-white text-2xl font-extrabold tracking-tight">EduPlay</h2>
+                </div>
+                <nav class="hidden md:flex items-center gap-2">
+                    <a class="px-6 py-2 rounded-full bg-primary text-white font-semibold text-sm transition-all" href="{{ path('app_library') }}">Home</a>
+                    <a class="px-6 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold text-sm transition-all" href="#">My Books</a>
+                    <a class="px-6 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold text-sm transition-all" href="#">Help</a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a class="px-6 py-2 rounded-full bg-green-500 text-white font-semibold text-sm transition-all" href="{{ path('app_admin') }}">Admin</a>
+                    {% endif %}
+                </nav>
+                <div class="flex items-center gap-4">
+                    <button class="size-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                        <span class="material-symbols-outlined">settings</span>
+                    </button>
+                    <div class="size-10 rounded-full border-2 border-primary overflow-hidden shadow-md">
+                        <img class="w-full h-full object-cover" alt="Cartoon avatar of a smiling child" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbRYuXbiGWzBqkPT0_kb-B6VeCv6_MOWoWpAa8-3qHfL1hBuOPosP29T00LH9JH4F-jsIh8oQgwz-1-C_vRRki-AKXIgs-kCRqumvMEbsAfzSbNoRB1vRtUOnDfgcFRiYt-9vSnd-uZlLntqtZrJQiYxjj2MDdQ6qG2OqB1nOZtscihZ7oTI_wV0sWCGn9CHDrmo7uuD7kuucqy-27Yvm326XTTgdqjCFQm92M9AsZ5FpAvuDqaFR7OT1_cN9BFJYLUyseed_ombI"/>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <main class="max-w-7xl mx-auto px-6 lg:px-20 py-10 w-full">
+            <!-- Hero Section -->
+            <div class="text-center mb-12">
+                <h1 class="text-4xl lg:text-5xl font-extrabold text-[#111418] dark:text-white mb-4">Explore Your Library</h1>
+                <p class="text-gray-500 dark:text-gray-400 text-lg mb-8 max-w-2xl mx-auto">Discover amazing stories, solve math puzzles, and explore the wonders of the universe!</p>
+                <div class="max-w-2xl mx-auto">
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-gray-400 group-focus-within:text-primary transition-colors">search</span>
+                        </div>
+                        <input class="block w-full pl-14 pr-6 py-5 bg-white dark:bg-gray-900 border-none rounded-xl shadow-xl shadow-blue-100 dark:shadow-none text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-4 focus:ring-primary/20 text-lg" placeholder="What would you like to learn today?" type="text" id="searchInput"/>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Library Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="libraryGrid">
+                {% for library in libraries %}
+                <div class="group bg-white dark:bg-gray-900 rounded-xl p-4 shadow-xl shadow-blue-50/50 dark:shadow-none transition-all hover:-translate-y-2 library-card">
+                    <div class="relative aspect-[3/4] rounded-lg overflow-hidden mb-5 bg-gray-100">
+                        {% if library.coverImage %}
+                            <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                                 alt="{{ library.name }}" 
+                                 src="{{ asset('uploads/' ~ library.coverImage) }}">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
+                                <span class="material-symbols-outlined text-5xl text-blue-300">auto_stories</span>
+                            </div>
+                        {% endif %}
+                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur rounded-full px-3 py-1 flex items-center gap-1 shadow-sm">
+                            <span class="material-symbols-outlined text-primary text-sm">category</span>
+                            <span class="text-xs font-bold text-gray-700">{{ library.theme|slice(0, 10) }}{% if library.theme|length > 10 %}...{% endif %}</span>
+                        </div>
+                    </div>
+                    <div class="px-2">
+                        <span class="inline-block bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 text-[10px] font-bold uppercase tracking-wider mb-2 px-2 py-0.5 rounded">
+                            {{ library.minAge }} - {{ library.maxAge }} Years
+                        </span>
+                        <h3 class="text-xl font-bold text-[#111418] dark:text-white mb-2">{{ library.name }}</h3>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-4 line-clamp-3">
+                            {{ library.description|slice(0, 100) }}{% if library.description|length > 100 %}...{% endif %}
+                        </p>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="level-badge level-{{ library.level|lower }}">
+                                {{ library.level }}
+                            </span>
+                            <div class="text-xs text-gray-500">
+                                <span class="material-symbols-outlined text-sm align-text-bottom">visibility</span>
+                                <span class="ml-1">Library</span>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full py-3 rounded-full bg-primary/10 text-primary font-bold hover:bg-primary hover:text-white transition-colors">
+                            Start Exploring
+                        </button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-span-4 text-center py-16">
+                    <div class="mx-auto w-24 h-24 mb-6 text-gray-300">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No libraries found</h3>
+                    <p class="text-gray-500 mb-6">Check back later for amazing content!</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Filter by Theme -->
+            {% if libraries|length > 0 %}
+            <div class="mt-20">
+                <h2 class="text-2xl font-bold text-[#111418] dark:text-white mb-6">Browse by Theme</h2>
+                <div class="flex flex-wrap gap-3">
+                    {% set themes = [] %}
+                    {% for library in libraries %}
+                        {% if library.theme not in themes %}
+                            {% set themes = themes|merge([library.theme]) %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <button class="filter-theme px-6 py-3 rounded-full bg-primary text-white font-semibold transition-all active" data-theme="all">
+                        All Themes
+                    </button>
+                    {% for theme in themes|slice(0, 8) %}
+                        <button class="filter-theme px-6 py-3 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-primary hover:text-white transition-all" data-theme="{{ theme|lower }}">
+                            {{ theme }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Recently Added -->
+            {% if libraries|length > 0 %}
+            <div class="mt-20">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-[#111418] dark:text-white">Recently Added</h2>
+                    <a class="text-primary font-semibold flex items-center gap-1 hover:underline" href="#">
+                        View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </a>
+                </div>
+                <div class="flex flex-wrap gap-4">
+                    {% for library in libraries|slice(0, 3) %}
+                    <div class="flex items-center gap-4 bg-white dark:bg-gray-900 p-3 pr-6 rounded-full shadow-md border border-gray-100 dark:border-gray-800">
+                        <div class="size-12 rounded-full overflow-hidden">
+                            {% if library.coverImage %}
+                                <img class="w-full h-full object-cover" alt="{{ library.name }}" src="{{ asset('uploads/' ~ library.coverImage) }}">
+                            {% else %}
+                                <div class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-blue-300">book</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-[#111418] dark:text-white">{{ library.name|slice(0, 20) }}{% if library.name|length > 20 %}...{% endif %}</p>
+                            <p class="text-xs text-gray-400">{{ library.theme }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </main>
+        
+        <!-- Playful Footer -->
+        <footer class="mt-20 py-10 px-6 lg:px-20 border-t border-gray-100 dark:border-gray-800 text-center">
+            <div class="flex items-center justify-center gap-2 mb-4 text-primary">
+                <span class="material-symbols-outlined text-3xl">star</span>
+                <span class="material-symbols-outlined text-3xl">sentiment_very_satisfied</span>
+                <span class="material-symbols-outlined text-3xl">star</span>
+            </div>
+            <p class="text-gray-400 text-sm">© 2024 EduPlay Learning Platform. Fun for everyone!</p>
+            <p class="text-gray-400 text-xs mt-2">
+                {% if libraries|length > 0 %}
+                    {{ libraries|length }} libraries available
+                {% endif %}
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        // Filtrage par recherche
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.library-card');
+            
+            cards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                const theme = card.querySelector('.text-xs.font-bold').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm) || theme.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+        
+        // Filtrage par thème
+        document.querySelectorAll('.filter-theme').forEach(button => {
+            button.addEventListener('click', function() {
+                // Retirer la classe active de tous les boutons
+                document.querySelectorAll('.filter-theme').forEach(btn => {
+                    btn.classList.remove('active', 'bg-primary', 'text-white');
+                    btn.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
+                });
+                
+                // Ajouter la classe active au bouton cliqué
+                this.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
+                this.classList.add('active', 'bg-primary', 'text-white');
+                
+                const selectedTheme = this.getAttribute('data-theme');
+                const cards = document.querySelectorAll('.library-card');
+                
+                cards.forEach(card => {
+                    if (selectedTheme === 'all') {
+                        card.style.display = 'block';
+                    } else {
+                        const theme = card.querySelector('.text-xs.font-bold').textContent.toLowerCase();
+                        if (theme.includes(selectedTheme)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Animation d'entrée des cartes
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.library-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

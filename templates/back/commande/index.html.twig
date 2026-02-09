@@ -1,0 +1,148 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Commandes{% endblock %}
+
+{% block body %}
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <h1 class="text-3xl font-extrabold">Commandes</h1>
+        <div class="flex flex-wrap items-center gap-3">
+            <a href="{{ path('app_back_commande_new') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-bold hover:opacity-90 transition-colors text-sm">
+                <span class="material-symbols-outlined text-lg">add_shopping_cart</span>
+                Créer une commande
+            </a>
+            <a href="{{ path('app_back_commande_export_pdf', app.request.query.all) }}" class="inline-flex items-center gap-2 px-5 py-2.5 border border-[#dbe1e6] rounded-full font-bold hover:bg-background-light transition-colors text-sm">
+                <span class="material-symbols-outlined text-lg">picture_as_pdf</span>
+                Export PDF
+            </a>
+        </div>
+    </div>
+
+    {# Statistiques pour Commandes - CORRECTED #}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white rounded-xl border border-[#dbe1e6] p-6">
+            <p class="text-sm font-bold text-[#617989] mb-1">Total commandes</p>
+            <p class="text-2xl font-extrabold text-primary">{{ stats.total }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-[#dbe1e6] p-6">
+            <p class="text-sm font-bold text-[#617989] mb-1">Montant total</p>
+            <p class="text-2xl font-extrabold text-green-600">{{ stats.totalAmount|number_format(2, ',', ' ') }} DT</p>
+        </div>
+        <div class="bg-white rounded-xl border border-[#dbe1e6] p-6">
+            <p class="text-sm font-bold text-[#617989] mb-1">Moyenne par commande</p>
+            <p class="text-2xl font-extrabold text-blue-600">
+                {% if stats.total > 0 %}
+                    {{ (stats.totalAmount / stats.total)|number_format(2, ',', ' ') }} DT
+                {% else %}
+                    0,00 DT
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    {# Recherche + Filtres #}
+    <form method="get" action="{{ path('app_back_commande_index') }}" class="bg-white rounded-xl border border-[#dbe1e6] p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label for="search" class="block text-sm font-bold text-[#617989] mb-1">Recherche</label>
+                <input type="text" name="search" id="search" value="{{ search }}" placeholder="ID ou email..." class="w-full rounded-lg border border-gray-300 px-4 py-2"/>
+            </div>
+            <div>
+                <label for="user_id" class="block text-sm font-bold text-[#617989] mb-1">Client</label>
+                <select name="user_id" id="user_id" class="w-full rounded-lg border border-gray-300 px-4 py-2">
+                    <option value="">Tous les clients</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}" {{ user_id == user.id ? 'selected' : '' }}>{{ user.email }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="product_id" class="block text-sm font-bold text-[#617989] mb-1">Produit</label>
+                <select name="product_id" id="product_id" class="w-full rounded-lg border border-gray-300 px-4 py-2">
+                    <option value="">Tous les produits</option>
+                    {% for product in products %}
+                        <option value="{{ product.id }}" {{ product_id == product.id ? 'selected' : '' }}>{{ product.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex items-end gap-2">
+                <div class="flex-1">
+                    <label for="date_from" class="block text-sm font-bold text-[#617989] mb-1">Du</label>
+                    <input type="date" name="date_from" id="date_from" value="{{ date_from }}" class="w-full rounded-lg border border-gray-300 px-4 py-2"/>
+                </div>
+                <div class="flex-1">
+                    <label for="date_to" class="block text-sm font-bold text-[#617989] mb-1">Au</label>
+                    <input type="date" name="date_to" id="date_to" value="{{ date_to }}" class="w-full rounded-lg border border-gray-300 px-4 py-2"/>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 flex gap-2">
+            <input type="hidden" name="sort" value="{{ sortBy }}"/>
+            <input type="hidden" name="order" value="{{ sortOrder }}"/>
+            <button type="submit" class="px-5 py-2.5 bg-primary text-white font-bold rounded-full hover:opacity-90 transition-opacity">Filtrer</button>
+            <a href="{{ path('app_back_commande_index') }}" class="px-5 py-2.5 border border-[#dbe1e6] rounded-full font-bold hover:bg-background-light transition-colors">Réinitialiser</a>
+        </div>
+    </form>
+
+    <div class="bg-white rounded-xl border border-[#dbe1e6] overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-background-light border-b border-[#dbe1e6]">
+                    <tr>
+                        <th class="px-6 py-4 font-bold">
+                            <a href="{{ path('app_back_commande_index', app.request.query.all|merge({sort: 'id', order: (sortBy == 'id' and sortOrder == 'DESC') ? 'ASC' : 'DESC'})) }}" class="hover:text-primary">ID {{ sortBy == 'id' ? (sortOrder == 'ASC' ? '↑' : '↓') : '' }}</a>
+                        </th>
+                        <th class="px-6 py-4 font-bold">
+                            <a href="{{ path('app_back_commande_index', app.request.query.all|merge({sort: 'dateCommande', order: (sortBy == 'dateCommande' and sortOrder == 'DESC') ? 'ASC' : 'DESC'})) }}" class="hover:text-primary">Date {{ sortBy == 'dateCommande' ? (sortOrder == 'ASC' ? '↑' : '↓') : '' }}</a>
+                        </th>
+                        <th class="px-6 py-4 font-bold">Client</th>
+                        <th class="px-6 py-4 font-bold">Produits</th>
+                        <th class="px-6 py-4 font-bold">
+                            <a href="{{ path('app_back_commande_index', app.request.query.all|merge({sort: 'montantTotal', order: (sortBy == 'montantTotal' and sortOrder == 'DESC') ? 'ASC' : 'DESC'})) }}" class="hover:text-primary">Montant {{ sortBy == 'montantTotal' ? (sortOrder == 'ASC' ? '↑' : '↓') : '' }}</a>
+                        </th>
+                        <th class="px-6 py-4 font-bold w-36">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                        <tr class="border-b border-[#dbe1e6] hover:bg-background-light/50">
+                            <td class="px-6 py-4 font-mono">#{{ commande.id }}</td>
+                            <td class="px-6 py-4">{{ commande.dateCommande|date('d/m/Y H:i') }}</td>
+                            <td class="px-6 py-4">
+                                <div class="font-medium">{{ commande.user.email }}</div>
+                                <div class="text-sm text-[#617989]">ID: {{ commande.user.id }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="space-y-1">
+                                    {% for item in commande.commandeItems %}
+                                        <div class="flex justify-between items-center">
+                                            <span>{{ item.product.name }}</span>
+                                            <span class="text-sm bg-gray-100 px-2 py-1 rounded">x{{ item.quantite }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 font-bold">{{ commande.montantTotal|number_format(2, ',', ' ') }} DT</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ path('app_back_commande_show', { id: commande.id }) }}" class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg transition-colors" title="Voir">
+                                        <span class="material-symbols-outlined text-sm">visibility</span>
+                                    </a>
+                                    <form method="post" action="{{ path('app_back_commande_delete', { id: commande.id }) }}" class="inline js-delete-form" data-message="Supprimer la commande #{{ commande.id }} ?">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commande.id) }}"/>
+                                        <button type="submit" class="inline-flex items-center justify-center w-8 h-8 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors" title="Supprimer">
+                                            <span class="material-symbols-outlined text-sm">delete</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-[#617989]">Aucune commande.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Nouvelle commande{% endblock %}
+
+{% block body %}
+    <div class="mb-8">
+        <a href="{{ path('app_back_commande_index') }}" class="text-primary font-bold hover:underline inline-flex items-center gap-1">
+            <span class="material-symbols-outlined text-xl">arrow_back</span>
+            Retour à la liste
+        </a>
+    </div>
+    <h1 class="text-3xl font-extrabold mb-8">Nouvelle commande</h1>
+
+    <div class="bg-white rounded-xl border border-[#dbe1e6] p-8 max-w-2xl">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        {{ form_errors(form) }}
+        <div class="space-y-6">
+            <div>
+                {{ form_label(form.idUser) }}
+                {{ form_widget(form.idUser) }}
+                {{ form_errors(form.idUser) }}
+            </div>
+            <div>
+                {{ form_label(form.idProduct) }}
+                {{ form_widget(form.idProduct) }}
+                {{ form_errors(form.idProduct) }}
+            </div>
+            <div>
+                {{ form_label(form.quantity) }}
+                {{ form_widget(form.quantity) }}
+                {{ form_errors(form.quantity) }}
+            </div>
+            <div>
+                {{ form_label(form.dateCommande) }}
+                {{ form_widget(form.dateCommande) }}
+                {{ form_errors(form.dateCommande) }}
+            </div>
+            <div>
+                {{ form_label(form.totalAmount) }}
+                {{ form_widget(form.totalAmount) }}
+                {{ form_errors(form.totalAmount) }}
+            </div>
+        </div>
+        <div class="mt-8 flex gap-4">
+            <button type="submit" class="px-6 py-3 bg-primary text-white font-bold rounded-full hover:opacity-90 transition-opacity">
+                Enregistrer
+            </button>
+            <a href="{{ path('app_back_commande_index') }}" class="px-6 py-3 border border-[#dbe1e6] rounded-full font-bold hover:bg-background-light transition-colors">
+                Annuler
+            </a>
+        </div>
+        {{ form_rest(form) }}
+        {{ form_end(form) }}
+    </div>
+
+    </div>
+{% endblock %}

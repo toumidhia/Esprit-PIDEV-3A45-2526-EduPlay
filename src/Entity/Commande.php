@@ -3,8 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CommandeRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 class Commande
@@ -14,26 +14,67 @@ class Commande
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $idUser = null;
-
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Product $idProduct = null;
-
     #[ORM\Column]
+    #[Assert\NotNull(message: 'La quantité est obligatoire.')]
+    #[Assert\Positive(message: 'La quantité doit être positive.')]
+    #[Assert\LessThanOrEqual(
+        value: 100,
+        message: 'La quantité ne peut pas dépasser {{ compared_value }}.'
+    )]
     private ?int $quantity = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $dateCommande = null;
+    #[ORM\Column(name: 'date_commande')]
+    private ?\DateTimeInterface $dateCommande = null;
 
-    #[ORM\Column]
-    private ?int $totalAmount = null;
+    #[ORM\Column(name: 'total_amount', type: 'float')]
+    private ?float $totalAmount = null;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'id_user_id', referencedColumnName: 'id', nullable: false)]
+    #[Assert\NotNull(message: 'Veuillez sélectionner un utilisateur.')]
+    private ?User $idUser = null;
+
+    #[ORM\ManyToOne(targetEntity: Product::class)]
+    #[ORM\JoinColumn(name: 'id_product_id', referencedColumnName: 'id', nullable: false)]
+    private ?Product $idProduct = null;
+
+    // Getters et Setters
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getQuantity(): ?int
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity(int $quantity): static
+    {
+        $this->quantity = $quantity;
+        return $this;
+    }
+
+    public function getDateCommande(): ?\DateTimeInterface
+    {
+        return $this->dateCommande;
+    }
+
+    public function setDateCommande(\DateTimeInterface $dateCommande): static
+    {
+        $this->dateCommande = $dateCommande;
+        return $this;
+    }
+
+    public function getTotalAmount(): ?float
+    {
+        return $this->totalAmount;
+    }
+
+    public function setTotalAmount(float $totalAmount): static
+    {
+        $this->totalAmount = $totalAmount;
+        return $this;
     }
 
     public function getIdUser(): ?User
@@ -44,7 +85,6 @@ class Commande
     public function setIdUser(?User $idUser): static
     {
         $this->idUser = $idUser;
-
         return $this;
     }
 
@@ -56,43 +96,6 @@ class Commande
     public function setIdProduct(?Product $idProduct): static
     {
         $this->idProduct = $idProduct;
-
-        return $this;
-    }
-
-    public function getQuantity(): ?int
-    {
-        return $this->quantity;
-    }
-
-    public function setQuantity(int $quantity): static
-    {
-        $this->quantity = $quantity;
-
-        return $this;
-    }
-
-    public function getDateCommande(): ?\DateTime
-    {
-        return $this->dateCommande;
-    }
-
-    public function setDateCommande(\DateTime $dateCommande): static
-    {
-        $this->dateCommande = $dateCommande;
-
-        return $this;
-    }
-
-    public function getTotalAmount(): ?int
-    {
-        return $this->totalAmount;
-    }
-
-    public function setTotalAmount(int $totalAmount): static
-    {
-        $this->totalAmount = $totalAmount;
-
         return $this;
     }
 }

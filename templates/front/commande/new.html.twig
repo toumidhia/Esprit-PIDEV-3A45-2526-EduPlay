@@ -1,0 +1,166 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Passer une commande - {{ product.name }}{% endblock %}
+
+{% block body %}
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="{{ path('app_front_shop_show', {id: product.id}) }}" class="text-primary hover:underline inline-flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Retour au produit
+            </a>
+        </div>
+
+        <h1 class="text-3xl font-bold mb-8">Passer une commande</h1>
+
+        <div class="max-w-4xl mx-auto">
+            <form method="post" class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-100 border-b-2 border-gray-300">
+                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700">Produit</th>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-gray-700">Prix unitaire</th>
+                                <th class="px-6 py-4 text-center text-sm font-bold text-gray-700">Quantité</th>
+                                <th class="px-6 py-4 text-right text-sm font-bold text-gray-700">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                <td class="px-6 py-4">
+                                    <div>
+                                        <p class="font-bold text-lg">{{ product.name }}</p>
+                                        <p class="text-sm text-gray-600">{{ product.description }}</p>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-lg font-bold text-primary">
+                                    {{ product.price|number_format(2, ',', ' ') }} DT
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex justify-center">
+                                        {{ form_widget(form.quantity, {'attr': {'class': 'w-20 rounded-lg border border-gray-300 px-3 py-2 text-center focus:ring-2 focus:ring-primary focus:border-transparent', 'min': '1', 'max': '100'}}) }}
+                                    </div>
+                                    {% if form.quantity.vars.errors|length > 0 %}
+                                        <div class="mt-2 text-red-600 text-xs">
+                                            {% for error in form.quantity.vars.errors %}
+                                                {{ error.message }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <p id="total-amount" class="text-2xl font-bold text-primary">
+                                        {{ (product.price * 1)|number_format(2, ',', ' ') }} DT
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                    <div class="mb-6">
+                        <label for="idUser" class="block text-sm font-bold text-gray-700 mb-2">ID du parent responsable <span class="text-red-500">*</span></label>
+                        {{ form_widget(form.idUser, {'attr': {'class': 'w-full rounded-lg border-2 border-primary px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary text-lg', 'placeholder': 'Entrez l\'ID du parent'}}) }}
+                        {% if form.idUser.vars.errors|length > 0 %}
+                            <div class="mt-2 text-red-600 text-sm">
+                                {% for error in form.idUser.vars.errors %}
+                                    <p>{{ error.message }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <h3 class="font-bold text-blue-800 mb-3">Récapitulatif de la commande</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">Produit :</span>
+                                <span class="font-medium">{{ product.name }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">Prix unitaire :</span>
+                                <span class="font-medium">{{ product.price|number_format(2, ',', ' ') }} DT</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">Quantité :</span>
+                                <span class="font-medium" id="recap-quantity">1</span>
+                            </div>
+                            <div class="border-t border-blue-200 pt-2 flex justify-between text-base font-bold text-blue-800">
+                                <span>Montant total :</span>
+                                <span id="recap-total">{{ (product.price * 1)|number_format(2, ',', ' ') }} DT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button type="submit" class="flex-1 px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Confirmer la commande
+                        </button>
+                        <button id="add-to-cart-btn" type="button" class="flex-1 px-6 py-3 bg-yellow-400 text-white font-bold rounded-lg hover:bg-yellow-500 transition-colors flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4"/>
+                            </svg>
+                            Ajouter au panier
+                        </button>
+                        <a href="{{ path('app_front_shop_show', {id: product.id}) }}" class="flex-1 px-6 py-3 border-2 border-gray-300 font-bold rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Annuler
+                        </a>
+                    </div>
+                </div>
+                
+                {# REMOVED THE SHIPPINGMETHOD FIELD LINES #}
+                
+                {{ form_rest(form) }}
+            </form>
+
+            {# Hidden form used to add product to cart without submitting the order form #}
+            <form id="add-to-cart-form" method="post" action="{{ path('app_front_cart_add', {id: product.id}) }}" style="display:none;">
+                <input type="hidden" name="quantity" id="add-to-cart-quantity" value="1" />
+                <input type="hidden" name="_token" value="{{ csrf_token('add-to-cart') }}" />
+            </form>
+        </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const quantityInput = document.querySelector('input[name*="quantity"]');
+            const totalAmountElement = document.getElementById('total-amount');
+            const recapQuantity = document.getElementById('recap-quantity');
+            const recapTotal = document.getElementById('recap-total');
+            const productPrice = {{ product.price }};
+            
+            function updateTotalAmount() {
+                const quantity = parseInt(quantityInput.value) || 1;
+                const total = productPrice * quantity;
+                const formattedTotal = total.toFixed(2).replace('.', ',') + ' DT';
+                
+                totalAmountElement.textContent = formattedTotal;
+                recapQuantity.textContent = quantity;
+                recapTotal.textContent = formattedTotal;
+            }
+            
+            if (quantityInput) {
+                quantityInput.addEventListener('input', updateTotalAmount);
+                quantityInput.addEventListener('change', updateTotalAmount);
+            }
+            // Add to cart button behaviour
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            const addToCartForm = document.getElementById('add-to-cart-form');
+            const addToCartQuantity = document.getElementById('add-to-cart-quantity');
+            if (addToCartBtn && addToCartForm && quantityInput) {
+                addToCartBtn.addEventListener('click', function() {
+                    addToCartQuantity.value = parseInt(quantityInput.value) || 1;
+                    addToCartForm.submit();
+                });
+            }
+        });
+    </script>
+{% endblock %}

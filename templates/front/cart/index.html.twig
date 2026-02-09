@@ -1,0 +1,41 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Panier{% endblock %}
+
+{% block body %}
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">Votre panier</h1>
+        {% if items is empty %}
+            <div class="bg-white rounded-xl p-8 border border-[#dbe1e6]">
+                <p class="text-gray-600">Votre panier est vide.</p>
+                <a href="{{ path('app_front_shop') }}" class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-primary text-white rounded-full">Voir la boutique</a>
+            </div>
+        {% else %}
+            <div class="bg-white rounded-xl p-6 border border-[#dbe1e6]">
+                <table class="w-full mb-6">
+                    <thead>
+                        <tr class="text-left text-sm text-gray-600 border-b pb-2">
+                            <th>Produit</th>
+                            <th>Quantité</th>
+                            <th class="text-right">Prix</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                            <tr class="border-b py-4">
+                                <td class="py-4">{{ item.product.name }}</td>
+                                <td class="py-4">{{ item.quantity }}</td>
+                                <td class="py-4 text-right">{{ item.lineTotal|number_format(2, ',', ' ') }} DT</td>
+                                    <td class="py-4 text-right">{{ item.lineTotal|number_format(2, ',', ' ') }} DT</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="flex justify-between items-center">
+                    <div class="text-lg font-bold">Total</div>
+                    <div class="text-2xl font-extrabold">{{ total|number_format(2, ',', ' ') }} DT</div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

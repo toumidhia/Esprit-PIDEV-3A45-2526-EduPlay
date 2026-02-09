@@ -1,111 +1,78 @@
 security:
-<<<<<<< HEAD
-    password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+  password_hashers:
+    Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
-    providers:
-        # ✅ Provider DB (sera utilisé quand ton camarade intègre l’auth)
-=======
-    # Configuration du hashage des mots de passe
-    password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+  providers:
+    # ✅ Provider DB (sera utilisé quand ton camarade intègre l’auth)
+    app_user_provider:
+      entity:
+        class: App\Entity\User
+        property: email
 
-    # Provider pour charger les utilisateurs
-    providers:
->>>>>>> gestionUser
-        app_user_provider:
-            entity:
-                class: App\Entity\User
-                property: email
+    # ✅ Provider mémoire (pour tester maintenant)
+    users_in_memory:
+      memory:
+        users:
+          parent_test:
+            password: '$2y$13$kCcIYZ57AKBnfwwZXqh0QeCiBObBIsjWeYUEJxMzho4YIauJw1CkS'
+            roles: [ROLE_PARENT]
 
-<<<<<<< HEAD
-        # ✅ Provider mémoire (pour tester maintenant)
-        users_in_memory:
-            memory:
-                users:
-                    parent_test:
-                        # IMPORTANT: mets ici un vrai hash (commande plus bas)
-                        password: '$2y$13$kCcIYZ57AKBnfwwZXqh0QeCiBObBIsjWeYUEJxMzho4YIauJw1CkS'
-                        roles: [ROLE_PARENT]
+    # ✅ Chain: Symfony va chercher d’abord en mémoire, puis en DB
+    chain_provider:
+      chain:
+        providers: [users_in_memory, app_user_provider]
 
-        # ✅ Chain: Symfony va chercher d’abord en mémoire, puis en DB
-        chain_provider:
-            chain:
-                providers: [users_in_memory, app_user_provider]
+  firewalls:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js)/
+      security: false
 
-=======
->>>>>>> gestionUser
-    firewalls:
-        dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
-            security: false
+    main:
+      lazy: true
+      provider: chain_provider
+      http_basic: ~
 
-        main:
-            lazy: true
-<<<<<<< HEAD
-            provider: chain_provider
+      # Quand ton camarade aura form_login/custom_authenticator, vous remplacerez http_basic
+      # form_login:
+      #   login_path: app_login
+      #   check_path: app_login
+      # logout:
+      #   path: app_logout
+      #   target: front_event_index
 
-            # ✅ login simple pour tester (tu peux utiliser http_basic)
-            http_basic: ~
+  access_control:
+    # ✅ pages publiques
+    - { path: ^/events$, roles: PUBLIC_ACCESS }
+    - { path: ^/events/\d+$, roles: PUBLIC_ACCESS }
 
-            # (quand ton camarade aura form_login, vous pouvez remplacer http_basic par form_login)
-            # form_login:
-            #     login_path: app_login
-            #     check_path: app_login
-            # logout:
-            #     path: app_logout
-            #     target: front_event_index
+    # ✅ inscription: protégé
+    - { path: ^/events/\d+/register$, roles: ROLE_PARENT }
+    - { path: ^/my-registrations, roles: ROLE_PARENT }
 
-    access_control:
-        # ✅ pages publiques
-        - { path: ^/events$, roles: PUBLIC_ACCESS }
-        - { path: ^/events/\d+$, roles: PUBLIC_ACCESS }
+    # ✅ routes auth (si vous les ajoutez plus tard)
+    - { path: ^/login, roles: PUBLIC_ACCESS }
+    - { path: ^/register, roles: PUBLIC_ACCESS }
 
-        # ✅ inscription: protégé (comme en prod/intégration)
-        - { path: ^/events/\d+/register$, roles: ROLE_PARENT }
-        - { path: ^/my-registrations, roles: ROLE_PARENT }
+    # ✅ exemples (à activer quand vous aurez ces sections)
+    - { path: ^/admin, roles: ROLE_ADMIN }
+    - { path: ^/parent, roles: ROLE_PARENT }
+    - { path: ^/enseignant, roles: ROLE_ENSEIGNANT }
+    - { path: ^/enfant, roles: ROLE_ENFANT }
 
-        # ✅ tout le reste public pour l’instant (ajuste selon ton projet)
-        - { path: ^/, roles: PUBLIC_ACCESS }
+    # ✅ tout le reste public pour l’instant
+    - { path: ^/, roles: PUBLIC_ACCESS }
 
-=======
-            provider: app_user_provider
-
-            # Utiliser notre custom authenticator
-            custom_authenticator: App\Security\LoginFormAuthenticator
-
-            # Déconnexion
-            logout:
-                path: app_logout
-                target: app_home
-
-    # Contrôle d'accès par routes
-    access_control:
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/parent, roles: ROLE_PARENT }
-        - { path: ^/enseignant, roles: ROLE_ENSEIGNANT }
-        - { path: ^/enfant, roles: ROLE_ENFANT }
-        - { path: ^/, roles: PUBLIC_ACCESS }
-
-    # Hiérarchie des rôles
-    role_hierarchy:
-        ROLE_ADMIN: [ROLE_USER]
-        ROLE_PARENT: [ROLE_USER]
-        ROLE_ENSEIGNANT: [ROLE_USER]
-        ROLE_ENFANT: [ROLE_USER]
->>>>>>> gestionUser
+  role_hierarchy:
+    ROLE_ADMIN: [ROLE_USER]
+    ROLE_PARENT: [ROLE_USER]
+    ROLE_ENSEIGNANT: [ROLE_USER]
+    ROLE_ENFANT: [ROLE_USER]
 
 when@test:
-    security:
-        password_hashers:
-            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
-                algorithm: auto
-                cost: 4
-                time_cost: 3
-<<<<<<< HEAD
-                memory_cost: 10
-=======
-                memory_cost: 10
->>>>>>> gestionUser
+  security:
+    password_hashers:
+      Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+        algorithm: auto
+        cost: 4
+        time_cost: 3
+        memory_cost: 10

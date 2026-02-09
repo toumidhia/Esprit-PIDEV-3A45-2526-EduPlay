@@ -1,12 +1,13 @@
 <?php
 
 namespace App\Entity;
-use Symfony\Component\Validator\Constraints as Assert;
+
 use App\Repository\SchoolEventRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SchoolEventRepository::class)]
 class SchoolEvent
@@ -31,7 +32,6 @@ class SchoolEvent
         message: 'La date de fin doit être supérieure ou égale à la date de début.'
     )]
     private ?\DateTime $endDate = null;
-
 
     #[ORM\Column(length: 255)]
     private ?string $location = null;
@@ -58,6 +58,7 @@ class SchoolEvent
     {
         $this->resources = new ArrayCollection();
         $this->registrations = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -73,7 +74,6 @@ class SchoolEvent
     public function setTitle(string $title): static
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -85,7 +85,6 @@ class SchoolEvent
     public function setDescription(string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -97,7 +96,6 @@ class SchoolEvent
     public function setStartDate(\DateTime $startDate): static
     {
         $this->startDate = $startDate;
-
         return $this;
     }
 
@@ -109,7 +107,6 @@ class SchoolEvent
     public function setEndDate(\DateTime $endDate): static
     {
         $this->endDate = $endDate;
-
         return $this;
     }
 
@@ -121,7 +118,6 @@ class SchoolEvent
     public function setLocation(string $location): static
     {
         $this->location = $location;
-
         return $this;
     }
 
@@ -133,7 +129,6 @@ class SchoolEvent
     public function setImagePath(string $imagePath): static
     {
         $this->imagePath = $imagePath;
-
         return $this;
     }
 
@@ -145,7 +140,6 @@ class SchoolEvent
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -163,19 +157,16 @@ class SchoolEvent
             $this->resources->add($resource);
             $resource->setEvent($this);
         }
-
         return $this;
     }
 
     public function removeResource(EventResource $resource): static
     {
         if ($this->resources->removeElement($resource)) {
-            // set the owning side to null (unless already changed)
             if ($resource->getEvent() === $this) {
                 $resource->setEvent(null);
             }
         }
-
         return $this;
     }
 
@@ -193,19 +184,16 @@ class SchoolEvent
             $this->registrations->add($registration);
             $registration->setEvent($this);
         }
-
         return $this;
     }
 
     public function removeRegistration(EventRegistration $registration): static
     {
         if ($this->registrations->removeElement($registration)) {
-            // set the owning side to null (unless already changed)
             if ($registration->getEvent() === $this) {
                 $registration->setEvent(null);
             }
         }
-
         return $this;
     }
 }

@@ -8,16 +8,22 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: EventRegistrationRepository::class)]
 class EventRegistration
 {
+    public const STATUS_PENDING = 'PENDING';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    private ?string $status = self::STATUS_PENDING;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $registeredAt = null;
+
+    // ✅ CHAMP MANQUANT (cause de l'erreur SQL)
+    #[ORM\Column(length: 120)]
+    private ?string $childFullName = null;
 
     #[ORM\ManyToOne(inversedBy: 'registrations')]
     #[ORM\JoinColumn(nullable: false)]
@@ -40,7 +46,6 @@ class EventRegistration
     public function setStatus(string $status): static
     {
         $this->status = $status;
-
         return $this;
     }
 
@@ -52,7 +57,17 @@ class EventRegistration
     public function setRegisteredAt(\DateTimeImmutable $registeredAt): static
     {
         $this->registeredAt = $registeredAt;
+        return $this;
+    }
 
+    public function getChildFullName(): ?string
+    {
+        return $this->childFullName;
+    }
+
+    public function setChildFullName(string $childFullName): static
+    {
+        $this->childFullName = $childFullName;
         return $this;
     }
 
@@ -64,7 +79,6 @@ class EventRegistration
     public function setEvent(?SchoolEvent $event): static
     {
         $this->event = $event;
-
         return $this;
     }
 
@@ -76,7 +90,6 @@ class EventRegistration
     public function setParent(?User $parent): static
     {
         $this->parent = $parent;
-
         return $this;
     }
 }

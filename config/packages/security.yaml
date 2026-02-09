@@ -1,44 +1,65 @@
 security:
-    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
-    providers:
-        users_in_memory: { memory: null }
-    firewalls:
-        #admin:
-         #   pattern: ^/admin/events
-          #  security: false
 
+    providers:
+        # ✅ Provider DB (sera utilisé quand ton camarade intègre l’auth)
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+        # ✅ Provider mémoire (pour tester maintenant)
+        users_in_memory:
+            memory:
+                users:
+                    parent_test:
+                        # IMPORTANT: mets ici un vrai hash (commande plus bas)
+                        password: '$2y$13$kCcIYZ57AKBnfwwZXqh0QeCiBObBIsjWeYUEJxMzho4YIauJw1CkS'
+                        roles: [ROLE_PARENT]
+
+        # ✅ Chain: Symfony va chercher d’abord en mémoire, puis en DB
+        chain_provider:
+            chain:
+                providers: [users_in_memory, app_user_provider]
+
+    firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+
         main:
             lazy: true
-            provider: users_in_memory
+            provider: chain_provider
 
-            # activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#the-firewall
+            # ✅ login simple pour tester (tu peux utiliser http_basic)
+            http_basic: ~
 
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
-        
-    # Easy way to control access for large sections of your site
-    # Note: Only the *first* access control that matches will be used
+            # (quand ton camarade aura form_login, vous pouvez remplacer http_basic par form_login)
+            # form_login:
+            #     login_path: app_login
+            #     check_path: app_login
+            # logout:
+            #     path: app_logout
+            #     target: front_event_index
+
     access_control:
-        #- { path: ^/admin/events, roles: PUBLIC_ACCESS }
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        # ✅ pages publiques
+        - { path: ^/events$, roles: PUBLIC_ACCESS }
+        - { path: ^/events/\d+$, roles: PUBLIC_ACCESS }
+
+        # ✅ inscription: protégé (comme en prod/intégration)
+        - { path: ^/events/\d+/register$, roles: ROLE_PARENT }
+
+        # ✅ tout le reste public pour l’instant (ajuste selon ton projet)
+        - { path: ^/, roles: PUBLIC_ACCESS }
+
 
 when@test:
     security:
         password_hashers:
-            # By default, password hashers are resource intensive and take time. This is
-            # important to generate secure password hashes. In tests however, secure hashes
-            # are not important, waste resources and increase test times. The following
-            # reduces the work factor to the lowest possible values.
             Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
                 algorithm: auto
-                cost: 4 # Lowest possible value for bcrypt
-                time_cost: 3 # Lowest possible value for argon
-                memory_cost: 10 # Lowest possible value for argon
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

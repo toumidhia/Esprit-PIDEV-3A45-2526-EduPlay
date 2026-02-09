@@ -42,13 +42,12 @@
             </div>
           </div>
 
-          {# ✅ Inscription : on l’active dans l’étape 2 #}
-          <button
-            class="h-11 px-6 rounded-full bg-accent-yellow text-[#111518] font-extrabold opacity-70 cursor-not-allowed"
-            type="button"
-            title="Étape suivante : inscription Parent">
-            S'inscrire (bientôt)
-          </button>
+          {# ✅ Inscription #}
+          <a class="h-11 px-6 rounded-full bg-accent-yellow text-[#111518] font-extrabold hover:scale-105 transition-transform inline-flex items-center justify-center"
+            href="{{ path('front_event_register', {id: event.id}) }}">
+            S'inscrire
+          </a>
+
         </div>
       </div>
     </div>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>EduPlay Book Collection View</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#63b7f2",
+                        "accent-yellow": "#F7C56E",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101b22",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#111518] dark:text-white font-display">
+    <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+        <!-- Top Navigation Bar -->
+        <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#f0f3f4] dark:border-[#2a3a46] bg-white dark:bg-background-dark px-6 py-4 lg:px-20">
+            <div class="flex items-center gap-8">
+                <div class="flex items-center gap-3">
+                    <div class="size-10 bg-primary rounded-xl flex items-center justify-center text-white">
+                        <span class="material-symbols-outlined filled-icon text-2xl">rocket_launch</span>
+                    </div>
+                    <h2 class="text-2xl font-extrabold tracking-tight text-primary">EduPlay</h2>
+                </div>
+                <nav class="hidden md:flex items-center gap-6">
+                    <a class="text-sm font-bold text-primary border-b-2 border-primary pb-1" href="{{ path('app_resource') }}">Libraries</a>
+                    <a class="text-sm font-semibold text-[#617989] hover:text-primary transition-colors" href="#">Achievements</a>
+                    <a class="text-sm font-semibold text-[#617989] hover:text-primary transition-colors" href="#">My Books</a>
+                </nav>
+            </div>
+            <div class="flex flex-1 justify-end gap-4 items-center">
+                <label class="hidden sm:flex flex-col min-w-40 h-10 max-w-64 w-full">
+                    <div class="flex w-full flex-1 items-stretch rounded-full h-full bg-[#f0f3f4] dark:bg-[#1c2a35]">
+                        <div class="text-[#617989] flex items-center justify-center pl-4">
+                            <span class="material-symbols-outlined text-xl">search</span>
+                        </div>
+                        <input class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 text-sm font-medium placeholder:text-[#617989]" placeholder="Search for magic stories..." value=""/>
+                    </div>
+                </label>
+                <div class="size-10 rounded-full border-2 border-primary p-0.5">
+                    <div class="bg-center bg-no-repeat bg-cover rounded-full h-full w-full" alt="Avatar profile of a smiling child learner" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAYch8AAhFf1YWFhxA81UgdT_nZlDH5-BX2VLTSoBQ_RFPEL3YUXxTicImQcpPK6JdUB8LsGRfB1g2yaejnA628z8KXJJ4Uk6_h3hPTSd0QhSaQGBMJYgTXRCvBhzUNVDLA0jjQAudCJBDXuUMjKRvVWtgpFj9K9mPcQFNCRvqvZeynsKmDuf4rbjq8SVeRFZyQ_pPGj2xHLYIrFxk51Ip7cQLguQ2vOFFo4oHzHyNTfMtVPVEzgohCYuurgTCOlaJbVbVlYxDE_Jo");'></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex flex-1 flex-col lg:flex-row lg:px-20 py-8 gap-8">
+            <!-- Playful Sidebar Filters -->
+            <aside class="w-full lg:w-72 flex flex-col gap-8 px-6 lg:px-0">
+                <div class="bg-white dark:bg-[#1c2a35] p-6 rounded-xl shadow-sm border border-[#f0f3f4] dark:border-[#2a3a46]">
+                    <div class="flex flex-col gap-6">
+                        <!-- Filter Group: Age -->
+                        <section>
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="material-symbols-outlined text-primary text-xl">child_care</span>
+                                <h3 class="text-lg font-bold">Age Group</h3>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <button class="flex items-center justify-between px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold text-sm">
+                                    <span>3-5 Years</span>
+                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                </button>
+                                <button class="flex items-center justify-between px-4 py-2 rounded-full bg-[#f0f3f4] dark:bg-[#2a3a46] text-[#617989] font-semibold text-sm hover:bg-primary/5 transition-all">
+                                    <span>6-8 Years</span>
+                                </button>
+                                <button class="flex items-center justify-between px-4 py-2 rounded-full bg-[#f0f3f4] dark:bg-[#2a3a46] text-[#617989] font-semibold text-sm hover:bg-primary/5 transition-all">
+                                    <span>9-12 Years</span>
+                                </button>
+                            </div>
+                        </section>
+                        <hr class="border-[#f0f3f4] dark:border-[#2a3a46]"/>
+                        
+                        <!-- Filter Group: Type -->
+                        <section>
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="material-symbols-outlined text-primary text-xl">auto_stories</span>
+                                <h3 class="text-lg font-bold">Content Type</h3>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <label class="flex items-center gap-3 px-4 py-2 rounded-full bg-[#f0f3f4] dark:bg-[#2a3a46] cursor-pointer group">
+                                    <input class="rounded-full text-primary focus:ring-primary size-5 border-none bg-white dark:bg-[#1c2a35]" type="checkbox"/>
+                                    <span class="text-sm font-semibold text-[#111518] dark:text-white">Novels</span>
+                                </label>
+                                <label class="flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 cursor-pointer group">
+                                    <input checked="" class="rounded-full text-primary focus:ring-primary size-5 border-none bg-white" type="checkbox"/>
+                                    <span class="text-sm font-bold text-primary">Stories</span>
+                                </label>
+                                <label class="flex items-center gap-3 px-4 py-2 rounded-full bg-[#f0f3f4] dark:bg-[#2a3a35] cursor-pointer group">
+                                    <input class="rounded-full text-primary focus:ring-primary size-5 border-none bg-white dark:bg-[#1c2a35]" type="checkbox"/>
+                                    <span class="text-sm font-semibold text-[#111518] dark:text-white">Educational</span>
+                                </label>
+                            </div>
+                        </section>
+                        <hr class="border-[#f0f3f4] dark:border-[#2a3a46]"/>
+                        
+                        <!-- Filter Group: Language -->
+                        <section>
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="material-symbols-outlined text-primary text-xl">language</span>
+                                <h3 class="text-lg font-bold">Language</h3>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="size-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs ring-4 ring-primary/20">EN</button>
+                                <button class="size-10 rounded-full bg-[#f0f3f4] dark:bg-[#2a3a46] text-[#617989] flex items-center justify-center font-bold text-xs hover:bg-primary/10 transition-colors">ES</button>
+                                <button class="size-10 rounded-full bg-[#f0f3f4] dark:bg-[#2a3a46] text-[#617989] flex items-center justify-center font-bold text-xs hover:bg-primary/10 transition-colors">FR</button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Main Content Area -->
+            <div class="flex-1 px-6 lg:px-0">
+                <!-- Breadcrumbs & Title -->
+                <div class="flex flex-col gap-2 mb-8">
+                    <nav class="flex items-center gap-2 text-sm font-bold text-[#617989]">
+                        <a class="hover:text-primary" href="{{ path('app_resource') }}">Libraries</a>
+                        <span class="material-symbols-outlined text-sm">chevron_right</span>
+                        <span class="text-primary">All Resources</span>
+                    </nav>
+                    <div class="flex items-center justify-between">
+                        <h1 class="text-4xl font-extrabold tracking-tight">All Resources</h1>
+                        <div class="flex items-center gap-2 text-sm font-bold text-[#617989]">
+                            <span class="material-symbols-outlined">grid_view</span>
+                            <span>{{ resources|length }} Books Found</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Book Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+                    {% for resource in resources %}
+                    <div class="bg-white dark:bg-[#1c2a35] rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-[#f0f3f4] dark:border-[#2a3a46] group">
+                        <div class="aspect-[3/4] overflow-hidden relative">
+                            <div class="absolute top-4 right-4 z-10 size-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-xs font-bold text-primary shadow-sm border border-primary/20">
+                                {{ resource.language|upper|slice(0, 2) }}
+                            </div>
+                            {% if resource.coverImage %}
+                                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                                     alt="{{ resource.title }}" 
+                                     src="{{ asset('uploads/' ~ resource.coverImage) }}">
+                            {% else %}
+                                <div class="w-full h-full bg-gradient-to-br from-primary/20 to-accent-yellow/20 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-primary text-6xl">book</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-extrabold mb-1 group-hover:text-primary transition-colors">{{ resource.title }}</h3>
+                            <p class="text-[#617989] font-semibold text-sm mb-2">by {{ resource.author }}</p>
+                            <div class="flex items-center gap-2 mb-4 text-xs font-semibold text-[#617989]">
+                                <span class="material-symbols-outlined text-sm">category</span>
+                                <span>{{ resource.type }}</span>
+                                <span class="mx-1">•</span>
+                                <span class="material-symbols-outlined text-sm">child_care</span>
+                                <span>{{ resource.minAge }}-{{ resource.maxAge }} years</span>
+                            </div>
+                            {% if resource.pdfFile %}
+                            <a href="{{ asset('pdfs/' ~ resource.pdfFile) }}" target="_blank" 
+                               class="w-full py-4 rounded-full bg-accent-yellow hover:bg-[#efba5d] text-[#5c3e0d] font-extrabold flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-md">
+                                <span class="material-symbols-outlined filled-icon">menu_book</span>
+                                Read Book
+                            </a>
+                            {% else %}
+                            <button class="w-full py-4 rounded-full bg-gray-300 text-gray-600 font-extrabold flex items-center justify-center gap-2 cursor-not-allowed">
+                                <span class="material-symbols-outlined">lock</span>
+                                Not Available
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-span-full text-center py-12">
+                        <span class="material-symbols-outlined text-6xl text-primary/50 mb-4">book</span>
+                        <h3 class="text-xl font-bold text-[#617989]">No resources found</h3>
+                        <p class="text-[#617989]">Add some resources from the BackOffice</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+        
+        <!-- Fun Footer Decoration -->
+        <footer class="mt-20 py-10 bg-primary/5 dark:bg-primary/10 border-t border-primary/10 overflow-hidden relative">
+            <div class="absolute -bottom-10 -left-10 size-40 bg-accent-yellow/20 rounded-full blur-3xl"></div>
+            <div class="absolute -top-10 -right-10 size-40 bg-primary/20 rounded-full blur-3xl"></div>
+            <div class="max-w-7xl mx-auto px-6 lg:px-20 flex flex-col items-center gap-4 text-center">
+                <div class="size-12 bg-primary rounded-xl flex items-center justify-center text-white mb-2">
+                    <span class="material-symbols-outlined filled-icon">rocket_launch</span>
+                </div>
+                <h2 class="text-xl font-extrabold text-primary">EduPlay</h2>
+                <p class="text-[#617989] font-semibold text-sm">Where learning becomes your favorite game!</p>
+                <div class="flex gap-6 mt-4">
+                    <a class="text-sm font-bold text-[#617989] hover:text-primary" href="#">Safety Center</a>
+                    <a class="text-sm font-bold text-[#617989] hover:text-primary" href="#">Parents Dashboard</a>
+                    <a class="text-sm font-bold text-[#617989] hover:text-primary" href="#">Contact Us</a>
+                </div>
+                <p class="text-xs text-[#617989] mt-6">© 2024 EduPlay Educational Platforms. All Rights Reserved.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

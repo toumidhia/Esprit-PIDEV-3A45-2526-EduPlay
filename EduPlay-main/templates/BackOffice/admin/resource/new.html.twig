@@ -1,0 +1,25 @@
+{# templates/BackOffice/admin/resource/new.html.twig #}
+{% extends 'BackOffice/admin/base_admin.html.twig' %}
+
+{% block title %}Nouvelle Ressource{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Ajouter une nouvelle ressource</h1>
+        <p class="text-gray-600 mt-2">Remplissez le formulaire ci-dessous pour créer une nouvelle ressource.</p>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="mb-6 p-4 rounded-lg {% if label == 'success' %}bg-green-100 text-green-700 border border-green-200{% else %}bg-red-100 text-red-700 border border-red-200{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        {% include 'BackOffice/admin/resource/_form.html.twig' with {'resource': null} %}
+    </div>
+</div>
+{% endblock %}

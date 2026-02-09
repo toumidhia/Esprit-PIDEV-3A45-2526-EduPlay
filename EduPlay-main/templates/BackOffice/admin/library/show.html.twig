@@ -3,99 +3,203 @@
 {% block title %}Détails : {{ library.name }}{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto">
-    <div class="mb-8">
-        <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-800">{{ library.name }}</h1>
-                <p class="text-gray-600 mt-2">Détails complets de la Bibliothèque</p>
+<div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <!-- HEADER AVEC BACKGROUND GRADIENT -->
+    <div class="px-8 py-10 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center">
+            <div class="mb-6 lg:mb-0">
+                <h1 class="text-4xl font-bold mb-2">{{ library.name }}</h1>
+                <p class="text-blue-100">Détails complets de la bibliothèque</p>
+                
+                <!-- Badges d'information -->
+                <div class="flex flex-wrap gap-3 mt-4">
+                    <span class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-full">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ library.minAge }} - {{ library.maxAge }} ans
+                    </span>
+                    
+                    {% set level_colors = {
+                        'Débutant': 'bg-gradient-to-r from-green-400 to-emerald-500',
+                        'Intermédiaire': 'bg-gradient-to-r from-yellow-400 to-amber-500',
+                        'Avancé': 'bg-gradient-to-r from-orange-400 to-red-500',
+                        'Expert': 'bg-gradient-to-r from-red-500 to-pink-600'
+                    } %}
+                    <span class="inline-flex items-center px-4 py-2 {{ level_colors[library.level]|default('bg-gradient-to-r from-gray-600 to-gray-700') }} text-white text-sm font-bold rounded-full shadow-lg">
+                        {{ library.level }}
+                    </span>
+                    
+                    <span class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-full">
+                        {{ library.theme }}
+                    </span>
+                </div>
             </div>
-            <div class="flex space-x-3">
-                <a href="{{ path('admin_library_edit', {'id': library.id}) }}" 
-                   class="inline-flex items-center px-5 py-2.5 border border-blue-300 text-blue-700 font-medium rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                    </svg>
-                    Modifier
-                </a>
+            
+            <!-- Boutons d'action -->
+            <div class="flex flex-col sm:flex-row gap-3">
                 <a href="{{ path('admin_library_index') }}" 
-                   class="inline-flex items-center px-5 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg bg-white hover:bg-gray-50 transition-colors">
+                   class="inline-flex items-center justify-center px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/30 transition-all duration-300 border border-white/30 transform hover:-translate-y-0.5">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                     Retour
                 </a>
+                <a href="{{ path('admin_library_edit', {'id': library.id}) }}" 
+                   class="inline-flex items-center justify-center px-6 py-3 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Modifier
+                </a>
             </div>
         </div>
     </div>
-    
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+
+    <!-- CONTENU PRINCIPAL -->
+    <div class="p-8">
+        <!-- IMAGE DE COUVERTURE -->
         {% if library.coverImage %}
-            <div class="h-64 bg-gradient-to-r from-blue-100 to-indigo-100 relative overflow-hidden">
-                <img src="{{ asset('uploads/' ~ library.coverImage) }}" 
-                     alt="{{ library.name }}" 
-                     class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+            <div class="mb-8">
+                <div class="relative h-80 overflow-hidden rounded-2xl border-2 border-gray-100 shadow-lg">
+                    <img src="{{ asset('uploads/' ~ library.coverImage) }}" 
+                         alt="{{ library.name }}" 
+                         class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                </div>
             </div>
         {% endif %}
-        
-        <div class="p-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="md:col-span-2">
-                    <div class="mb-8">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Description</h2>
-                        <div class="prose max-w-none text-gray-600">
-                            {{ library.description|nl2br }}
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- DESCRIPTION -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex items-center mb-6">
+                        <div class="p-3 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-xl mr-4">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                            </svg>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="md:col-span-1">
-                    <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Informations</h3>
-                        
-                        <div class="space-y-4">
-                            <div>
-                                <p class="text-sm text-gray-500 mb-1">Tranche d'âge</p>
-                                <p class="font-medium text-gray-800">
-                                    <span class="inline-flex items-center">
-                                        <svg class="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        {{ library.minAge }} - {{ library.maxAge }} ans
-                                    </span>
-                                </p>
-                            </div>
-                            
-                            <div>
-                                <p class="text-sm text-gray-500 mb-1">Niveau</p>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                    {{ library.level }}
-                                </span>
-                            </div>
-                            
-                            <div>
-                                <p class="text-sm text-gray-500 mb-1">Thème</p>
-                                <p class="font-medium text-gray-800">{{ library.theme }}</p>
-                            </div>
-                            
-                         
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Description</h2>
+                            <p class="text-gray-500">Présentation de la bibliothèque</p>
                         </div>
                     </div>
                     
-                    <div class="mt-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Actions</h3>
+                    {% if library.description %}
+                        <div class="prose max-w-none">
+                            <div class="text-gray-700 leading-relaxed bg-gray-50 p-6 rounded-xl border border-gray-100">
+                                {{ library.description|nl2br }}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12 bg-gray-50 rounded-xl border border-gray-100">
+                            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <p class="text-gray-500 text-lg">Aucune description disponible</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- INFORMATIONS ET ACTIONS -->
+            <div class="space-y-6">
+                <!-- INFORMATIONS -->
+                <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex items-center mb-6">
+                        <div class="p-3 bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl mr-4">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Informations</h2>
+                            <p class="text-gray-500">Détails techniques</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <!-- Tranche d'âge -->
+                        <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                            <p class="text-sm font-semibold text-blue-800 mb-2">📊 Tranche d'âge</p>
+                            <p class="text-2xl font-bold text-blue-900">{{ library.minAge }} - {{ library.maxAge }} ans</p>
+                            <div class="mt-3">
+                                <div class="flex justify-between text-xs text-blue-600 mb-1">
+                                    <span>{{ library.minAge }} ans</span>
+                                    <span>{{ library.maxAge }} ans</span>
+                                </div>
+                                <div class="h-2 bg-blue-200 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full" 
+                                         style="width: {{ ((library.maxAge - library.minAge) / 9) * 100 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Niveau -->
+                        <div class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+                            <p class="text-sm font-semibold text-gray-700 mb-2">🎯 Niveau de difficulté</p>
+                            <div class="flex items-center justify-between">
+                                <p class="text-lg font-bold text-gray-800">{{ library.level }}</p>
+                                {% if library.level == 'Débutant' %}
+                                    <span class="text-2xl">🌱</span>
+                                {% elseif library.level == 'Intermédiaire' %}
+                                    <span class="text-2xl">⚡</span>
+                                {% elseif library.level == 'Avancé' %}
+                                    <span class="text-2xl">🔥</span>
+                                {% elseif library.level == 'Expert' %}
+                                    <span class="text-2xl">🏆</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Thème -->
+                        <div class="p-4 bg-gradient-to-r from-purple-50 to-violet-100 rounded-xl border border-purple-200">
+                            <p class="text-sm font-semibold text-purple-800 mb-2">🏷️ Thème / Catégorie</p>
+                            <p class="text-lg font-bold text-gray-800">{{ library.theme }}</p>
+                        </div>
+
+                       
+                    </div>
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex items-center mb-6">
+                        <div class="p-3 bg-gradient-to-r from-red-100 to-rose-100 rounded-xl mr-4">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Actions</h2>
+                            <p class="text-gray-500">Gestion de la bibliothèque</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Bouton Modifier -->
+                        <a href="{{ path('admin_library_edit', {'id': library.id}) }}" 
+                           class="block w-full text-center px-6 py-4 border-2 border-blue-200 text-blue-700 font-bold rounded-xl bg-blue-50 hover:bg-blue-100 hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            Modifier
+                        </a>
+                        
+                        <!-- Bouton Supprimer -->
                         <form method="post" 
                               action="{{ path('admin_library_delete', {'id': library.id}) }}"
-                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette library ?');">
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer « {{ library.name }} » ?');">
                             <input type="hidden" name="_token" 
                                    value="{{ csrf_token('delete' ~ library.id) }}">
                             <button type="submit" 
-                                    class="w-full inline-flex items-center justify-center px-4 py-3 border border-red-300 text-red-700 font-medium rounded-lg bg-red-50 hover:bg-red-100 transition-colors">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    class="w-full px-6 py-4 border-2 border-red-200 text-red-700 font-bold rounded-xl bg-red-50 hover:bg-red-100 hover:border-red-300 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
-                                Supprimer cette Bibliothèque
+                                Supprimer
                             </button>
                         </form>
                     </div>
@@ -104,4 +208,28 @@
         </div>
     </div>
 </div>
+
+<!-- SCRIPT SIMPLE -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Copier l'ID au clic
+    document.querySelectorAll('[title="Copier l\'ID"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = '{{ library.id }}';
+            navigator.clipboard.writeText(id).then(() => {
+                // Feedback visuel
+                const originalHTML = this.innerHTML;
+                this.innerHTML = `
+                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                `;
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                }, 2000);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

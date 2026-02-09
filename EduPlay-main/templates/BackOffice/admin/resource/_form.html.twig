@@ -1,0 +1,122 @@
+{# templates/BackOffice/admin/resource/_form.html.twig #}
+
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'space-y-6'}}) }}
+
+    {# Titre #}
+    <div class="mb-6">
+        {{ form_label(form.title, "Titre", {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+        {{ form_widget(form.title, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'}}) }}
+        {{ form_errors(form.title, {'attr': {'class': 'text-red-600 text-sm mt-2'}}) }}
+    </div>
+
+    {# Auteur #}
+    <div class="mb-6">
+        {{ form_label(form.author, "Auteur", {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+        {{ form_widget(form.author, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'}}) }}
+        {{ form_errors(form.author, {'attr': {'class': 'text-red-600 text-sm mt-2'}}) }}
+    </div>
+
+    {# Résumé #}
+    <div class="mb-6">
+        {{ form_label(form.summary, "Résumé", {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+        {{ form_widget(form.summary, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none', 'rows': 4}}) }}
+        {{ form_errors(form.summary, {'attr': {'class': 'text-red-600 text-sm mt-2'}}) }}
+        <p class="text-xs text-gray-500 mt-1">Optionnel</p>
+    </div>
+
+    {# Type et Langue #}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+            {{ form_label(form.type, "Type", {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+            {{ form_widget(form.type, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'}}) }}
+            {{ form_errors(form.type, {'attr': {'class': 'text-red-600 text-sm mt-2'}}) }}
+        </div>
+        <div>
+            {{ form_label(form.language, "Langue", {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+            {{ form_widget(form.language, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'}}) }}
+            {{ form_errors(form.language, {'attr': {'class': 'text-red-600 text-sm mt-2'}}) }}
+        </div>
+    </div>
+
+    {# Âge minimum et maximum #}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+            {{ form_label(form.minAge, "Âge minimum", {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+            {{ form_widget(form.minAge, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'}}) }}
+            {{ form_errors(form.minAge, {'attr': {'class': 'text-red-600 text-sm mt-2'}}) }}
+            <p class="text-xs text-gray-500 mt-1">Minimum 3 ans</p>
+        </div>
+        <div>
+            {{ form_label(form.maxAge, "Âge maximum", {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+            {{ form_widget(form.maxAge, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'}}) }}
+            {{ form_errors(form.maxAge, {'attr': {'class': 'text-red-600 text-sm mt-2'}}) }}
+            <p class="text-xs text-gray-500 mt-1">Maximum 18 ans</p>
+        </div>
+    </div>
+
+    {# Bibliothèque #}
+    <div class="mb-6">
+        {{ form_label(form.libraryId, "Bibliothèque", {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+        {{ form_widget(form.libraryId, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'}}) }}
+        {{ form_errors(form.libraryId, {'attr': {'class': 'text-red-600 text-sm mt-2'}}) }}
+    </div>
+
+    {# Image de couverture #}
+   <div class="mb-6">
+    {{ form_label(form.coverImageFile, "Image de couverture", {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+    
+    {# Afficher l'info pour l'édition #}
+    {% if is_edit is defined and is_edit and resource.coverImage is defined and resource.coverImage %}
+        <p class="text-sm text-gray-600 mb-2">Laissez vide pour conserver l'image actuelle</p>
+    {% endif %}
+    
+    {{ form_widget(form.coverImageFile, {'attr': {'class': 'w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100'}}) }}
+    {{ form_errors(form.coverImageFile, {'attr': {'class': 'text-red-600 text-sm mt-2'}}) }}
+    
+    {% if resource.coverImage is defined and resource.coverImage %}
+        <div class="mt-4">
+            <p class="text-sm text-gray-600 mb-2">Image actuelle :</p>
+            <img src="{{ asset('uploads/' ~ resource.coverImage) }}" 
+                 alt="Image de couverture" 
+                 class="w-32 h-32 object-cover rounded-lg border border-gray-200">
+        </div>
+    {% endif %}
+</div>
+
+    {# Fichier PDF #}
+  <div class="mb-6">
+    {{ form_label(form.pdfFileFile, "Fichier PDF", {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+    
+    {# Afficher l'info pour l'édition #}
+    {% if is_edit is defined and is_edit and resource.pdfFile is defined and resource.pdfFile %}
+        <p class="text-sm text-gray-600 mb-2">Laissez vide pour conserver le PDF actuel</p>
+    {% endif %}
+    
+    {{ form_widget(form.pdfFileFile, {'attr': {'class': 'w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100'}}) }}
+    {{ form_errors(form.pdfFileFile, {'attr': {'class': 'text-red-600 text-sm mt-2'}}) }}
+    
+    {% if resource.pdfFile is defined and resource.pdfFile %}
+        <div class="mt-4">
+            <p class="text-sm text-gray-600 mb-2">PDF actuel :</p>
+            <a href="{{ asset('pdfs/' ~ resource.pdfFile) }}" 
+               target="_blank" 
+               class="inline-flex items-center text-blue-600 hover:text-blue-800">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
+                </svg>
+                Télécharger le PDF actuel
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+    {# Bouton Enregistrer #}
+    <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+        <a href="{{ path('admin_resource_index') }}" 
+           class="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+            Annuler
+        </a>
+        {{ form_widget(form.save) }}
+    </div>
+
+{{ form_end(form) }}

@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
-
+use App\Form\LibrarySearchType;
 final class LibraryController extends AbstractController
 {
     // ===============================
@@ -43,14 +43,41 @@ final class LibraryController extends AbstractController
     // BACK OFFICE - CRUD Operations
     // ===============================
     
-    // ========================= LIST =========================
-    #[Route('BackOffice/admin/library/', name: 'admin_library_index', methods: ['GET'])]
-    public function adminIndex(LibraryRepository $libraryRepository): Response
-    {
-        return $this->render('BackOffice/admin/library/index.html.twig', [
-            'libraries' => $libraryRepository->findAll(),
-        ]);
+   // ========================= LIST =========================
+#[Route('BackOffice/admin/library/', name: 'admin_library_index', methods: ['GET'])]
+public function adminIndex(Request $request, LibraryRepository $libraryRepository): Response
+{
+    $form = $this->createForm(LibrarySearchType::class);
+    $form->handleRequest($request);
+    
+    $libraries = [];
+    $filters = [];
+    
+    if ($form->isSubmitted()) {
+        $data = $form->getData();
+        
+        // Si c'est le bouton "Réinitialiser"
+        if ($form->get('reset')->isClicked()) {
+            return $this->redirectToRoute('admin_library_index');
+        }
+        
+        // Appliquer les filtres
+        $filters = array_filter($data, function($value) {
+            return $value !== null && $value !== '';
+        });
+        
+        $libraries = $libraryRepository->search($filters);
+    } else {
+        // Par défaut, toutes les bibliothèques triées par nom
+        $libraries = $libraryRepository->findBy([], ['name' => 'ASC']);
     }
+    
+    return $this->render('BackOffice/admin/library/index.html.twig', [
+        'libraries' => $libraries,
+        'searchForm' => $form->createView(),
+        'activeFilters' => $filters
+    ]);
+}
     
     // ========================= CREATE =========================
     #[Route('BackOffice/admin/library/new', name: 'admin_library_new', methods: ['GET','POST'])]

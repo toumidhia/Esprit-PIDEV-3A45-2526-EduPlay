@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Parent - Eduplay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-gray-900">Bienvenue {{ parent.firstName }} !</h1>
+                <div class="flex gap-4">
+                    <a href="{{ path('app_parent_enfant_new') }}" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">
+                        Ajouter un enfant
+                    </a>
+                    <a href="{{ path('app_logout') }}" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
+                        Déconnexion
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Flash messages -->
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            {% for message in app.flashes('success') %}
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Main content -->
+        <main class="max-w-7xl mx-auto px-4 py-8">
+            <h2 class="text-2xl font-bold mb-6">Mes enfants</h2>
+
+            {% if enfants is empty %}
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
+                    <p class="text-xl text-gray-700 mb-4">Vous n'avez pas encore ajouté d'enfant</p>
+                    <a href="{{ path('app_parent_enfant_new') }}" class="inline-block bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-600">
+                        Créer le premier compte enfant
+                    </a>
+                </div>
+            {% else %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for enfant in enfants %}
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                    {{ enfant.firstName|slice(0, 1) }}
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-xl font-bold">{{ enfant.fullName }}</h3>
+                                    <p class="text-gray-600">{{ enfant.age }} ans</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 mb-4">
+                                <p class="text-sm">
+                                    <strong>Identifiant:</strong> 
+                                    <code class="bg-gray-100 px-2 py-1 rounded">{{ enfant.username }}</code>
+                                </p>
+                                {% if enfant.niveau %}
+                                    <p class="text-sm">
+                                        <strong>Niveau:</strong> {{ enfant.niveau }}
+                                    </p>
+                                {% endif %}
+                                <p class="text-sm">
+                                    <strong>Né(e) le:</strong> {{ enfant.birthDate|date('d/m/Y') }}
+                                </p>
+                            </div>
+
+                            <form method="post" action="{{ path('app_parent_enfant_delete', {id: enfant.id}) }}" 
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce compte ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ enfant.id) }}">
+                                <button type="submit" class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</body>
+</html>

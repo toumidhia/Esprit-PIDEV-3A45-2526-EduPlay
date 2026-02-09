@@ -1,14 +1,24 @@
 security:
+<<<<<<< HEAD
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
     providers:
         # ✅ Provider DB (sera utilisé quand ton camarade intègre l’auth)
+=======
+    # Configuration du hashage des mots de passe
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    # Provider pour charger les utilisateurs
+    providers:
+>>>>>>> gestionUser
         app_user_provider:
             entity:
                 class: App\Entity\User
                 property: email
 
+<<<<<<< HEAD
         # ✅ Provider mémoire (pour tester maintenant)
         users_in_memory:
             memory:
@@ -23,6 +33,8 @@ security:
             chain:
                 providers: [users_in_memory, app_user_provider]
 
+=======
+>>>>>>> gestionUser
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -30,6 +42,7 @@ security:
 
         main:
             lazy: true
+<<<<<<< HEAD
             provider: chain_provider
 
             # ✅ login simple pour tester (tu peux utiliser http_basic)
@@ -55,6 +68,34 @@ security:
         # ✅ tout le reste public pour l’instant (ajuste selon ton projet)
         - { path: ^/, roles: PUBLIC_ACCESS }
 
+=======
+            provider: app_user_provider
+
+            # Utiliser notre custom authenticator
+            custom_authenticator: App\Security\LoginFormAuthenticator
+
+            # Déconnexion
+            logout:
+                path: app_logout
+                target: app_home
+
+    # Contrôle d'accès par routes
+    access_control:
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/parent, roles: ROLE_PARENT }
+        - { path: ^/enseignant, roles: ROLE_ENSEIGNANT }
+        - { path: ^/enfant, roles: ROLE_ENFANT }
+        - { path: ^/, roles: PUBLIC_ACCESS }
+
+    # Hiérarchie des rôles
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_USER]
+        ROLE_PARENT: [ROLE_USER]
+        ROLE_ENSEIGNANT: [ROLE_USER]
+        ROLE_ENFANT: [ROLE_USER]
+>>>>>>> gestionUser
 
 when@test:
     security:
@@ -63,4 +104,8 @@ when@test:
                 algorithm: auto
                 cost: 4
                 time_cost: 3
+<<<<<<< HEAD
                 memory_cost: 10
+=======
+                memory_cost: 10
+>>>>>>> gestionUser

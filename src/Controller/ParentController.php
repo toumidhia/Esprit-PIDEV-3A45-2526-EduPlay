@@ -24,7 +24,7 @@ class ParentController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('parent/Partials/base_parent.html.twig', [
+        return $this->render('FrontOffice/parent/Partials/base_parent.html.twig', [
             'parent' => $parent,
             'enfants' => $parent->getEnfants(),
         ]);
@@ -70,7 +70,7 @@ class ParentController extends AbstractController
             return $this->redirectToRoute('app_parent_dashboard');
         }
 
-        return $this->render('parent/enfant_new.html.twig', [
+        return $this->render('FrontOffice/parent/enfant_new.html.twig', [
             'form' => $form->createView(),
         ]);
     }

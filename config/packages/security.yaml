@@ -50,6 +50,7 @@ security:
 
         # ✅ inscription: protégé (comme en prod/intégration)
         - { path: ^/events/\d+/register$, roles: ROLE_PARENT }
+        - { path: ^/my-registrations, roles: ROLE_PARENT }
 
         # ✅ tout le reste public pour l’instant (ajuste selon ton projet)
         - { path: ^/, roles: PUBLIC_ACCESS }

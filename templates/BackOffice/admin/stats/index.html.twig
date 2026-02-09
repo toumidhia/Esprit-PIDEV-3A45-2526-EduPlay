@@ -1,0 +1,131 @@
+{% extends 'BackOffice/admin/base.html.twig' %}
+
+{% block title %}Statistiques{% endblock %}
+
+{% block admin_content %}
+  <div class="mb-6">
+    <h1 class="text-3xl font-extrabold">Statistiques</h1>
+    <p class="text-[#617989] dark:text-gray-400 font-medium mt-1">
+      Vue globale (événements, inscriptions, ressources)
+    </p>
+  </div>
+
+  {# KPI cards #}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-2xl p-5">
+      <div class="text-sm font-bold text-[#617989] dark:text-gray-400">Total événements</div>
+      <div class="text-3xl font-extrabold mt-2">{{ totalEvents }}</div>
+    </div>
+
+    <div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-2xl p-5">
+      <div class="text-sm font-bold text-[#617989] dark:text-gray-400">Événements à venir</div>
+      <div class="text-3xl font-extrabold mt-2">{{ upcomingEvents }}</div>
+    </div>
+
+    <div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-2xl p-5">
+      <div class="text-sm font-bold text-[#617989] dark:text-gray-400">Total inscriptions</div>
+      <div class="text-3xl font-extrabold mt-2">{{ totalRegistrations }}</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    {# Inscriptions par mois #}
+    <div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-2xl p-5">
+      <h2 class="text-lg font-extrabold mb-4">Inscriptions (12 derniers mois)</h2>
+
+      {% set maxVal = 0 %}
+      {% for k,v in months %}
+        {% if v > maxVal %}{% set maxVal = v %}{% endif %}
+      {% endfor %}
+      {% if maxVal == 0 %}{% set maxVal = 1 %}{% endif %}
+
+      <div class="space-y-2">
+        {% for k, v in months %}
+          {% set pct = (v / maxVal) * 100 %}
+          <div>
+            <div class="flex justify-between text-sm font-bold">
+              <span>{{ k }}</span>
+              <span>{{ v }}</span>
+            </div>
+            <div class="h-2 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
+              <div class="h-2 bg-primary" style="width: {{ pct }}%"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Inscriptions par événement #}
+    <div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-2xl p-5">
+      <h2 class="text-lg font-extrabold mb-4">Top événements (inscriptions)</h2>
+
+      {% if registrationsByEvent is empty %}
+        <p class="font-bold">Aucune inscription.</p>
+      {% else %}
+        {% set maxVal = 0 %}
+        {% for t,c in registrationsByEvent %}
+          {% if c > maxVal %}{% set maxVal = c %}{% endif %}
+        {% endfor %}
+        {% if maxVal == 0 %}{% set maxVal = 1 %}{% endif %}
+
+        <div class="space-y-3">
+          {% for title, count in registrationsByEvent|slice(0, 8) %}
+            {% set pct = (count / maxVal) * 100 %}
+            <div>
+              <div class="flex justify-between text-sm font-bold">
+                <span class="truncate" title="{{ title }}">{{ title }}</span>
+                <span>{{ count }}</span>
+              </div>
+              <div class="h-2 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
+                <div class="h-2 bg-accent-yellow" style="width: {{ pct }}%"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    {# Ressources par type #}
+    <div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-2xl p-5">
+      <h2 class="text-lg font-extrabold mb-4">Ressources par type</h2>
+
+      {% if resourcesByType is empty %}
+        <p class="font-bold">Aucune ressource.</p>
+      {% else %}
+        <ul class="space-y-2 text-sm font-bold">
+          {% for type, count in resourcesByType %}
+            <li class="flex justify-between bg-black/5 dark:bg-white/10 rounded-xl p-3">
+              <span>{{ type }}</span>
+              <span>{{ count }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    {# Dernières inscriptions #}
+    <div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-2xl p-5">
+      <h2 class="text-lg font-extrabold mb-4">Dernières inscriptions</h2>
+
+      {% if latestRegistrations is empty %}
+        <p class="font-bold">Aucune inscription.</p>
+      {% else %}
+        <div class="space-y-3">
+          {% for r in latestRegistrations %}
+            <div class="bg-black/5 dark:bg-white/10 rounded-xl p-3">
+              <div class="font-extrabold">{{ r.event.title }}</div>
+              <div class="text-sm text-[#617989] dark:text-gray-400 font-bold">
+                Enfant : {{ r.childFullName }}
+              </div>
+              {% if r.registeredAt %}
+                <div class="text-xs font-bold mt-1 text-[#617989] dark:text-gray-400">
+                  {{ r.registeredAt|date('d/m/Y H:i') }}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -21,9 +21,27 @@ class EventRegistration
     #[ORM\Column]
     private ?\DateTimeImmutable $registeredAt = null;
 
-    // ✅ CHAMP MANQUANT (cause de l'erreur SQL)
     #[ORM\Column(length: 120)]
     private ?string $childFullName = null;
+
+    // ✅ Nouveaux champs
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $parentPhone = null;
+
+    #[ORM\Column(length: 80, nullable: true)]
+    private ?string $childClassLevel = null; // ex: "3A", "CE2", ...
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $medicalNotes = null; // allergies, asthme...
+
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $emergencyContactName = null;
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $emergencyContactPhone = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $notes = null;
 
     #[ORM\ManyToOne(inversedBy: 'registrations')]
     #[ORM\JoinColumn(nullable: false)]
@@ -33,15 +51,9 @@ class EventRegistration
     #[ORM\JoinColumn(nullable: false)]
     private ?User $parent = null;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function getStatus(): ?string
-    {
-        return $this->status;
-    }
+    public function getStatus(): ?string { return $this->status; }
 
     public function setStatus(string $status): static
     {
@@ -49,10 +61,7 @@ class EventRegistration
         return $this;
     }
 
-    public function getRegisteredAt(): ?\DateTimeImmutable
-    {
-        return $this->registeredAt;
-    }
+    public function getRegisteredAt(): ?\DateTimeImmutable { return $this->registeredAt; }
 
     public function setRegisteredAt(\DateTimeImmutable $registeredAt): static
     {
@@ -60,10 +69,7 @@ class EventRegistration
         return $this;
     }
 
-    public function getChildFullName(): ?string
-    {
-        return $this->childFullName;
-    }
+    public function getChildFullName(): ?string { return $this->childFullName; }
 
     public function setChildFullName(string $childFullName): static
     {
@@ -71,10 +77,55 @@ class EventRegistration
         return $this;
     }
 
-    public function getEvent(): ?SchoolEvent
+    public function getParentPhone(): ?string { return $this->parentPhone; }
+
+    public function setParentPhone(?string $parentPhone): static
     {
-        return $this->event;
+        $this->parentPhone = $parentPhone;
+        return $this;
     }
+
+    public function getChildClassLevel(): ?string { return $this->childClassLevel; }
+
+    public function setChildClassLevel(?string $childClassLevel): static
+    {
+        $this->childClassLevel = $childClassLevel;
+        return $this;
+    }
+
+    public function getMedicalNotes(): ?string { return $this->medicalNotes; }
+
+    public function setMedicalNotes(?string $medicalNotes): static
+    {
+        $this->medicalNotes = $medicalNotes;
+        return $this;
+    }
+
+    public function getEmergencyContactName(): ?string { return $this->emergencyContactName; }
+
+    public function setEmergencyContactName(?string $emergencyContactName): static
+    {
+        $this->emergencyContactName = $emergencyContactName;
+        return $this;
+    }
+
+    public function getEmergencyContactPhone(): ?string { return $this->emergencyContactPhone; }
+
+    public function setEmergencyContactPhone(?string $emergencyContactPhone): static
+    {
+        $this->emergencyContactPhone = $emergencyContactPhone;
+        return $this;
+    }
+
+    public function getNotes(): ?string { return $this->notes; }
+
+    public function setNotes(?string $notes): static
+    {
+        $this->notes = $notes;
+        return $this;
+    }
+
+    public function getEvent(): ?SchoolEvent { return $this->event; }
 
     public function setEvent(?SchoolEvent $event): static
     {
@@ -82,10 +133,7 @@ class EventRegistration
         return $this;
     }
 
-    public function getParent(): ?User
-    {
-        return $this->parent;
-    }
+    public function getParent(): ?User { return $this->parent; }
 
     public function setParent(?User $parent): static
     {

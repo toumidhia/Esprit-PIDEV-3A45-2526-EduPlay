@@ -62,10 +62,12 @@ class EventRegistrationController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', "Inscription enregistrée ✅");
-            return $this->redirectToRoute('front_event_show', ['id' => $event->getId()]);
+
+            // ✅ Redirection demandée : vers la liste "Mes inscriptions"
+            return $this->redirectToRoute('front_my_registrations');
         }
 
-        // ✅ Ton chemin réel
+        // ✅ Ton chemin réel (respecte exactement la casse de ton dossier)
         return $this->render('FrontOffice/Parent/event/registration/new.html.twig', [
             'event' => $event,
             'form' => $form->createView(),

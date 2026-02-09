@@ -29,7 +29,7 @@ class AdminController extends AbstractController
         $admins = $userRepository->findByType('admin');
         $enseignants = $userRepository->findByType('enseignant');
 
-        return $this->render('admin/Partials/base_admin.html.twig', [
+        return $this->render('BackOffice/admin/Partials/base_admin.html.twig', [
             'admins' => $admins,
             'enseignants' => $enseignants,
         ]);
@@ -38,7 +38,7 @@ class AdminController extends AbstractController
     #[Route('/users', name: 'app_admin_users')]
         public function users(UserRepository $userRepository): Response
         {
-            return $this->render('admin/users.html.twig', [
+            return $this->render('BackOffice/admin/users.html.twig', [
                 'admins' => $userRepository->findByType('admin'),
                 'enseignants' => $userRepository->findByType('enseignant'),
             ]);
@@ -81,7 +81,7 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_dashboard');
         }
 
-        return $this->render('admin/admin_new.html.twig', [
+        return $this->render('BackOffice/admin/admin_new.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -147,7 +147,7 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_dashboard');
         }
 
-        return $this->render('admin/enseignant_new.html.twig', [
+        return $this->render('BackOffice/admin/enseignant_new.html.twig', [
             'form' => $form->createView(),
         ]);
     }

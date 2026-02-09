@@ -20,7 +20,7 @@ class EnfantController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('enfant/Partials/base_enfant.html.twig', [
+        return $this->render('FrontOffice/enfant/Partials/base_enfant.html.twig', [
             'enfant' => [
             'id' => $enfant->getId(),
             'firstName' => $enfant->getFirstName(),

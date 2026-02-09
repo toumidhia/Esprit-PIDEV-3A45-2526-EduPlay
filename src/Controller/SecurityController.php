@@ -49,7 +49,7 @@ class SecurityController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('security/register.html.twig', [
+        return $this->render('FrontOffice/security/register.html.twig', [
             'registrationForm' => $form->createView(),
         ]);
     }
@@ -68,7 +68,7 @@ class SecurityController extends AbstractController
         // Dernier nom d'utilisateur entré
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        return $this->render('security/login.html.twig', [
+        return $this->render('FrontOffice/security/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
         ]);

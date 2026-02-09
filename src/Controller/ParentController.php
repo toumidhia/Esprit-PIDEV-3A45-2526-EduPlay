@@ -24,7 +24,7 @@ class ParentController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('parent/dashboard.html.twig', [
+        return $this->render('parent/Partials/base_parent.html.twig', [
             'parent' => $parent,
             'enfants' => $parent->getEnfants(),
         ]);

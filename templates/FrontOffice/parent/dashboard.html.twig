@@ -14,7 +14,7 @@
                 <h1 class="text-3xl font-bold text-gray-900">Bienvenue {{ parent.firstName }} !</h1>
                 <div class="flex gap-4">
                     <a href="{{ path('app_parent_enfant_new') }}" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">
-                        ➕ Ajouter un enfant
+                        Ajouter un enfant
                     </a>
                     <a href="{{ path('app_logout') }}" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
                         Déconnexion
@@ -76,7 +76,7 @@
                                   onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce compte ?');">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ enfant.id) }}">
                                 <button type="submit" class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600">
-                                    🗑️ Supprimer
+                                    Supprimer
                                 </button>
                             </form>
                         </div>

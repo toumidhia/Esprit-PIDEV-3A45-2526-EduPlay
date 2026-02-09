@@ -20,7 +20,7 @@ class EnseignantController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('enseignant/dashboard.html.twig', [
+        return $this->render('FrontOffice/enseignant/Partials/base_enseignant.html.twig', [
             'enseignant' => $enseignant,
         ]);
     }

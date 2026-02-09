@@ -33,7 +33,7 @@ class EventController extends AbstractController
 
         $events = $qb->getQuery()->getResult();
 
-        return $this->render('front/event/index.html.twig', [
+        return $this->render('FrontOffice/Parent/event/index.html.twig', [
             'events' => $events,
             'q' => $q,
             'sort' => $sort,
@@ -53,7 +53,7 @@ class EventController extends AbstractController
             return $tb <=> $ta;
         });
 
-        return $this->render('front/event/show.html.twig', [
+        return $this->render('FrontOffice/Parent/event/show.html.twig', [
             'event' => $event,
             'resources' => $resources,
         ]);

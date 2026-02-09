@@ -66,7 +66,7 @@ class EventRegistrationController extends AbstractController
         }
 
         // ✅ Ton chemin réel
-        return $this->render('front/event/registration/new.html.twig', [
+        return $this->render('FrontOffice/Parent/event/registration/new.html.twig', [
             'event' => $event,
             'form' => $form->createView(),
         ]);
@@ -88,7 +88,7 @@ class EventRegistrationController extends AbstractController
             ['registeredAt' => 'DESC']
         );
 
-        return $this->render('front/event/registration/index.html.twig', [
+        return $this->render('FrontOffice/Parent/event/registration/index.html.twig', [
             'registrations' => $registrations,
         ]);
     }

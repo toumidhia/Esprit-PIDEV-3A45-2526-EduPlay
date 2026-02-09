@@ -23,7 +23,7 @@ class EventAdminController extends AbstractController
 
         $events = $schoolEventRepository->findBy([], ['createdAt' => 'DESC']);
 
-        return $this->render('admin/event/index.html.twig', [
+        return $this->render('BackOffice/admin/event/index.html.twig', [
             'events' => $events,
         ]);
     }
@@ -33,7 +33,7 @@ class EventAdminController extends AbstractController
     {
         //$this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        return $this->render('admin/event/stats.html.twig');
+        return $this->render('BackOffice/admin/event/stats.html.twig');
     }
 
 
@@ -72,7 +72,7 @@ class EventAdminController extends AbstractController
         return $this->redirectToRoute('admin_event_index');
         }
 
-        return $this->render('admin/event/new.html.twig', [
+        return $this->render('BackOffice/admin/event/new.html.twig', [
          'form' => $form->createView(),
         ]);
     }
@@ -80,7 +80,7 @@ class EventAdminController extends AbstractController
     #[Route('/admin/events/{id}', name: 'admin_event_show', methods: ['GET'])]
     public function show(SchoolEvent $event): Response
     {
-        return $this->render('admin/event/show.html.twig', [
+        return $this->render('BackOffice/admin/event/show.html.twig', [
         'event' => $event,
         ]);
     }
@@ -109,7 +109,7 @@ class EventAdminController extends AbstractController
         return $this->redirectToRoute('admin_event_index');
         }
 
-        return $this->render('admin/event/edit.html.twig', [
+        return $this->render('BackOffice/admin/event/edit.html.twig', [
             'event' => $event,
             'form' => $form->createView(),
         ]);

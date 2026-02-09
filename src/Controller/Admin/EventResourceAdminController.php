@@ -44,7 +44,7 @@ class EventResourceAdminController extends AbstractController
 
         $resources = $em->getRepository(EventResource::class)->findBy($criteria, $orderBy);
 
-        return $this->render('admin/event_resource/index.html.twig', [
+        return $this->render('BackOffice/admin/event_resource/index.html.twig', [
             'event' => $event,
             'resources' => $resources,
         ]);
@@ -170,7 +170,7 @@ class EventResourceAdminController extends AbstractController
 
                 if ($exists) {
                     $form->addError(new FormError("Un PDF avec le même nom existe déjà pour cet événement."));
-                    return $this->render('admin/event_resource/new.html.twig', [
+                    return $this->render('BackOffice/admin/event_resource/new.html.twig', [
                         'event' => $event,
                         'form' => $form->createView(),
                     ]);
@@ -181,7 +181,7 @@ class EventResourceAdminController extends AbstractController
                     $resource->setFilePath($relativePath);
                 } catch (FileException $e) {
                     $form->addError(new FormError("Erreur lors de l'upload du fichier PDF."));
-                    return $this->render('admin/event_resource/new.html.twig', [
+                    return $this->render('BackOffice/admin/event_resource/new.html.twig', [
                         'event' => $event,
                         'form' => $form->createView(),
                     ]);
@@ -222,7 +222,7 @@ class EventResourceAdminController extends AbstractController
             return $this->redirectToRoute('admin_event_resource_index', ['id' => $event->getId()]);
         }
 
-        return $this->render('admin/event_resource/new.html.twig', [
+        return $this->render('BackOffice/admin/event_resource/new.html.twig', [
             'event' => $event,
             'form' => $form->createView(),
             'useSimpleForm' => $useSimpleForm, // optionnel si tu veux l’utiliser dans twig
@@ -350,7 +350,7 @@ class EventResourceAdminController extends AbstractController
 
                 if ((int) $qb->getQuery()->getSingleScalarResult() > 0) {
                     $form->addError(new FormError("Un PDF avec le même nom existe déjà pour cet événement."));
-                    return $this->render('admin/event_resource/edit.html.twig', [
+                    return $this->render('BackOffice/admin/event_resource/edit.html.twig', [
                         'event' => $event,
                         'resource' => $resource,
                         'form' => $form->createView(),
@@ -362,7 +362,7 @@ class EventResourceAdminController extends AbstractController
                     $resource->setFilePath($relativePath);
                 } catch (FileException $e) {
                     $form->addError(new FormError("Erreur lors de l'upload du fichier PDF."));
-                    return $this->render('admin/event_resource/edit.html.twig', [
+                    return $this->render('BackOffice/admin/event_resource/edit.html.twig', [
                         'event' => $event,
                         'resource' => $resource,
                         'form' => $form->createView(),
@@ -375,7 +375,7 @@ class EventResourceAdminController extends AbstractController
             return $this->redirectToRoute('admin_event_resource_index', ['id' => $event->getId()]);
         }
 
-        return $this->render('admin/event_resource/edit.html.twig', [
+        return $this->render('BackOffice/admin/event_resource/edit.html.twig', [
             'event' => $event,
             'resource' => $resource,
             'form' => $form->createView(),
@@ -437,7 +437,7 @@ class EventResourceAdminController extends AbstractController
             return $this->redirectToRoute('admin_event_resource_index', ['id' => $event->getId()]);
         }
 
-        return $this->render('admin/event_resource/edit_checklist.html.twig', [
+        return $this->render('BackOffice/admin/event_resource/edit_checklist.html.twig', [
             'event' => $event,
             'resource' => $resource,
             'form' => $form->createView(),
@@ -472,7 +472,7 @@ class EventResourceAdminController extends AbstractController
             return $this->redirectToRoute('admin_event_resource_index', ['id' => $event->getId()]);
         }
 
-        return $this->render('admin/event_resource/edit_planning.html.twig', [
+        return $this->render('BackOffice/admin/event_resource/edit_planning.html.twig', [
             'event' => $event,
             'resource' => $resource,
             'form' => $form->createView(),

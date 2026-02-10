@@ -20,6 +20,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
+     * @return User[] Parents (type = 'parent')
+     */
+    public function findParents(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.type = :type')
+            ->setParameter('type', 'parent')
+            ->orderBy('u.lastName', 'ASC')
+            ->addOrderBy('u.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Used to upgrade (rehash) the user's password automatically over time.
      */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void

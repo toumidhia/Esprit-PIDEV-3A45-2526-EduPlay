@@ -29,23 +29,48 @@ class SecurityController extends AbstractController
         $form = $this->createForm(ParentRegistrationType::class, $user);
         $form->handleRequest($request);
 
+        // Debugging: surface submission and validation errors to flashes so we can see why nothing happens
+        if ($form->isSubmitted()) {
+            if (!$form->isValid()) {
+                $errors = $form->getErrors(true, true);
+                $msgParts = [];
+                foreach ($errors as $error) {
+                    $origin = $error->getOrigin();
+                    $field = $origin ? $origin->getName() : 'form';
+                    $msgParts[] = sprintf('%s: %s', $field, $error->getMessage());
+                }
+                if (count($msgParts) > 0) {
+                    $this->addFlash('error', implode(' | ', $msgParts));
+                }
+            }
+        }
+
+
         if ($form->isSubmitted() && $form->isValid()) {
-            // Définir le type parent
             $user->setType('parent');
-            
-            // Hasher le mot de passe
-            $hashedPassword = $passwordHasher->hashPassword(
-                $user,
-                $form->get('password')->getData()
-            );
+
+            $rawPassword = $form->get('password')->getData();
+            if (!\is_string($rawPassword) || $rawPassword === '') {
+                $this->addFlash('error', 'Veuillez entrer un mot de passe.');
+                return $this->render('FrontOffice/security/register.html.twig', [
+                    'registrationForm' => $form->createView(),
+                ]);
+            }
+
+            $hashedPassword = $passwordHasher->hashPassword($user, $rawPassword);
             $user->setPassword($hashedPassword);
 
-            // Sauvegarder
-            $entityManager->persist($user);
-            $entityManager->flush();
+            try {
+                $entityManager->persist($user);
+                $entityManager->flush();
+            } catch (\Throwable $e) {
+                $this->addFlash('error', 'Une erreur est survenue lors de l\'inscription. Réessayez ou contactez le support.');
+                return $this->render('FrontOffice/security/register.html.twig', [
+                    'registrationForm' => $form->createView(),
+                ]);
+            }
 
             $this->addFlash('success', 'Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.');
-
             return $this->redirectToRoute('app_login');
         }
 

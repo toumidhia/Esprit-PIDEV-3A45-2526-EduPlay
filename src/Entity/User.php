@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé')]
@@ -38,6 +39,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull(message: 'Le mot de passe est obligatoire.', groups: ['Default', 'edit', 'login'])]
     private ?string $password = null;
 
     // Type: 'parent', 'enfant', 'admin', 'enseignant'
@@ -88,6 +90,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: EventRegistration::class, mappedBy: 'parent')]
     private Collection $eventRegistrations;
 
+    /**
+     * @var Collection<int, Commande>
+     */
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'user')]
+    private Collection $commandes;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -95,6 +103,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->enfants = new ArrayCollection();
         $this->courses = new ArrayCollection();
         $this->eventRegistrations = new ArrayCollection();
+        $this->commandes = new ArrayCollection();
     }
 
     // === GETTERS ET SETTERS ===
@@ -380,6 +389,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
+    {
+        return $this->commandes;
     }
 
     // === MÉTHODES POUR L'INTERFACE USERINTERFACE ===

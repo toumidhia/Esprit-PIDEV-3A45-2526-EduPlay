@@ -57,20 +57,20 @@ class ParentRegistrationType extends AbstractType
                 'mapped' => false,
                 'first_options' => [
                     'label' => 'Mot de passe',
-                    'attr' => ['class' => 'form-control']
+                    'attr' => ['class' => 'form-control', 'placeholder' => 'Minimum 6 caractères', 'autocomplete' => 'new-password'],
+                    'constraints' => [
+                        new NotBlank(['message' => 'Veuillez entrer un mot de passe']),
+                        new Length([
+                            'min' => 6,
+                            'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères',
+                        ]),
+                    ],
                 ],
                 'second_options' => [
                     'label' => 'Confirmer le mot de passe',
-                    'attr' => ['class' => 'form-control']
+                    'attr' => ['class' => 'form-control', 'placeholder' => 'Confirmez votre mot de passe', 'autocomplete' => 'new-password'],
                 ],
                 'invalid_message' => 'Les mots de passe doivent correspondre',
-                'constraints' => [
-                    new NotBlank(['message' => 'Veuillez entrer un mot de passe']),
-                    new Length([
-                        'min' => 6,
-                        'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères',
-                    ])
-                ]
             ]);
     }
 
@@ -78,6 +78,7 @@ class ParentRegistrationType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'validation_groups' => ['registration'],
         ]);
     }
 }

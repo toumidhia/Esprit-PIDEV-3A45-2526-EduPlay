@@ -1,0 +1,56 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block body %}
+    <div class="mb-8">
+        <a href="{{ path('app_back_product_index') }}" class="text-primary font-bold hover:underline inline-flex items-center gap-1">
+            <span class="material-symbols-outlined text-xl">arrow_back</span>
+            Retour à la liste
+        </a>
+    </div>
+    <div class="flex flex-wrap justify-between items-start gap-4 mb-8">
+        <h1 class="text-3xl font-extrabold">Produit : {{ product.name }}</h1>
+        <div class="flex gap-2">
+            <a href="{{ path('app_back_product_edit', { id: product.id }) }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-full hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined">edit</span>
+                Modifier
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-[#dbe1e6] p-8 max-w-2xl">
+        <dl class="space-y-4">
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Image</dt>
+                <dd class="text-lg">
+                    {% if product.picture %}
+                        <img src="/uploads/products/{{ product.picture }}" alt="{{ product.name }}" class="w-48 h-auto rounded shadow" />
+                    {% else %}
+                        <div class="w-48 h-32 bg-gray-100 rounded flex items-center justify-center text-sm text-gray-500">Aucune image</div>
+                    {% endif %}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Id</dt>
+                <dd class="text-lg">{{ product.id }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Nom</dt>
+                <dd class="text-lg">{{ product.name }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Prix (€)</dt>
+                <dd class="text-lg">{{ product.price|number_format(2, ',', ' ') }} €</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Description</dt>
+                <dd class="text-lg">{{ product.description }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Disponible</dt>
+                <dd class="text-lg">{{ product.isAvailability ? 'Oui' : 'Non' }}</dd>
+            </div>
+        </dl>
+    </div>
+{% endblock %}

@@ -35,6 +35,8 @@ security:
         - { path: ^/parent, roles: ROLE_PARENT }
         - { path: ^/enseignant, roles: ROLE_ENSEIGNANT }
         - { path: ^/enfant, roles: ROLE_ENFANT }
+        - { path: ^/events, roles: ROLE_USER }
+
         - { path: ^/, roles: PUBLIC_ACCESS }
 
     # Hiérarchie des rôles

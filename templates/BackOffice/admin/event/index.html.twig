@@ -1,8 +1,8 @@
-{% extends 'BackOffice/admin/base.html.twig' %}
+{% extends 'BackOffice/admin/Partials/base_admin.html.twig' %}
 
 {% block title %}Admin - Événements{% endblock %}
 
-{% block admin_content %}
+{% block content %}
 <div class="flex items-end justify-between mb-6">
     <div>
         <h1 class="text-3xl font-extrabold">Gestion des événements</h1>
@@ -10,7 +10,7 @@
     </div>
 
     <a href="{{ path('admin_event_new') }}"
-       class="px-5 py-3 rounded-full bg-primary text-white font-extrabold hover:scale-105 transition-transform">
+       class="px-5 py-3 rounded-full bg-primary text-black font-extrabold hover:scale-105 transition-transform">
         + Nouvel événement
     </a>
 </div>

@@ -32,6 +32,7 @@ class EventController extends AbstractController
         }
 
         $events = $qb->getQuery()->getResult();
+        
 
         return $this->render('FrontOffice/Parent/event/index.html.twig', [
             'events' => $events,

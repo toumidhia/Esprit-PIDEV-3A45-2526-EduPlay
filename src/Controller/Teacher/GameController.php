@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 
 
-#[Route('/teacher/game')]
+#[Route('/enseignant/game')]
 final class GameController extends AbstractController
 {
     #[Route(name: 'teacher_game_index', methods: ['GET'])]

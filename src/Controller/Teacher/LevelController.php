@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 
-#[Route('/teacher/level')]
+#[Route('/enseignant/level')]
 final class LevelController extends AbstractController
 {
     #[Route(name: 'teacher_level_index', methods: ['GET'])]

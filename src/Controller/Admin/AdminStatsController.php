@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\EventRegistration;
 use App\Entity\EventResource;
 use App\Entity\SchoolEvent;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,8 +16,13 @@ class AdminStatsController extends AbstractController
     #[Route('/admin/stats', name: 'admin_stats', methods: ['GET'])]
     public function index(EntityManagerInterface $em): Response
     {
-        // Si vous voulez protéger plus tard:
-        // $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        /** @var User|null $user */
+        $user = $this->getUser();
+
+        // Protection : seuls les admins peuvent accéder
+        if (!$user || $user->getType() !== 'admin') {
+            return $this->redirectToRoute('app_login');
+        }
 
         $now = new \DateTimeImmutable();
 
@@ -37,24 +43,26 @@ class AdminStatsController extends AbstractController
             ->from(EventRegistration::class, 'r')
             ->getQuery()->getSingleScalarResult();
 
-        // Dernières inscriptions (pour afficher une mini liste)
-        $latestRegistrations = $em->getRepository(EventRegistration::class)->findBy([], ['registeredAt' => 'DESC'], 8);
+        // Dernières inscriptions
+        $latestRegistrations = $em->getRepository(EventRegistration::class)
+            ->findBy([], ['registeredAt' => 'DESC'], 8);
 
-        // ✅ Inscriptions par événement (sans GROUP BY complexe : on fait en PHP)
-        $allRegistrations = $em->getRepository(EventRegistration::class)->findBy([], ['registeredAt' => 'DESC']);
+        // Inscriptions par événement
+        $allRegistrations = $em->getRepository(EventRegistration::class)
+            ->findBy([], ['registeredAt' => 'DESC']);
 
-        $registrationsByEvent = []; // [eventTitle => count]
+        $registrationsByEvent = [];
         foreach ($allRegistrations as $reg) {
             $title = $reg->getEvent()?->getTitle() ?? 'Événement supprimé';
             $registrationsByEvent[$title] = ($registrationsByEvent[$title] ?? 0) + 1;
         }
-        arsort($registrationsByEvent); // tri desc
+        arsort($registrationsByEvent);
 
-        // ✅ Inscriptions par mois (12 derniers mois)
+        // Inscriptions par mois (12 derniers mois)
         $months = [];
         $cursor = (new \DateTimeImmutable('first day of this month'))->modify('-11 months');
         for ($i = 0; $i < 12; $i++) {
-            $key = $cursor->format('Y-m'); // ex 2026-02
+            $key = $cursor->format('Y-m');
             $months[$key] = 0;
             $cursor = $cursor->modify('+1 month');
         }
@@ -68,7 +76,7 @@ class AdminStatsController extends AbstractController
             }
         }
 
-        // ✅ Ressources par type (PDF/LINK/CHECKLIST/PLANNING)
+        // Ressources par type
         $allResources = $em->getRepository(EventResource::class)->findAll();
         $resourcesByType = [];
         foreach ($allResources as $res) {

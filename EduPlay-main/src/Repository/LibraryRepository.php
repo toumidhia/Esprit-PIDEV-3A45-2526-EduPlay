@@ -43,7 +43,6 @@ class LibraryRepository extends ServiceEntityRepository
         // 2. TRI
         if (!empty($filters['sortBy'])) {
             switch ($filters['sortBy']) {
-                // Nom
                 case 'name_asc':
                     $qb->orderBy('l.name', 'ASC');
                     break;
@@ -51,7 +50,6 @@ class LibraryRepository extends ServiceEntityRepository
                     $qb->orderBy('l.name', 'DESC');
                     break;
                 
-                // Thème
                 case 'theme_asc':
                     $qb->orderBy('l.theme', 'ASC');
                     break;
@@ -59,7 +57,6 @@ class LibraryRepository extends ServiceEntityRepository
                     $qb->orderBy('l.theme', 'DESC');
                     break;
                 
-                // Niveau (ordre personnalisé)
                 case 'level_asc':
                     $qb->orderBy("
                         CASE 
@@ -81,7 +78,6 @@ class LibraryRepository extends ServiceEntityRepository
                         END", 'DESC');
                     break;
                 
-                // Âge minimum
                 case 'minAge_asc':
                     $qb->orderBy('l.minAge', 'ASC');
                     break;
@@ -89,7 +85,6 @@ class LibraryRepository extends ServiceEntityRepository
                     $qb->orderBy('l.minAge', 'DESC');
                     break;
                 
-                // Âge maximum
                 case 'maxAge_asc':
                     $qb->orderBy('l.maxAge', 'ASC');
                     break;
@@ -118,5 +113,47 @@ class LibraryRepository extends ServiceEntityRepository
             ->orderBy('l.theme', 'ASC')
             ->getQuery()
             ->getSingleColumnResult();
+    }
+
+    public function getLevelDistribution(): array
+    {
+        $query = $this->createQueryBuilder('l')
+            ->select('l.level, COUNT(l.id) as count')
+            ->groupBy('l.level')
+            ->orderBy('l.level')
+            ->getQuery();
+
+        $results = $query->getResult();
+        
+        // Formatage pour avoir tous les niveaux même à 0
+        $allLevels = ['Débutant', 'Intermédiaire', 'Avancé', 'Expert'];
+        $distribution = [];
+        
+        foreach ($allLevels as $level) {
+            $distribution[$level] = 0;
+        }
+        
+        foreach ($results as $result) {
+            if (isset($result['level'])) {
+                $distribution[$result['level']] = (int)$result['count'];
+            }
+        }
+        
+        return $distribution;
+    }
+
+    /**
+     * Récupère le top des bibliothèques avec le plus de ressources
+     */
+    public function findTopLibrariesByResourceCount(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('l')
+            ->leftJoin('l.resources', 'r')
+            ->select('l.name', 'l.id', 'COUNT(r.id) as resourceCount')
+            ->groupBy('l.id')
+            ->orderBy('resourceCount', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 }

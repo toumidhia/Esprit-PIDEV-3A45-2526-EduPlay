@@ -4,6 +4,8 @@
 namespace App\Entity;
 
 use App\Repository\LibraryRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -63,6 +65,14 @@ class Library
         maxMessage: 'Le thème ne peut pas dépasser {{ limit }} caractères'
     )]
     private ?string $theme = null;
+
+    #[ORM\OneToMany(targetEntity: Resource::class, mappedBy: 'libraryId')]
+    private Collection $resources;
+
+    public function __construct()
+    {
+        $this->resources = new ArrayCollection();
+    }
 
     // Getters et setters
     public function getId(): ?int
@@ -145,5 +155,58 @@ class Library
     {
         $this->theme = $theme;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Resource>
+     */
+    public function getResources(): Collection
+    {
+        return $this->resources;
+    }
+
+    public function addResource(Resource $resource): static
+    {
+        if (!$this->resources->contains($resource)) {
+            $this->resources->add($resource);
+            $resource->setLibraryId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeResource(Resource $resource): static
+    {
+        if ($this->resources->removeElement($resource)) {
+            // set the owning side to null (unless already changed)
+            if ($resource->getLibraryId() === $this) {
+                $resource->setLibraryId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    // Méthode utilitaire pour obtenir le nombre de ressources
+    public function getResourceCount(): int
+    {
+        return $this->resources->count();
+    }
+
+    // Méthode de validation personnalisée (pour vérifier minAge < maxAge)
+    #[Assert\Callback]
+    public function validateAges(mixed $context): void
+    {
+        if ($this->minAge !== null && $this->maxAge !== null && $this->minAge > $this->maxAge) {
+            $context->buildViolation("L'âge maximum doit être supérieur ou égal à l'âge minimum")
+                    ->atPath('maxAge')
+                    ->addViolation();
+        }
+    }
+
+    // Méthode toString pour l'affichage
+    public function __toString(): string
+    {
+        return $this->name ?? '';
     }
 }

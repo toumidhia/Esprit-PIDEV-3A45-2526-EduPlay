@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use App\Form\LibrarySearchType;
+use App\Repository\ResourceRepository;
 final class LibraryController extends AbstractController
 {
     // ===============================
@@ -31,12 +32,114 @@ final class LibraryController extends AbstractController
     // BACK OFFICE (Admin) - Dashboard
     // ===============================
     
+   
     #[Route('BackOffice/admin', name: 'app_admin')]
-    public function adminDashboard(): Response
+    public function adminDashboard(LibraryRepository $libraryRepository): Response
     {
+        // VERSION TEMPORAIRE - Attendez d'ajouter la méthode dans le Repository
+        // Récupérer toutes les bibliothèques
+        $libraries = $libraryRepository->findAll();
+        
+        // Calcul manuel de la distribution
+        $levelDistribution = [
+            'Débutant' => 0,
+            'Intermédiaire' => 0,
+            'Avancé' => 0,
+            'Expert' => 0
+        ];
+        
+        foreach ($libraries as $library) {
+            $level = $library->getLevel();
+            if (isset($levelDistribution[$level])) {
+                $levelDistribution[$level]++;
+            }
+        }
+        
+        // Calculer le total et les pourcentages
+        $totalLibraries = count($libraries);
+        $levelPercentages = [];
+        
+        foreach ($levelDistribution as $level => $count) {
+            $levelPercentages[$level] = $totalLibraries > 0 ? 
+                round(($count / $totalLibraries) * 100, 1) : 0;
+        }
+
+        // Données pour le graphique
+        $chartData = [
+            'labels' => array_keys($levelDistribution),
+            'datasets' => [
+                [
+                    'label' => 'Nombre de bibliothèques',
+                    'data' => array_values($levelDistribution),
+                    'backgroundColor' => [
+                        'rgba(99, 183, 242, 0.7)',  // Bleu clair - Débutant
+                        'rgba(52, 152, 219, 0.7)',  // Bleu - Intermédiaire
+                        'rgba(155, 89, 182, 0.7)',  // Violet - Avancé
+                        'rgba(231, 76, 60, 0.7)',   // Rouge - Expert
+                    ],
+                    'borderColor' => [
+                        'rgb(99, 183, 242)',
+                        'rgb(52, 152, 219)',
+                        'rgb(155, 89, 182)',
+                        'rgb(231, 76, 60)',
+                    ],
+                    'borderWidth' => 2,
+                    'borderRadius' => 5,
+                ]
+            ]
+        ];
+
+        // Récupérer le top 5 des bibliothèques avec le plus de ressources
+        $topLibraries = $libraryRepository->findTopLibrariesByResourceCount(5);
+        
+        // Préparer les données pour les barres de progression
+        $libraryProgressBars = [];
+        if (!empty($topLibraries)) {
+            $maxResources = max(array_column($topLibraries, 'resourceCount'));
+            
+            foreach ($topLibraries as $index => $library) {
+                $percentage = $maxResources > 0 ? round(($library['resourceCount'] / $maxResources) * 100) : 0;
+                $libraryProgressBars[] = [
+                    'position' => $index + 1,
+                    'name' => $library['name'],
+                    'resourceCount' => $library['resourceCount'],
+                    'percentage' => $percentage,
+                    'barLength' => $this->generateProgressBar($percentage),
+                    'id' => $library['id']
+                ];
+            }
+        }
+
         return $this->render('BackOffice/admin/base_admin.html.twig', [
+            'levelDistribution' => $levelDistribution,
+            'levelPercentages' => $levelPercentages,
+            'totalLibraries' => $totalLibraries,
+            'chartData' => $chartData,
+            'topLibraries' => $libraryProgressBars,
             'controller_name' => 'LibraryController',
         ]);
+    }
+    
+    /**
+     * Génère une barre de progression visuelle
+     */
+    private function generateProgressBar(int $percentage): string
+    {
+        $fullBlocks = floor($percentage / 10);
+        $partialBlock = $percentage % 10;
+        
+        $bar = str_repeat('█', $fullBlocks);
+        
+        // Ajouter un bloc partiel si nécessaire
+        if ($partialBlock > 0) {
+            $partialChars = ['', '▏', '▎', '▍', '▌', '▋', '▊', '▉', '█'];
+            $bar .= $partialChars[round($partialBlock / 10 * 8)];
+        }
+        
+        // Compléter avec des espaces
+        $bar .= str_repeat('░', 10 - ceil($percentage / 10));
+        
+        return $bar;
     }
     
     // ===============================
@@ -215,4 +318,19 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
         
         return $this->redirectToRoute('admin_library_index');
     }
+
+
+
+#[Route('FrontOffice/library/{id}/resources', name: 'library_resources')]
+public function libraryResources(Library $library, ResourceRepository $resourceRepository): Response
+{
+    // Récupérer toutes les ressources de cette bibliothèque
+    $resources = $resourceRepository->findBy(['libraryId' => $library], ['title' => 'ASC']);
+    
+    // Utiliser le template qui existe déjà dans FrontOffice/resource/
+    return $this->render('FrontOffice/resource/index.html.twig', [
+        'library' => $library,
+        'resources' => $resources,
+    ]);
+}
 }

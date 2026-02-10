@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html class="light" lang="fr">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>EduPlay Library Explorer</title>
+    <title>EduPlay - Explorateur de Bibliothèques</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -51,13 +51,13 @@
     </style>
 </head>
 <body class="font-display bg-background-light dark:bg-background-dark min-h-screen relative overflow-x-hidden">
-    <!-- Playful Background Shapes -->
+    <!-- Formes de fond ludiques -->
     <div class="organic-shape bg-pink-300 w-[500px] h-[500px] rounded-full -top-40 -left-40"></div>
     <div class="organic-shape bg-primary/30 w-[600px] h-[600px] rounded-full -bottom-40 -right-40"></div>
     <div class="organic-shape bg-blue-200 w-[400px] h-[400px] rounded-full top-1/2 left-1/4"></div>
     
     <div class="layout-container flex h-full grow flex-col">
-        <!-- Top Navigation -->
+        <!-- Navigation supérieure -->
         <header class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 px-6 py-4 lg:px-20">
             <div class="max-w-7xl mx-auto flex items-center justify-between">
                 <div class="flex items-center gap-3">
@@ -67,9 +67,9 @@
                     <h2 class="text-[#111418] dark:text-white text-2xl font-extrabold tracking-tight">EduPlay</h2>
                 </div>
                 <nav class="hidden md:flex items-center gap-2">
-                    <a class="px-6 py-2 rounded-full bg-primary text-white font-semibold text-sm transition-all" href="{{ path('app_library') }}">Home</a>
-                    <a class="px-6 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold text-sm transition-all" href="#">My Books</a>
-                    <a class="px-6 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold text-sm transition-all" href="#">Help</a>
+                    <a class="px-6 py-2 rounded-full bg-primary text-white font-semibold text-sm transition-all" href="{{ path('app_library') }}">Accueil</a>
+                    <a class="px-6 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold text-sm transition-all" href="#">Mes Livres</a>
+                    <a class="px-6 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold text-sm transition-all" href="#">Aide</a>
                     {% if is_granted('ROLE_ADMIN') %}
                         <a class="px-6 py-2 rounded-full bg-green-500 text-white font-semibold text-sm transition-all" href="{{ path('app_admin') }}">Admin</a>
                     {% endif %}
@@ -79,28 +79,28 @@
                         <span class="material-symbols-outlined">settings</span>
                     </button>
                     <div class="size-10 rounded-full border-2 border-primary overflow-hidden shadow-md">
-                        <img class="w-full h-full object-cover" alt="Cartoon avatar of a smiling child" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbRYuXbiGWzBqkPT0_kb-B6VeCv6_MOWoWpAa8-3qHfL1hBuOPosP29T00LH9JH4F-jsIh8oQgwz-1-C_vRRki-AKXIgs-kCRqumvMEbsAfzSbNoRB1vRtUOnDfgcFRiYt-9vSnd-uZlLntqtZrJQiYxjj2MDdQ6qG2OqB1nOZtscihZ7oTI_wV0sWCGn9CHDrmo7uuD7kuucqy-27Yvm326XTTgdqjCFQm92M9AsZ5FpAvuDqaFR7OT1_cN9BFJYLUyseed_ombI"/>
+                        <img class="w-full h-full object-cover" alt="Avatar cartoon d'un enfant souriant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbRYuXbiGWzBqkPT0_kb-B6VeCv6_MOWoWpAa8-3qHfL1hBuOPosP29T00LH9JH4F-jsIh8oQgwz-1-C_vRRki-AKXIgs-kCRqumvMEbsAfzSbNoRB1vRtUOnDfgcFRiYt-9vSnd-uZlLntqtZrJQiYxjj2MDdQ6qG2OqB1nOZtscihZ7oTI_wV0sWCGn9CHDrmo7uuD7kuucqy-27Yvm326XTTgdqjCFQm92M9AsZ5FpAvuDqaFR7OT1_cN9BFJYLUyseed_ombI"/>
                     </div>
                 </div>
             </div>
         </header>
         
         <main class="max-w-7xl mx-auto px-6 lg:px-20 py-10 w-full">
-            <!-- Hero Section -->
+            <!-- Section Héros -->
             <div class="text-center mb-12">
-                <h1 class="text-4xl lg:text-5xl font-extrabold text-[#111418] dark:text-white mb-4">Explore Your Library</h1>
-                <p class="text-gray-500 dark:text-gray-400 text-lg mb-8 max-w-2xl mx-auto">Discover amazing stories, solve math puzzles, and explore the wonders of the universe!</p>
+                <h1 class="text-4xl lg:text-5xl font-extrabold text-[#111418] dark:text-white mb-4">Explorez Votre Bibliothèque</h1>
+                <p class="text-gray-500 dark:text-gray-400 text-lg mb-8 max-w-2xl mx-auto">Découvrez des histoires incroyables, résolvez des énigmes mathématiques et explorez les merveilles de l'univers !</p>
                 <div class="max-w-2xl mx-auto">
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                             <span class="material-symbols-outlined text-gray-400 group-focus-within:text-primary transition-colors">search</span>
                         </div>
-                        <input class="block w-full pl-14 pr-6 py-5 bg-white dark:bg-gray-900 border-none rounded-xl shadow-xl shadow-blue-100 dark:shadow-none text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-4 focus:ring-primary/20 text-lg" placeholder="What would you like to learn today?" type="text" id="searchInput"/>
+                        <input class="block w-full pl-14 pr-6 py-5 bg-white dark:bg-gray-900 border-none rounded-xl shadow-xl shadow-blue-100 dark:shadow-none text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-4 focus:ring-primary/20 text-lg" placeholder="Que voulez-vous apprendre aujourd'hui ?" type="text" id="searchInput"/>
                     </div>
                 </div>
             </div>
             
-            <!-- Library Grid -->
+            <!-- Grille des Bibliothèques -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="libraryGrid">
                 {% for library in libraries %}
                 <div class="group bg-white dark:bg-gray-900 rounded-xl p-4 shadow-xl shadow-blue-50/50 dark:shadow-none transition-all hover:-translate-y-2 library-card">
@@ -121,11 +121,11 @@
                     </div>
                     <div class="px-2">
                         <span class="inline-block bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 text-[10px] font-bold uppercase tracking-wider mb-2 px-2 py-0.5 rounded">
-                            {{ library.minAge }} - {{ library.maxAge }} Years
+                            {{ library.minAge }} - {{ library.maxAge }} ans
                         </span>
                         <h3 class="text-xl font-bold text-[#111418] dark:text-white mb-2">{{ library.name }}</h3>
                         <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-4 line-clamp-3">
-                            {{ library.description|slice(0, 100) }}{% if library.description|length > 100 %}...{% endif %}
+                            {{ library.description|default('Aucune description disponible')|slice(0, 100) }}{% if library.description|default and library.description|length > 100 %}...{% endif %}
                         </p>
                         
                         <div class="flex items-center justify-between mb-4">
@@ -134,13 +134,15 @@
                             </span>
                             <div class="text-xs text-gray-500">
                                 <span class="material-symbols-outlined text-sm align-text-bottom">visibility</span>
-                                <span class="ml-1">Library</span>
+                                <span class="ml-1">Bibliothèque</span>
                             </div>
                         </div>
                         
-                        <button class="w-full py-3 rounded-full bg-primary/10 text-primary font-bold hover:bg-primary hover:text-white transition-colors">
-                            Start Exploring
-                        </button>
+                        <a href="{{ path('library_resources', {'id': library.id}) }}" 
+                           class="w-full py-3 rounded-full bg-primary/10 text-primary font-bold hover:bg-primary hover:text-white transition-colors inline-flex items-center justify-center">
+                            Commencer l'Exploration
+                            <span class="material-symbols-outlined ml-2 text-sm">arrow_forward</span>
+                        </a>
                     </div>
                 </div>
                 {% else %}
@@ -150,16 +152,16 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No libraries found</h3>
-                    <p class="text-gray-500 mb-6">Check back later for amazing content!</p>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Aucune bibliothèque trouvée</h3>
+                    <p class="text-gray-500 mb-6">Revenez plus tard pour découvrir du contenu incroyable !</p>
                 </div>
                 {% endfor %}
             </div>
             
-            <!-- Filter by Theme -->
+            <!-- Filtrage par Thème -->
             {% if libraries|length > 0 %}
             <div class="mt-20">
-                <h2 class="text-2xl font-bold text-[#111418] dark:text-white mb-6">Browse by Theme</h2>
+                <h2 class="text-2xl font-bold text-[#111418] dark:text-white mb-6">Parcourir par Thème</h2>
                 <div class="flex flex-wrap gap-3">
                     {% set themes = [] %}
                     {% for library in libraries %}
@@ -169,7 +171,7 @@
                     {% endfor %}
                     
                     <button class="filter-theme px-6 py-3 rounded-full bg-primary text-white font-semibold transition-all active" data-theme="all">
-                        All Themes
+                        Tous les Thèmes
                     </button>
                     {% for theme in themes|slice(0, 8) %}
                         <button class="filter-theme px-6 py-3 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-primary hover:text-white transition-all" data-theme="{{ theme|lower }}">
@@ -180,13 +182,13 @@
             </div>
             {% endif %}
             
-            <!-- Recently Added -->
+            <!-- Récemment Ajouté -->
             {% if libraries|length > 0 %}
             <div class="mt-20">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-bold text-[#111418] dark:text-white">Recently Added</h2>
+                    <h2 class="text-2xl font-bold text-[#111418] dark:text-white">Récemment Ajouté</h2>
                     <a class="text-primary font-semibold flex items-center gap-1 hover:underline" href="#">
-                        View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        Voir Tout <span class="material-symbols-outlined text-sm">arrow_forward</span>
                     </a>
                 </div>
                 <div class="flex flex-wrap gap-4">
@@ -212,19 +214,65 @@
             {% endif %}
         </main>
         
-        <!-- Playful Footer -->
-        <footer class="mt-20 py-10 px-6 lg:px-20 border-t border-gray-100 dark:border-gray-800 text-center">
-            <div class="flex items-center justify-center gap-2 mb-4 text-primary">
-                <span class="material-symbols-outlined text-3xl">star</span>
-                <span class="material-symbols-outlined text-3xl">sentiment_very_satisfied</span>
-                <span class="material-symbols-outlined text-3xl">star</span>
+        <!-- Pied de page complet -->
+        <footer class="bg-white dark:bg-background-dark border-t border-[#dbe1e6] dark:border-gray-800 px-6 md:px-20 lg:px-40 py-16">
+            <div class="max-w-[1280px] mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
+                <div class="flex flex-col gap-6">
+                    <div class="flex items-center gap-3">
+                        <div class="size-8 bg-primary rounded-full flex items-center justify-center text-white">
+                            <span class="material-symbols-outlined text-xl">rocket_launch</span>
+                        </div>
+                        <h2 class="text-xl font-extrabold tracking-tight">EduPlay</h2>
+                    </div>
+                    <p class="text-sm text-[#617989] dark:text-gray-400 leading-relaxed">Faire de l'apprentissage une aventure pour chaque enfant, partout.</p>
+                    <div class="flex gap-4">
+                        <a class="w-10 h-10 rounded-full bg-background-light dark:bg-gray-800 flex items-center justify-center text-primary" href="#"><span class="material-symbols-outlined">social_leaderboard</span></a>
+                        <a class="w-10 h-10 rounded-full bg-background-light dark:bg-gray-800 flex items-center justify-center text-primary" href="#"><span class="material-symbols-outlined">camera_enhance</span></a>
+                        <a class="w-10 h-10 rounded-full bg-background-light dark:bg-gray-800 flex items-center justify-center text-primary" href="#"><span class="material-symbols-outlined">alternate_email</span></a>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <h4 class="font-extrabold">Découvrir</h4>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Jeux Éducatifs</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Bibliothèque de Lecture</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Kits STEM</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Outils pour Enseignants</a>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <h4 class="font-extrabold">Support</h4>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Centre d'Aide</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Directives de Sécurité</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Politique de Confidentialité</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Contactez-nous</a>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <h4 class="font-extrabold">Applications</h4>
+                    <div class="flex flex-col gap-3">
+                        <button class="bg-[#111518] text-white p-3 rounded-lg flex items-center gap-3">
+                            <span class="material-symbols-outlined">phone_iphone</span>
+                            <div class="text-left">
+                                <p class="text-[10px] uppercase font-bold text-white/50">Télécharger sur</p>
+                                <p class="text-sm font-bold">App Store</p>
+                            </div>
+                        </button>
+                        <button class="bg-[#111518] text-white p-3 rounded-lg flex items-center gap-3">
+                            <span class="material-symbols-outlined">play_arrow</span>
+                            <div class="text-left">
+                                <p class="text-[10px] uppercase font-bold text-white/50">Disponible sur</p>
+                                <p class="text-sm font-bold">Google Play</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <p class="text-gray-400 text-sm">© 2024 EduPlay Learning Platform. Fun for everyone!</p>
-            <p class="text-gray-400 text-xs mt-2">
-                {% if libraries|length > 0 %}
-                    {{ libraries|length }} libraries available
-                {% endif %}
-            </p>
+            <div class="max-w-[1280px] mx-auto border-t border-[#dbe1e6] dark:border-gray-800 mt-12 pt-8 text-center md:text-left">
+                <p class="text-xs text-[#617989] dark:text-gray-400">© 2024 EduPlay Médias Éducatifs. Tous droits réservés.</p>
+                <p class="text-xs text-[#617989] dark:text-gray-400 mt-2">
+                    {% if libraries|length > 0 %}
+                        {{ libraries|length }} bibliothèque{% if libraries|length > 1 %}s{% endif %} disponible{% if libraries|length > 1 %}s{% endif %}
+                    {% endif %}
+                </p>
+            </div>
         </footer>
     </div>
     

@@ -1,0 +1,50 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Commande #{{ commande.id }}{% endblock %}
+
+{% block body %}
+    <div class="mb-8">
+        <a href="{{ path('app_back_commande_index') }}" class="text-primary font-bold hover:underline inline-flex items-center gap-1">
+            <span class="material-symbols-outlined text-xl">arrow_back</span>
+            Retour à la liste
+        </a>
+    </div>
+    <div class="flex flex-wrap justify-between items-start gap-4 mb-8">
+        <h1 class="text-3xl font-extrabold">Commande #{{ commande.id }}</h1>
+        <div class="flex gap-2">
+            <a href="{{ path('app_back_commande_edit', { id: commande.id }) }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-full hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined">edit</span>
+                Modifier
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-[#dbe1e6] p-8 max-w-2xl">
+        <dl class="space-y-4">
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Id</dt>
+                <dd class="text-lg">{{ commande.id }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Utilisateur</dt>
+                <dd class="text-lg">{{ commande.user ? commande.user.firstName ~ ' ' ~ commande.user.lastName ~ ' (' ~ commande.user.email ~ ')' : '-' }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Produit</dt>
+                <dd class="text-lg">{{ commande.product ? commande.product.name : '-' }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Quantité</dt>
+                <dd class="text-lg">{{ commande.quantity }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Date de commande</dt>
+                <dd class="text-lg">{{ commande.dateCommande ? commande.dateCommande|date('d/m/Y') : '-' }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-bold text-[#617989]">Montant total (DT)</dt>
+                <dd class="text-lg">{{ commande.totalAmount|number_format(0, ',', ' ') }} DT</dd>
+            </div>
+        </dl>
+    </div>
+{% endblock %}

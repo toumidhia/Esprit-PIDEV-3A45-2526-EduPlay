@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <title>Liste des produits - EduPlay</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; }
+        th { background: #f0f0f0; font-weight: bold; }
+        h1 { font-size: 16px; margin-bottom: 8px; }
+        .meta { color: #666; font-size: 9px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Liste des produits - EduPlay</h1>
+    <p class="meta">Exporté le {{ "now"|date("d/m/Y H:i") }} — {{ products|length }} produit(s)</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nom</th>
+                <th>Prix (€)</th>
+                <th>Description</th>
+                <th>Disponible</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+                <tr>
+                    <td>{{ product.id }}</td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.price|number_format(2, ',', ' ') }} €</td>
+                    <td>{{ product.description }}</td>
+                    <td>{{ product.isAvailability ? 'Oui' : 'Non' }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="5">Aucun produit.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{# Small cart icon with count badge for header #}
+{% set cart = app.session is defined ? app.session.get('cart', {}) : {} %}
+{% set cart_count = 0 %}
+{% for qty in cart %}
+    {% set cart_count = cart_count + qty %}
+{% endfor %}
+
+<a href="{{ path('app_front_cart_index') }}" class="relative inline-flex items-center px-3 py-2 rounded-full hover:bg-gray-100 transition-colors">
+    <span class="material-symbols-outlined text-2xl">shopping_cart</span>
+    {% if cart_count > 0 %}
+        <span class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">{{ cart_count }}</span>
+    {% endif %}
+</a>

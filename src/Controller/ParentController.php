@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Commande;
 use App\Form\EnfantType;
+use App\Form\FrontCommandeType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -98,4 +100,83 @@ class ParentController extends AbstractController
 
         return $this->redirectToRoute('app_parent_dashboard');
     }
-}
+
+    #[Route('/commandes', name: 'app_parent_commandes', methods: ['GET'])]
+    public function commandes(): Response
+    {
+        /** @var User $parent */
+        $parent = $this->getUser();
+
+        if (!$parent || $parent->getType() !== 'parent') {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $commandes = $parent->getCommandes()->toArray();
+        usort($commandes, static fn ($a, $b) => ($b->getDateCommande() ?? new \DateTime()) <=> ($a->getDateCommande() ?? new \DateTime()));
+
+        return $this->render('FrontOffice/parent/commandes.html.twig', [
+            'parent' => $parent,
+            'commandes' => $commandes,
+        ]);
+    }
+
+    #[Route('/commande/{id}/edit', name: 'app_parent_commande_edit', methods: ['GET', 'POST'])]
+    public function editCommande(
+        Commande $commande,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        /** @var User $parent */
+        $parent = $this->getUser();
+
+        // Vérifier que la commande appartient bien au parent connecté
+        if ($commande->getUser() !== $parent) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette commande.');
+        }
+
+        $form = $this->createForm(FrontCommandeType::class, $commande);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Recalculate total amount
+            $product = $commande->getProduct();
+            if ($product) {
+                $commande->setTotalAmount($product->getPrice() * $commande->getQuantity());
+            }
+
+            $entityManager->persist($commande);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Commande modifiée avec succès.');
+            return $this->redirectToRoute('app_parent_commandes');
+        }
+
+        return $this->render('FrontOffice/parent/commande_edit.html.twig', [
+            'commande' => $commande,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/commande/{id}/delete', name: 'app_parent_commande_delete', methods: ['POST'])]
+    public function deleteCommande(
+        Commande $commande,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        /** @var User $parent */
+        $parent = $this->getUser();
+
+        // Vérifier que la commande appartient bien au parent connecté
+        if ($commande->getUser() !== $parent) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette commande.');
+        }
+
+        if ($this->isCsrfTokenValid('delete'.$commande->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($commande);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Commande supprimée avec succès.');
+        }
+
+        return $this->redirectToRoute('app_parent_commandes');
+    }}

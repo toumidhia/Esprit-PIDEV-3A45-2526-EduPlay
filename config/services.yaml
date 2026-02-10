@@ -4,8 +4,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    event_images_dir: '%kernel.project_dir%/public/uploads/events'
-    event_resources_dir: '%kernel.project_dir%/public/uploads/event-resources'
+ upload_directory: '%kernel.project_dir%/public/uploads/games'
+ upload_tmp_directory_games: '%kernel.project_dir%/public/uploads/tmp'
+ 
 
 services:
     # default configuration for services in *this* file

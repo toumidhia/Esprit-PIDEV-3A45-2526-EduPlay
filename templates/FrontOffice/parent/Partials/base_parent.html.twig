@@ -34,9 +34,28 @@
         }
 
         .sidebar-nav a.active {
-            background: linear-gradient(90deg, rgba(99,183,242,0.1) 0%, rgba(99,183,242,0.05) 100%);
-            border-right: 4px solid #63b7f2;
+            background: linear-gradient(90deg, rgba(99,183,242,0.15) 0%, rgba(99,183,242,0.08) 100%);
+            border-left: 4px solid #63b7f2;
             color: #63b7f2;
+            padding-left: calc(1.25rem - 4px);
+        }
+
+        /* Scrollbar styling for sidebar */
+        .sidebar-nav::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
         }
 
         /* Cards */

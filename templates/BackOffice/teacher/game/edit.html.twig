@@ -1,0 +1,94 @@
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#63b7f2",
+              "accent-yellow": "#F7C56E",
+              "accent-pink": "#F29BAE",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101b22",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .blob {
+        position: absolute;
+        filter: blur(60px);
+        z-index: -1;
+        opacity: 0.4;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+
+
+
+
+
+
+
+
+{% block body %}
+<div class="container mx-auto px-6 py-8 max-w-4xl">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-extrabold text-[#111518] dark:text-white mb-2">Edit Game</h1>
+        <p class="text-[#617989] dark:text-gray-400">
+            Update game information
+        </p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="mb-4 p-4 rounded-lg {% if type == 'success' %}bg-green-100 text-green-800{% elseif type == 'error' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- Form Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+        {{ include('BackOffice/teacher/game/_form.html.twig', {'button_label': 'Update'}) }}
+    </div>
+
+    <!-- Delete Form -->
+   
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const key = 'scrollpos:teacher_game_edit';
+
+  // Restaurer la position après reload
+  const saved = sessionStorage.getItem(key);
+  if (saved !== null) {
+    window.scrollTo(0, parseInt(saved, 10));
+    sessionStorage.removeItem(key);
+  }
+
+  // Sauvegarder la position juste avant submit
+  const form = document.getElementById('game-form');
+  if (form) {
+    form.addEventListener('submit', () => {
+      sessionStorage.setItem(key, String(window.scrollY));
+    });
+  }
+});
+</script>
+
+
+{% endblock %}

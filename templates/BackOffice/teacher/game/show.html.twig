@@ -1,0 +1,132 @@
+
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#63b7f2",
+              "accent-yellow": "#F7C56E",
+              "accent-pink": "#F29BAE",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101b22",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .blob {
+        position: absolute;
+        filter: blur(60px);
+        z-index: -1;
+        opacity: 0.4;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+
+
+{% block body %}
+<div class="container mx-auto px-6 py-8 max-w-4xl">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{{ path('teacher_game_index') }}" class="inline-flex items-center gap-2 text-primary font-bold hover:underline">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Back to Games
+        </a>
+    </div>
+ 
+    <!-- Game Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-primary to-accent-pink p-8 text-white">
+            <div class="flex justify-between items-start mb-4">
+                <span class="px-4 py-2 bg-white/20 backdrop-blur-md rounded-full text-sm font-bold">
+                    {{ game.type|upper }}
+                </span>
+
+                {% if game.idLevel is not null %}
+                    <span class="px-4 py-2 bg-white/20 backdrop-blur-md rounded-full text-sm font-bold">
+                        {{ game.idLevel.name }}
+                    </span>
+                {% endif %}
+            </div>
+
+            <h1 class="text-4xl font-extrabold mb-2">{{ game.name }}</h1>
+            <p class="text-white/90">{{ game.description }}</p>
+        </div>
+
+        <!-- Game Details -->
+        <div class="p-8 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex items-start gap-4 p-4 bg-background-light dark:bg-gray-900 rounded-lg">
+                    <div class="bg-primary/10 p-3 rounded-full">
+                        <span class="material-symbols-outlined text-primary">category</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-[#111518] dark:text-white mb-1">Type</h3>
+                        <p class="text-[#617989] dark:text-gray-400">{{ game.type }}</p>
+                    </div>
+                </div>
+
+                {% if game.idLevel is not null %}
+                <div class="flex items-start gap-4 p-4 bg-background-light dark:bg-gray-900 rounded-lg">
+                    <div class="bg-accent-pink/10 p-3 rounded-full">
+                        <span class="material-symbols-outlined text-accent-pink">signal_cellular_alt</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-[#111518] dark:text-white mb-1">Level</h3>
+                        <p class="text-[#617989] dark:text-gray-400">{{ game.idLevel.name }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if game.image %}
+                <div class="flex items-start gap-4 p-4 bg-background-light dark:bg-gray-900 rounded-lg md:col-span-2">
+                    <div class="bg-primary/10 p-3 rounded-full">
+                        <span class="material-symbols-outlined text-primary">image</span>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-[#111518] dark:text-white mb-2">Image</h3>
+
+                        {# Si c'est une URL, ça s'affiche direct. Si c'est un nom de fichier, adapte avec asset() #}
+                        <div class="rounded-lg overflow-hidden border border-[#dbe1e6] dark:border-gray-700">
+                            <img src="{{ asset('uploads/games/' ~ game.image) }}" alt="{{ game.name }}">
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-wrap gap-4 pt-6 border-t border-[#dbe1e6] dark:border-gray-700">
+                <a href="{{ path('teacher_game_edit', {'id': game.id}) }}"
+                   class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform shadow-lg">
+                    <span class="material-symbols-outlined">edit</span>
+                    Edit Game
+                </a>
+                <div >
+        {{ include('BackOffice/teacher/game/_delete_form.html.twig') }}
+    </div>
+
+                <a href="{{ path('teacher_game_index') }}"
+                   class="flex items-center gap-2 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-[#111518] dark:text-white rounded-full font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

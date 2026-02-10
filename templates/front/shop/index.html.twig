@@ -1,0 +1,119 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Shop{% endblock %}
+
+{% block body %}
+    <h1 class="text-4xl font-extrabold mb-2">Boutique EduPlay</h1>
+    <p class="text-[#617989] mb-10">Kits et produits éducatifs pour les enfants.</p>
+
+    {# Statistiques #}
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-xl border border-[#dbe1e6] p-4">
+            <p class="text-xs font-bold text-[#617989] mb-1">Total produits</p>
+            <p class="text-xl font-extrabold text-primary">{{ stats.total }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-[#dbe1e6] p-4">
+            <p class="text-xs font-bold text-[#617989] mb-1">Prix min (DT)</p>
+            <p class="text-xl font-extrabold text-green-600">{{ stats.minPrice|number_format(2, ',', ' ') }} DT</p>
+        </div>
+        <div class="bg-white rounded-xl border border-[#dbe1e6] p-4">
+            <p class="text-xs font-bold text-[#617989] mb-1">Prix max (DT)</p>
+            <p class="text-xl font-extrabold text-accent-pink">{{ stats.maxPrice|number_format(2, ',', ' ') }} DT</p>
+        </div>
+        <div class="bg-white rounded-xl border border-[#dbe1e6] p-4">
+            <p class="text-xs font-bold text-[#617989] mb-1">Prix moyen (DT)</p>
+            <p class="text-xl font-extrabold text-accent-yellow">{{ stats.avgPrice|number_format(2, ',', ' ') }} DT</p>
+        </div>
+    </div>
+
+    {# Recherche + Filtres + Tri #}
+    <form method="get" action="{{ path('app_front_shop') }}" class="bg-white rounded-xl border border-[#dbe1e6] p-6 mb-8">
+        <div class="flex flex-wrap items-end gap-4 mb-4">
+            <div class="flex-1 min-w-[200px]">
+                <label for="search" class="block text-sm font-bold text-[#617989] mb-1">Recherche par nom</label>
+                <input type="text" name="search" id="search" value="{{ search }}" placeholder="Nom du produit..." class="w-full rounded-lg border border-gray-300 px-4 py-2"/>
+            </div>
+            <div>
+                <label for="price_min" class="block text-sm font-bold text-[#617989] mb-1">Prix min (DT)</label>
+                <input type="number" name="price_min" id="price_min" value="{{ price_min }}" placeholder="0" class="w-32 rounded-lg border border-gray-300 px-4 py-2"/>
+            </div>
+            <div>
+                <label for="price_max" class="block text-sm font-bold text-[#617989] mb-1">Prix max (DT)</label>
+                <input type="number" name="price_max" id="price_max" value="{{ price_max }}" placeholder="999" class="w-32 rounded-lg border border-gray-300 px-4 py-2"/>
+            </div>
+            <div>
+                <label for="sort" class="block text-sm font-bold text-[#617989] mb-1">Trier par</label>
+                <select name="sort" id="sort" class="rounded-lg border border-gray-300 px-4 py-2">
+                    <option value="id" {{ sortBy == 'id' ? 'selected' : '' }}>Id</option>
+                    <option value="name" {{ sortBy == 'name' ? 'selected' : '' }}>Nom</option>
+                    <option value="price" {{ sortBy == 'price' ? 'selected' : '' }}>Prix</option>
+                </select>
+            </div>
+            <div>
+                <label for="order" class="block text-sm font-bold text-[#617989] mb-1">Ordre</label>
+                <select name="order" id="order" class="rounded-lg border border-gray-300 px-4 py-2">
+                    <option value="ASC" {{ sortOrder == 'ASC' ? 'selected' : '' }}>Croissant</option>
+                    <option value="DESC" {{ sortOrder == 'DESC' ? 'selected' : '' }}>Décroissant</option>
+                </select>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button type="submit" class="px-5 py-2.5 bg-primary text-white font-bold rounded-full hover:opacity-90 transition-opacity">Filtrer</button>
+            <a href="{{ path('app_front_shop') }}" class="px-5 py-2.5 border border-[#dbe1e6] rounded-full font-bold hover:bg-background-light transition-colors">Réinitialiser</a>
+        </div>
+    </form>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for product in products %}
+                <article class="bg-white rounded-xl border border-[#dbe1e6] overflow-hidden hover:shadow-xl transition-shadow card">
+                {% if product.picture %}
+                    <div class="w-full h-48 bg-gray-100 overflow-hidden">
+                        <img src="/uploads/products/{{ product.picture }}" alt="{{ product.name }}" class="w-full h-full object-cover" />
+                    </div>
+                {% else %}
+                    <div class="w-full h-48 bg-gray-50 flex items-center justify-center text-sm text-gray-400">Aucune image</div>
+                {% endif %}
+                <div class="p-6">
+                    <h2 class="text-xl font-extrabold mb-2">{{ product.name }}</h2>
+                    <p class="text-primary font-bold text-lg mb-2">{{ product.price|number_format(2, ',', ' ') }} DT</p>
+                    <p class="text-[#617989] text-sm mb-4 line-clamp-2">{{ product.description }}</p>
+                    <a href="{{ path('app_front_shop_show', { id: product.id }) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold rounded-full text-sm hover:opacity-90 transition-opacity">
+                        Voir le produit
+                        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                    </a>
+                </div>
+            </article>
+        {% else %}
+            <p class="col-span-full text-center text-[#617989] py-12">Aucun produit disponible pour le moment.</p>
+        {% endfor %}
+    </div>
+
+    {# Recommandations intelligentes IA #}
+    {% if recommendations is not empty %}
+        <div class="mt-16">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="material-symbols-outlined text-primary text-3xl">auto_awesome</span>
+                <h2 class="text-2xl font-extrabold">Recommandations intelligentes pour vous</h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {% for product in recommendations %}
+                    <article class="bg-gradient-to-br from-primary/5 to-accent-pink/5 rounded-xl border-2 border-primary/20 overflow-hidden hover:shadow-xl transition-all hover:scale-105">
+                        <article class="bg-gradient-to-br from-primary/5 to-accent-pink/5 rounded-xl border-2 border-primary/20 overflow-hidden hover:shadow-xl transition-all hover:scale-105 card">
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-outlined text-primary text-sm">recommend</span>
+                                <span class="text-xs font-bold text-primary">Recommandé</span>
+                            </div>
+                            <h3 class="text-lg font-extrabold mb-2">{{ product.name }}</h3>
+                            <p class="text-primary font-bold mb-2">{{ product.price|number_format(2, ',', ' ') }} DT</p>
+                            <a href="{{ path('app_front_shop_show', { id: product.id }) }}" class="inline-flex items-center gap-1 px-4 py-2 bg-primary text-white font-bold rounded-full text-xs hover:opacity-90 transition-opacity">
+                                Voir
+                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends 'FrontOffice/parent/Partials/base_parent.html.twig' %}
+
+{% block title %}Mes commandes - EduPlay{% endblock %}
+
+{% block content %}
+            <style>
+                .modal {
+                    display: none;
+                    position: fixed;
+                    z-index: 1000;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5);
+                }
+                .modal.show {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .modal-content {
+                    background-color: white;
+                    padding: 2rem;
+                    border-radius: 0.75rem;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                    max-width: 450px;
+                    width: 90%;
+                }
+                .modal-header {
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                    color: #111518;
+                    margin-bottom: 0.5rem;
+                }
+                .modal-body {
+                    color: #617989;
+                    margin-bottom: 2rem;
+                }
+                .modal-footer {
+                    display: flex;
+                    gap: 1rem;
+                    justify-content: flex-end;
+                }
+                .btn {
+                    padding: 0.75rem 1.5rem;
+                    border: none;
+                    border-radius: 0.5rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+                .btn-danger {
+                    background-color: #ef4444;
+                    color: white;
+                }
+                .btn-danger:hover {
+                    background-color: #dc2626;
+                }
+                .btn-secondary {
+                    background-color: #e5e7eb;
+                    color: #374151;
+                }
+                .btn-secondary:hover {
+                    background-color: #d1d5db;
+                }
+            </style>
+
+            <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Mes commandes</h1>
+        <p class="text-gray-600 mt-1">Historique de vos commandes sur la boutique EduPlay.</p>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="mb-4 px-4 py-3 rounded-xl {{ label == 'success' ? 'bg-green-100 text-green-800' : (label == 'error' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800') }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {% if commandes is empty %}
+        <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <p class="text-gray-600 text-lg mb-6">Vous n'avez pas encore passé de commande.</p>
+            <a href="{{ path('app_front_shop') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition-colors">
+                Découvrir la boutique
+            </a>
+        </div>
+    {% else %}
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 font-bold text-gray-700">N°</th>
+                            <th class="px-6 py-4 font-bold text-gray-700">Date</th>
+                            <th class="px-6 py-4 font-bold text-gray-700">Produit</th>
+                            <th class="px-6 py-4 font-bold text-gray-700">Quantité</th>
+                            <th class="px-6 py-4 font-bold text-gray-700">Total</th>
+                            <th class="px-6 py-4 font-bold text-gray-700">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for commande in commandes %}
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="px-6 py-4 font-mono">#{{ commande.id }}</td>
+                                <td class="px-6 py-4">{{ commande.dateCommande ? commande.dateCommande|date('d/m/Y H:i') : '-' }}</td>
+                                <td class="px-6 py-4 font-medium">{{ commande.product ? commande.product.name : '-' }}</td>
+                                <td class="px-6 py-4">{{ commande.quantity }}</td>
+                                <td class="px-6 py-4 font-bold text-blue-600">{{ commande.totalAmount|number_format(2, ',', ' ') }} DT</td>
+                                <td class="px-6 py-4 flex gap-3">
+                                    <a href="{{ path('app_parent_commande_edit', {id: commande.id}) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-colors">
+                                        ✏️ Modifier
+                                    </a>
+                                    <button type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors delete-btn" data-commande-id="{{ commande.id }}" data-csrf="{{ csrf_token('delete' ~ commande.id) }}">
+                                        🗑️ Supprimer
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">⚠️ Confirmer la suppression</div>
+            <div class="modal-body">Êtes-vous sûr de vouloir supprimer cette commande ? Cette action est irréversible.</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedCommandeId = null;
+        let selectedCommandeToken = null;
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                selectedCommandeId = this.getAttribute('data-commande-id');
+                selectedCommandeToken = this.getAttribute('data-csrf');
+                document.getElementById('deleteModal').classList.add('show');
+            });
+        });
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            selectedCommandeId = null;
+        }
+
+        function confirmDelete() {
+            if (selectedCommandeId) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `{{ path('app_parent_commande_delete', {id: '__ID__'}) }}`.replace('__ID__', selectedCommandeId);
+                
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '_token';
+                tokenInput.value = selectedCommandeToken || '{{ csrf_token('delete') }}';
+                form.appendChild(tokenInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('deleteModal');
+            if (event.target === modal) {
+                closeDeleteModal();
+            }
+        });
+    </script>
+{% endblock %}

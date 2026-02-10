@@ -1,0 +1,82 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block body %}
+    <h1 class="text-3xl font-extrabold mb-8">Tableau de bord</h1>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="{{ path('app_back_product_index') }}" class="block p-8 bg-white rounded-xl border border-[#dbe1e6] hover:shadow-xl hover:border-primary/30 transition-all">
+            <div class="flex items-center gap-4">
+                <div class="size-14 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-3xl">inventory_2</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-extrabold">Produits</h2>
+                    <p class="text-3xl font-bold text-primary">{{ products_count }}</p>
+                </div>
+            </div>
+        </a>
+        <a href="{{ path('app_back_commande_index') }}" class="block p-8 bg-white rounded-xl border border-[#dbe1e6] hover:shadow-xl hover:border-primary/30 transition-all">
+            <div class="flex items-center gap-4">
+                <div class="size-14 bg-accent-pink/10 rounded-xl flex items-center justify-center text-accent-pink">
+                    <span class="material-symbols-outlined text-3xl">shopping_cart</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-extrabold">Commandes</h2>
+                    <p class="text-3xl font-bold text-accent-pink">{{ commandes_count }}</p>
+                </div>
+            </div>
+        </a>
+        <a href="{{ path('app_back_anomalies') }}" class="block p-8 bg-white rounded-xl border {{ anomalies_count > 0 ? 'border-red-300' : 'border-[#dbe1e6]' }} hover:shadow-xl hover:border-red-400 transition-all">
+            <div class="flex items-center gap-4">
+                <div class="size-14 {{ anomalies_count > 0 ? 'bg-red-100' : 'bg-gray-100' }} rounded-xl flex items-center justify-center {{ anomalies_count > 0 ? 'text-red-600' : 'text-gray-600' }}">
+                    <span class="material-symbols-outlined text-3xl">warning</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-extrabold">Anomalies</h2>
+                    <p class="text-3xl font-bold {{ anomalies_count > 0 ? 'text-red-600' : 'text-gray-600' }}">{{ anomalies_count }}</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        <div class="block p-8 bg-white rounded-xl border border-[#dbe1e6] hover:shadow-xl hover:border-primary/30 transition-all">
+            <div class="flex items-center gap-4">
+                <div class="size-14 bg-green-100 rounded-xl flex items-center justify-center text-green-700">
+                    <span class="material-symbols-outlined text-3xl">paid</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-extrabold">Chiffre d'affaires</h2>
+                    <p class="text-3xl font-bold text-green-700">{{ revenue_total|number_format(2, ',', ' ') }} DT</p>
+                    <p class="text-sm text-gray-500">Total toutes périodes</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="block p-8 bg-white rounded-xl border border-[#dbe1e6] hover:shadow-xl hover:border-primary/30 transition-all">
+            <div class="flex items-center gap-4">
+                <div class="size-14 bg-yellow-100 rounded-xl flex items-center justify-center text-yellow-700">
+                    <span class="material-symbols-outlined text-3xl">query_stats</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-extrabold">30 derniers jours</h2>
+                    <p class="text-2xl font-bold text-yellow-700">{{ commandes_30days }} commandes</p>
+                    <p class="text-sm text-gray-500">Montant: {{ revenue_30days|number_format(2, ',', ' ') }} DT</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="block p-8 bg-white rounded-xl border border-[#dbe1e6] hover:shadow-xl hover:border-primary/30 transition-all">
+            <div class="flex items-center gap-4">
+                <div class="size-14 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700">
+                    <span class="material-symbols-outlined text-3xl">people</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-extrabold">Utilisateurs</h2>
+                    <p class="text-3xl font-bold text-indigo-700">{{ products_count ? products_count : 0 }}</p>
+                    <p class="text-sm text-gray-500">(Produits affichés — placeholder)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

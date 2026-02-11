@@ -1,0 +1,42 @@
+<aside class="admin-sidebar w-72 bg-white border-r border-gray-200 flex flex-col h-screen shadow-sm">
+
+    {# Header - Fixed #}
+    <div class="p-8 border-b border-gray-200 flex-shrink-0">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+                <span class="material-symbols-outlined text-white text-3xl">family_home</span>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">EduPlay</h2>
+                <p class="text-xs text-gray-500 font-medium">Espace Parent</p>
+            </div>
+        </div>
+    </div>
+
+    {# Navigation - Scrollable #}
+    <nav class="sidebar-nav flex-1 overflow-y-auto p-6 space-y-3">
+        <a href="{{ path('app_parent_dashboard') }}" class="flex items-center gap-4 px-5 py-4 rounded-lg hover:bg-gray-50 transition-colors {{ app.request.get('_route') == 'app_parent_dashboard' ? 'active' : '' }}">
+            <span class="material-symbols-outlined text-gray-600">dashboard</span>
+            <span class="font-semibold text-gray-700">Dashboard</span>
+        </a>
+
+        <a href="{{ path('app_front_shop') }}" class="flex items-center gap-4 px-5 py-4 rounded-lg hover:bg-gray-50 transition-colors {{ app.request.get('_route') starts with 'app_front_shop' ? 'active' : '' }}">
+            <span class="material-symbols-outlined text-gray-600">shopping_cart</span>
+            <span class="font-semibold text-gray-700">Boutique</span>
+        </a>
+
+        <a href="{{ path('app_parent_commandes') }}" class="flex items-center gap-4 px-5 py-4 rounded-lg hover:bg-gray-50 transition-colors {{ app.request.get('_route') == 'app_parent_commandes' ? 'active' : '' }}">
+            <span class="material-symbols-outlined text-gray-600">receipt_long</span>
+            <span class="font-semibold text-gray-700">Mes commandes</span>
+        </a>
+    </nav>
+
+    {# Logout - Fixed #}
+    <div class="p-6 border-t border-gray-200 flex-shrink-0 bg-gray-50">
+        <a href="{{ path('app_logout') }}" class="flex items-center justify-center gap-3 w-full p-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold shadow-sm">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Déconnexion</span>
+        </a>
+    </div>
+
+</aside>

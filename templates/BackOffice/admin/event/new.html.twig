@@ -1,0 +1,27 @@
+{% extends 'BackOffice/admin/Partials/base_admin.html.twig' %}
+{% block title %}Nouvel événement{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-extrabold mb-6">Créer un événement</h1>
+
+<div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-xl p-6">
+    {{ form_start(form) }}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {{ form_row(form.title) }}
+        {{ form_row(form.location) }}
+        {{ form_row(form.startDate) }}
+        {{ form_row(form.endDate) }}
+        <div class="md:col-span-2">
+            {{ form_row(form.description) }}
+        </div>
+        <div class="md:col-span-2">
+            {{ form_row(form.imageFile) }}
+        </div>
+    </div>
+
+    <button class="mt-6 px-6 py-3 rounded-full bg-primary text-back font-extrabold hover:scale-105 transition-transform">
+        Enregistrer
+    </button>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

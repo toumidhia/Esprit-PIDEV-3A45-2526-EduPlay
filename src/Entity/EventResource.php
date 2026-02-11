@@ -2,11 +2,26 @@
 
 namespace App\Entity;
 
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use App\Repository\EventResourceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EventResourceRepository::class)]
+//#[Assert\Expression(
+  //  "this.getType() != 'LINK' or (this.getUrl() != null and this.getUrl() != '')",
+  //  message: "Pour une ressource de type LINK, l'URL est obligatoire."
+//)]
+//#[Assert\Expression(
+ //   "this.getType() != 'PDF' or (this.getFilePath() != null and this.getFilePath() != '')",
+   // message: "Pour une ressource de type PDF, le fichier est obligatoire."
+//)]
+//#[Assert\Expression(
+  //  "(['CHECKLIST','PLANNING'] contains this.getType()) == false or (this.getContext() != null and this.getContext() != '')",
+    //message: "Pour CHECKLIST/PLANNING, le champ contenu (texte) est obligatoire."
+//)]
+
 class EventResource
 {
     #[ORM\Id]
@@ -20,13 +35,13 @@ class EventResource
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $context = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $filePath = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $filePath = null; 
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $url = null;
 
     #[ORM\Column]
@@ -82,7 +97,7 @@ class EventResource
         return $this->filePath;
     }
 
-    public function setFilePath(string $filePath): static
+    public function setFilePath(?string $filePath): static
     {
         $this->filePath = $filePath;
 
@@ -94,7 +109,7 @@ class EventResource
         return $this->url;
     }
 
-    public function setUrl(string $url): static
+    public function setUrl(?string $url): static
     {
         $this->url = $url;
 
@@ -124,4 +139,38 @@ class EventResource
 
         return $this;
     }
+
+
+
+
+    //#[Assert\Callback]
+    public function validate(ExecutionContextInterface $context, mixed $payload): void
+    {
+        $type = $this->getType();
+
+        if ($type === 'LINK') {
+            if (!$this->getUrl()) {
+                $context->buildViolation("Pour une ressource de type LINK, l'URL est obligatoire.")
+                    ->atPath('url')
+                    ->addViolation();
+            }
+        }
+
+        if ($type === 'PDF') {
+            if (!$this->getFilePath()) {
+                $context->buildViolation("Pour une ressource de type PDF, le fichier est obligatoire.")
+                    ->atPath('filePath')
+                    ->addViolation();
+            }
+        }
+
+        if ($type === 'CHECKLIST' || $type === 'PLANNING') {
+            if (!$this->getContext()) {
+                $context->buildViolation("Pour CHECKLIST/PLANNING, le champ contenu est obligatoire.")
+                    ->atPath('context')
+                    ->addViolation();
+            }
+        }
+    }
+
 }

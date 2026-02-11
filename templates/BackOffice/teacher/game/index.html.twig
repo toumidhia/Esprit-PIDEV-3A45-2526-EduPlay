@@ -1,0 +1,262 @@
+{% extends 'BackOffice/teacher/Partials/base_admin.html.twig' %}
+{% block body %}
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#63b7f2",
+              "accent-yellow": "#F7C56E",
+              "accent-pink": "#F29BAE",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101b22",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .blob {
+        position: absolute;
+        filter: blur(60px);
+        z-index: -1;
+        opacity: 0.4;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+
+
+
+
+
+
+
+
+<div class="container mx-auto px-6 py-8">
+    <!-- Flash Messages -->
+    {% for type, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="flash-message mb-4 p-4 rounded-lg
+            {% if type == 'success' %}bg-green-100 text-green-800
+            {% elseif type == 'error' %}bg-red-100 text-red-800
+            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
+
+
+    <!-- Header -->
+    <div class="flex justify-between items-start mb-8">
+        <div>
+            <h1 class="text-4xl font-extrabold text-[#111518] dark:text-white">Game Management</h1>
+            <p class="text-[#617989] dark:text-gray-400 mt-2">
+                Manage your games
+            </p>
+        </div>
+
+        <a href="{{ path('teacher_game_new') }}" class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform shadow-lg">
+            <span class="material-symbols-outlined">add_circle</span>
+            Create New Game
+        </a>
+    </div>
+
+{% if statistics is defined and statistics %}
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+
+    <!-- Total -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-primary">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm uppercase font-bold">Total Games</p>
+                <p class="text-3xl font-extrabold">{{ statistics.total }}</p>
+            </div>
+            <span class="material-symbols-outlined text-primary text-4xl">sports_esports</span>
+        </div>
+    </div>
+
+    
+
+    
+    <!-- Types -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-yellow-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm uppercase font-bold">Game Types</p>
+                <p class="text-3xl font-extrabold">{{ statistics.type }}</p>
+            </div>
+            <span class="material-symbols-outlined text-yellow-500 text-4xl">category</span>
+        </div>
+   
+    
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-blue-500">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-sm uppercase font-bold">Top Level</p>
+      <p class="text-3xl font-extrabold">{{ statistics.topLevel }}</p>
+    </div>
+    <span class="material-symbols-outlined text-blue-500 text-4xl">
+      leaderboard
+    </span>
+  </div>
+</div>
+
+     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-red-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-[#617989] dark:text-gray-400 uppercase font-bold">Top Type</p>
+                <p class="text-lg font-extrabold text-[#111518] dark:text-white">
+                    {{ statistics.top_type }} 
+                </p>
+            </div>
+            <span class="material-symbols-outlined text-red-500 text-4xl">star</span>
+        </div>
+    </div>
+
+</div>
+{% endif %}
+    <!-- Advanced Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <form method="get" action="{{ path('teacher_game_index') }}" class="space-y-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-[#111518] dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined">filter_list</span>
+                    Filters & Search
+                </h3>
+                <a href="#" id="clearFiltersBtn" class="text-sm text-primary font-bold hover:underline">
+                    Clear All Filters
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Search -->
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">search</span>
+                        Search
+                    </label>
+                    <input type="text" name="search" value="{{ filters.search ?? '' }}"
+                           placeholder="Search by name or description..."
+                           class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                </div>
+
+                <!-- Type Filter -->
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">category</span>
+                        Type
+                    </label>
+                    <input type="text" name="type" value="{{ filters.type ?? '' }}"
+                           placeholder="Puzzle, Quiz, ..."
+                           class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                </div>
+
+                <!-- Level Filter -->
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">signal_cellular_alt</span>
+                        Level
+                    </label>
+                    <select name="level" class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                        <option value="">All Levels</option>
+                        {# si tu passes levels[] depuis le controller #}
+                        {% if levels is defined %}
+                            {% for lvl in levels %}
+                                <option value="{{ lvl.id }}" {% if (filters.level ?? '') == (lvl.id ~ '') %}selected{% endif %}>
+                                    {{ lvl.name }}
+                                </option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+
+                <!-- Sort By -->
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">sort</span>
+                        Sort By
+                    </label>
+                    <select name="sort" class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                        <option value="id" {% if (sortBy ?? 'id') == 'id' %}selected{% endif %}>Newest First</option>
+                        <option value="name" {% if (sortBy ?? '') == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="type" {% if (sortBy ?? '') == 'type' %}selected{% endif %}>Type</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit" class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform">
+                    <span class="material-symbols-outlined">search</span>
+                    Apply Filters
+                </button>
+                <select name="order" class="px-4 py-2 rounded-full border-2 border-primary/20 bg-white dark:bg-gray-800 font-bold">
+                    <option value="DESC" {% if (sortOrder ?? 'DESC') == 'DESC' %}selected{% endif %}>Descending</option>
+                    <option value="ASC" {% if (sortOrder ?? '') == 'ASC' %}selected{% endif %}>Ascending</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Games Grid -->
+    <div id="games-results" >
+    {{ include('BackOffice/teacher/game/_grid.html.twig', { games: games }) }}
+</div>
+
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form[action="{{ path('teacher_game_index') }}"]');
+    const results = document.getElementById('games-results');
+    const clearBtn = document.getElementById('clearFiltersBtn');
+
+    if (!form || !results) return;
+
+    async function loadGames(url) {
+        const response = await fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (!response.ok) return;
+
+        const html = await response.text();
+        results.innerHTML = html;
+
+        // optionnel: met à jour l'URL sans refresh
+        window.history.replaceState({}, '', url);
+    }
+
+    // APPLY FILTERS (submit)
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const params = new URLSearchParams(new FormData(form));
+        const url = form.action + '?' + params.toString();
+        loadGames(url);
+    });
+
+    // CLEAR FILTERS (click)
+    if (clearBtn) {
+        clearBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            form.reset(); // vide les champs
+            const url = form.action; // /teacher/game
+            loadGames(url);
+        });
+    }
+});
+</script>
+
+{% endblock %}
+

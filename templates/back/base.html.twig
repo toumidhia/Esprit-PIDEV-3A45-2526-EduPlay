@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}Admin{% endblock %} - EduPlay BackOffice</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#63b7f2",
+              "accent-yellow": "#F7C56E",
+              "accent-pink": "#F29BAE",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101b22",
+            },
+            fontFamily: { "display": ["Plus Jakarta Sans"] },
+            borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "full": "9999px" },
+          },
+        },
+      }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .form-error-message, .invalid-feedback { color: #b91c1c; font-size: 0.875rem; margin-top: 0.25rem; }
+        .form-input:invalid, .form-select:invalid { border-color: #b91c1c; }
+    </style>
+        <style>
+            /* Refined Instagram-like palette for admin */
+            :root{
+                --bg: #ffffff;
+                --surface: #ffffff;
+                --card: #ffffff;
+                --text: #111111;
+                --muted: #8e8e8e;
+                --border: #dbdbdb;
+                --primary: #0095f6;
+                --accent: #ff2d55;
+            }
+            .dark {
+                --bg: #000000;
+                --surface: #0b0b0b;
+                --card: #111111;
+                --text: #e6e6e6;
+                --muted: #9a9a9a;
+                --border: #222222;
+                --primary: #0095f6;
+                --accent: #ff2d55;
+            }
+            html, body { transition: background-color 200ms ease, color 200ms ease; }
+            body { background: var(--bg); color: var(--text); }
+            header, footer, aside, .bg-white { background-color: var(--card) !important; }
+            header, footer, .border-b, .border-t, .border-r, .border { border-color: var(--border) !important; }
+            .text-[#111518] { color: var(--text) !important; }
+            .bg-primary { background-color: var(--primary) !important; }
+            #dark-toggle-admin { position: absolute; right: 1rem; top: 1rem; background: transparent; border: none; cursor: pointer; }
+            /* UI helper classes for admin */
+            .card { border-radius: 1rem; border: 1px solid var(--border); background: var(--card); box-shadow: 0 8px 28px rgba(17,21,24,0.06); overflow: hidden; }
+            .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.9rem; border-radius: 9999px; font-weight: 600; }
+            .btn-primary { background: var(--primary); color: white; box-shadow: 0 6px 20px rgba(0,149,246,0.12); }
+            .table-clean th, .table-clean td { padding: 0.75rem 1rem; }
+            .table-clean tbody tr:hover { background: rgba(99,183,242,0.03); }
+        </style>
+</head>
+<body class="bg-background-light font-display text-[#111518] min-h-screen">
+<div class="flex min-h-screen">
+    {# Sidebar #}
+    <aside class="w-64 bg-white border-r border-[#dbe1e6] flex flex-col">
+        <div class="p-6 flex items-center gap-3 border-b border-[#dbe1e6]">
+            <div class="size-10 bg-primary rounded-full flex items-center justify-center text-white">
+                <span class="material-symbols-outlined text-2xl">rocket_launch</span>
+            </div>
+            <span class="text-xl font-extrabold">EduPlay Admin</span>
+        </div>
+        <nav class="p-4 flex-1 flex flex-col gap-1">
+            <a href="{{ path('app_back_dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#617989] hover:bg-primary/10 hover:text-primary transition-colors font-medium">
+                <span class="material-symbols-outlined">dashboard</span>
+                Tableau de bord
+            </a>
+            <a href="{{ path('app_back_product_index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#617989] hover:bg-primary/10 hover:text-primary transition-colors font-medium">
+                <span class="material-symbols-outlined">inventory_2</span>
+                Produits
+            </a>
+            <a href="{{ path('app_back_commande_index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#617989] hover:bg-primary/10 hover:text-primary transition-colors font-medium">
+                <span class="material-symbols-outlined">shopping_cart</span>
+                Commandes
+            </a>
+            <a href="{{ path('app_back_anomalies') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#617989] hover:bg-red-50 hover:text-red-600 transition-colors font-medium">
+                <span class="material-symbols-outlined">warning</span>
+                Anomalies
+            </a>
+        </nav>
+        <div class="p-4 border-t border-[#dbe1e6]">
+            <a href="{{ path('app_home') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#617989] hover:bg-primary/10 hover:text-primary transition-colors font-medium text-sm">
+                <span class="material-symbols-outlined">home</span>
+                Retour au site
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-auto">
+        <div class="p-8 max-w-6xl mx-auto relative">
+            <button id="dark-toggle-admin" title="Basculer mode sombre" class="text-[#617989]">
+                <span id="dark-icon-admin" class="material-symbols-outlined">dark_mode</span>
+            </button>
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="mb-4 px-4 py-3 rounded-xl {{ label == 'success' ? 'bg-green-100 text-green-800' : (label == 'error' ? 'bg-red-100 text-red-800' : 'bg-primary/10 text-primary') }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            {% block body %}{% endblock %}
+        </div>
+    </main>
+</div>
+    <!-- Confirmation modal for destructive actions -->
+    <div id="confirmModal" class="fixed inset-0 hidden flex items-center justify-center bg-black/50 z-50">
+        <div class="bg-white dark:bg-[#0f1724] rounded-xl p-6 w-full max-w-lg mx-4">
+            <h3 id="confirmModalTitle" class="text-lg font-bold text-[#111111] dark:text-[#e6e6e6]">Confirmer la suppression</h3>
+            <p id="confirmModalMessage" class="mt-3 text-sm text-[#617989] dark:text-[#9a9a9a]">Voulez-vous vraiment supprimer cet élément ? Cette action est irréversible.</p>
+            <div class="mt-6 flex justify-end gap-3">
+                <button id="confirmModalCancel" class="px-4 py-2 rounded-lg border border-[#dbe1e6] bg-transparent">Annuler</button>
+                <button id="confirmModalOk" class="px-4 py-2 rounded-lg bg-red-600 text-white">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            const root = document.documentElement;
+            const toggle = document.getElementById('dark-toggle-admin');
+            const icon = document.getElementById('dark-icon-admin');
+            const saved = localStorage.getItem('eduplay_theme');
+
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    root.classList.add('dark');
+                    if (icon) icon.textContent = 'light_mode';
+                } else {
+                    root.classList.remove('dark');
+                    if (icon) icon.textContent = 'dark_mode';
+                }
+            }
+
+            if (saved === 'dark' || saved === 'light') {
+                applyTheme(saved);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                applyTheme('dark');
+            }
+
+            if (toggle) toggle.addEventListener('click', function(){
+                const isDark = root.classList.toggle('dark');
+                localStorage.setItem('eduplay_theme', isDark ? 'dark' : 'light');
+                if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+            });
+        })();
+    </script>
+
+    <script>
+        (function(){
+            let activeForm = null;
+            const modal = document.getElementById('confirmModal');
+            const msgEl = document.getElementById('confirmModalMessage');
+            const okBtn = document.getElementById('confirmModalOk');
+            const cancelBtn = document.getElementById('confirmModalCancel');
+
+            function openModal(message, form){
+                activeForm = form;
+                if (msgEl) msgEl.textContent = message;
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeModal(){
+                activeForm = null;
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+
+            document.addEventListener('click', function(e){
+                const btn = e.target.closest('.js-delete-form button[type="submit"]');
+                if (!btn) return;
+                const form = btn.closest('form');
+                if (!form || !form.classList.contains('js-delete-form')) return;
+                e.preventDefault();
+                const message = form.dataset.message || 'Confirmer la suppression ?';
+                openModal(message, form);
+            });
+
+            if (cancelBtn) cancelBtn.addEventListener('click', function(e){ e.preventDefault(); closeModal(); });
+            if (modal) modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+            if (okBtn) okBtn.addEventListener('click', function(e){
+                e.preventDefault();
+                if (!activeForm) return closeModal();
+                // submit the form
+                activeForm.submit();
+                closeModal();
+            });
+        })();
+    </script>
+</body>
+</html>

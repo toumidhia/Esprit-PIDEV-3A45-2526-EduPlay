@@ -1,0 +1,218 @@
+{% extends 'back/base.html.twig' %}
+
+{% block title %}Produits{% endblock %}
+
+{% block body %}
+    <style>
+        /* Action Button Styles */
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            min-width: 70px;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-view {
+            background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+            color: white;
+        }
+        
+        .btn-view:hover {
+            background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
+        }
+        
+        .btn-icon {
+            margin-right: 4px;
+            font-size: 14px;
+        }
+        
+        /* Hover effect */
+        .btn-action {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-action::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+        }
+        
+        .btn-action:hover::after {
+            animation: shimmer 0.6s;
+        }
+        
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+    </style>
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <h1 class="text-3xl font-extrabold">Produits</h1>
+        <div class="flex flex-wrap items-center gap-3">
+            <a href="{{ path('app_back_product_export_pdf', app.request.query.all) }}" class="inline-flex items-center gap-2 px-5 py-2.5 border border-[#dbe1e6] rounded-full font-bold hover:bg-background-light transition-colors text-sm">
+                <span class="material-symbols-outlined text-lg">picture_as_pdf</span>
+                Export PDF
+            </a>
+            <a href="{{ path('app_back_product_new') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-full hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined">add</span>
+                Nouveau produit
+            </a>
+        </div>
+    </div>
+
+    {# Statistiques POUR PRODUITS - CORRECTED #}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white rounded-xl border border-[#dbe1e6] p-6">
+            <p class="text-sm font-bold text-[#617989] mb-1">Total produits</p>
+            <p class="text-2xl font-extrabold text-primary">{{ stats.total }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-[#dbe1e6] p-6">
+            <p class="text-sm font-bold text-[#617989] mb-1">Disponibles</p>
+            <p class="text-2xl font-extrabold text-green-600">{{ stats.available }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-[#dbe1e6] p-6">
+            <p class="text-sm font-bold text-[#617989] mb-1">Indisponibles</p>
+            <p class="text-2xl font-extrabold text-gray-600">{{ stats.unavailable }}</p>
+        </div>
+    </div>
+
+    {# Recherche + Filtres #}
+    <form method="get" action="{{ path('app_back_product_index') }}" class="bg-white rounded-xl border border-[#dbe1e6] p-6 mb-6">
+        <div class="flex flex-wrap items-end gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <label for="search" class="block text-sm font-bold text-[#617989] mb-1">Recherche (nom, description)</label>
+                <input type="text" name="search" id="search" value="{{ search }}" placeholder="Rechercher..." class="w-full rounded-lg border border-gray-300 px-4 py-2"/>
+            </div>
+            <div>
+                <label for="availability" class="block text-sm font-bold text-[#617989] mb-1">Disponibilité</label>
+                <select name="availability" id="availability" class="rounded-lg border border-gray-300 px-4 py-2">
+                    <option value="">Tous</option>
+                    <option value="1" {{ availability_filter === true ? 'selected' : '' }}>Disponibles</option>
+                    <option value="0" {{ availability_filter === false ? 'selected' : '' }}>Indisponibles</option>
+                </select>
+            </div>
+            <input type="hidden" name="sort" value="{{ sortBy }}"/>
+            <input type="hidden" name="order" value="{{ sortOrder }}"/>
+            <button type="submit" class="px-5 py-2.5 bg-primary text-white font-bold rounded-full hover:opacity-90 transition-opacity">Filtrer</button>
+            <a href="{{ path('app_back_product_index') }}" class="px-5 py-2.5 border border-[#dbe1e6] rounded-full font-bold hover:bg-background-light transition-colors">Réinitialiser</a>
+        </div>
+    </form>
+
+    <div class="bg-white rounded-xl border border-[#dbe1e6] overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="table-clean w-full text-left">
+                <thead class="bg-background-light border-b border-[#dbe1e6]">
+                    <tr>
+                        <th class="px-6 py-4 font-bold">
+                            <a href="{{ path('app_back_product_index', { search: search ?? '', availability: availability_filter is not null ? (availability_filter ? '1' : '0') : '', sort: 'id', order: (sortBy == 'id' and sortOrder == 'DESC') ? 'ASC' : 'DESC' }) }}" class="hover:text-primary">Id {{ sortBy == 'id' ? (sortOrder == 'ASC' ? '↑' : '↓') : '' }}</a>
+                        </th>
+                        <th class="px-6 py-4 font-bold">Image</th>
+                        <th class="px-6 py-4 font-bold">
+                            <a href="{{ path('app_back_product_index', { search: search ?? '', availability: availability_filter is not null ? (availability_filter ? '1' : '0') : '', sort: 'name', order: (sortBy == 'name' and sortOrder == 'DESC') ? 'ASC' : 'DESC' }) }}" class="hover:text-primary">Nom {{ sortBy == 'name' ? (sortOrder == 'ASC' ? '↑' : '↓') : '' }}</a>
+                        </th>
+                        <th class="px-6 py-4 font-bold">
+                            <a href="{{ path('app_back_product_index', { search: search ?? '', availability: availability_filter is not null ? (availability_filter ? '1' : '0') : '', sort: 'price', order: (sortBy == 'price' and sortOrder == 'DESC') ? 'ASC' : 'DESC' }) }}" class="hover:text-primary">Prix (DT) {{ sortBy == 'price' ? (sortOrder == 'ASC' ? '↑' : '↓') : '' }}</a>
+                        </th>
+                        <th class="px-6 py-4 font-bold">Description</th>
+                        <th class="px-6 py-4 font-bold">
+                            <a href="{{ path('app_back_product_index', { search: search ?? '', availability: availability_filter is not null ? (availability_filter ? '1' : '0') : '', sort: 'availability', order: (sortBy == 'availability' and sortOrder == 'DESC') ? 'ASC' : 'DESC' }) }}" class="hover:text-primary">Disponible {{ sortBy == 'availability' ? (sortOrder == 'ASC' ? '↑' : '↓') : '' }}</a>
+                        </th>
+                        <th class="px-6 py-4 font-bold">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                        <tr class="border-b border-[#dbe1e6] hover:bg-background-light/50">
+                            <td class="px-6 py-4">{{ product.id }}</td>
+                            <td class="px-6 py-4">
+                                {% if product.picture %}
+                                    <img src="/uploads/products/{{ product.picture }}" alt="{{ product.name }}" class="w-16 h-12 object-cover rounded" />
+                                {% else %}
+                                    <div class="w-16 h-12 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-500">No image</div>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 font-medium">{{ product.name }}</td>
+                            <td class="px-6 py-4">{{ product.price|number_format(2, ',', ' ') }} DT</td>
+                            <td class="px-6 py-4 max-w-xs truncate">{{ product.description }}</td>
+                            <td class="px-6 py-4">
+                                {% if product.isAvailability %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">Oui</span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-700">Non</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="action-buttons">
+                                    <a href="{{ path('app_back_product_show', { id: product.id }) }}" class="btn-action btn-view">
+                                        <span class="material-symbols-outlined btn-icon">visibility</span>
+                                        Voir
+                                    </a>
+                                    <a href="{{ path('app_back_product_edit', { id: product.id }) }}" class="btn-action btn-edit">
+                                        <span class="material-symbols-outlined btn-icon">edit</span>
+                                        Modifier
+                                    </a>
+                                    <form method="post" action="{{ path('app_back_product_delete', { id: product.id }) }}" class="inline js-delete-form" data-message="Supprimer le produit '{{ product.name }}' ?">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}"/>
+                                        <button type="submit" class="btn-action btn-delete">
+                                            <span class="material-symbols-outlined btn-icon">delete</span>
+                                            Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-[#617989]">Aucun produit.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

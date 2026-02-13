@@ -32,11 +32,11 @@ class CreateAdminCommand extends Command
         $admin = new User();
         $admin->setFirstName('Super');
         $admin->setLastName('Admin');
-        $admin->setEmail('admin@eduplay.com');
+        $admin->setEmail('admin@gmail.com');
         $admin->setType('admin');
         
         // Hasher le mot de passe
-        $hashedPassword = $this->passwordHasher->hashPassword($admin, 'admin123');
+        $hashedPassword = $this->passwordHasher->hashPassword($admin, '123456');
         $admin->setPassword($hashedPassword);
 
         // Sauvegarder
@@ -46,7 +46,7 @@ class CreateAdminCommand extends Command
         $io->success('Admin créé avec succès !');
         $io->table(
             ['Email', 'Mot de passe'],
-            [['admin@eduplay.com', 'admin123']]
+            [['admin@gmail.com', '123456']]
         );
 
         return Command::SUCCESS;

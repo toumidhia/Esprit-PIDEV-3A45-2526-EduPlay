@@ -1,0 +1,248 @@
+{% extends 'FrontOffice/base.html.twig' %}
+
+{% block title %}{{ course.title }} - EduPlay{% endblock %}
+
+{% block body %}
+{# Back Button #}
+<div class="mb-6">
+    <a href="{{ path('app_course_index') }}" class="inline-flex items-center text-primary hover:text-blue-400 font-semibold transition">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Retour aux cours
+    </a>
+</div>
+
+{# Course Header #}
+<div class="bg-gradient-to-r from-primary to-blue-400 rounded-3xl shadow-2xl p-8 md:p-12 mb-8 text-white">
+    <div class="max-w-4xl">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ course.title }}</h1>
+        
+        <div class="flex flex-wrap gap-3 mb-6">
+            {% if course.level == 'Beginner' %}
+                <span class="bg-green-400 text-white text-sm font-semibold px-4 py-2 rounded-full">
+                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    Débutant
+                </span>
+            {% elseif course.level == 'Intermediate' %}
+                <span class="bg-yellow-400 text-white text-sm font-semibold px-4 py-2 rounded-full">
+                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                    </svg>
+                    Intermédiaire
+                </span>
+            {% else %}
+                <span class="bg-red-400 text-white text-sm font-semibold px-4 py-2 rounded-full">
+                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clip-rule="evenodd"/>
+                    </svg>
+                    Avancé
+                </span>
+            {% endif %}
+            
+            <span class="bg-white bg-opacity-30 text-white text-sm font-semibold px-4 py-2 rounded-full">
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {{ course.durationTraining }} semaines
+            </span>
+        </div>
+
+        <div class="flex items-center space-x-2 text-white text-opacity-90">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            <span class="text-lg font-semibold">Enseignant: {{ course.teacherId.fullName }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    {# Main Content #}
+    <div class="lg:col-span-2 space-y-6">
+        {# Description Section #}
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Description du cours
+            </h2>
+            <p class="text-gray-700 text-lg leading-relaxed whitespace-pre-line">{{ course.description }}</p>
+        </div>
+
+        {# Seances Section (if any) #}
+        {% if course.seances|length > 0 %}
+            <div class="bg-white rounded-2xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    Séances programmées ({{ course.seances|length }})
+                </h2>
+                <div class="space-y-3">
+                    {% for seance in course.seances %}
+                        <div class="border-l-4 border-primary bg-gray-50 p-4 rounded-lg">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-gray-800 text-lg">{{ seance.title }}</h3>
+                                    <div class="flex items-center space-x-4 text-sm text-gray-600 mt-2">
+                                        <span class="flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            {{ seance.date|date('d/m/Y') }}
+                                        </span>
+                                        <span class="flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            {{ seance.startTime|date('H:i') }} - {{ seance.endTime|date('H:i') }}
+                                        </span>
+                                        <span class="flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                            {{ seance.location }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    {% if seance.status == 'scheduled' %}
+                                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">Planifiée</span>
+                                    {% elseif seance.status == 'ongoing' %}
+                                        <span class="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">En cours</span>
+                                    {% elseif seance.status == 'completed' %}
+                                        <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-3 py-1 rounded-full">Terminée</span>
+                                    {% else %}
+                                        <span class="bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full">Annulée</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {# Sidebar #}
+    <div class="space-y-6">
+        {# PDF Download #}
+        {% if course.pdfFile %}
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    Support de cours
+                </h3>
+                <a href="{{ asset('uploads/courses/' ~ course.pdfFile) }}" target="_blank" 
+                   class="block w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-4 px-6 rounded-xl transition shadow-lg text-center">
+                    <svg class="w-6 h-6 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Télécharger PDF
+                </a>
+            </div>
+        {% endif %}
+
+        {# Subscription Section for Parents #}
+        {% if app.user.isParent and kids|length > 0 %}
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    Inscrire mes enfants
+                </h3>
+                <div class="space-y-3">
+                    {% for kid in kids %}
+                        {% set isSubscribed = false %}
+                        {% for subscription in course.subscriptions %}
+                            {% if subscription.kid.id == kid.id and subscription.active %}
+                                {% set isSubscribed = true %}
+                            {% endif %}
+                        {% endfor %}
+
+                        <div class="bg-gray-50 p-4 rounded-xl">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="bg-accent-pink text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
+                                        {{ kid.firstName|slice(0, 1) }}
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-gray-800">{{ kid.fullName }}</p>
+                                        {% if kid.age %}
+                                            <p class="text-sm text-gray-500">{{ kid.age }} ans</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if isSubscribed %}
+                                    <svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                {% endif %}
+                            </div>
+
+                            {% if isSubscribed %}
+                                <form method="post" action="{{ path('app_subscription_unsubscribe', {'courseId': course.id, 'kidId': kid.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('unsubscribe' ~ course.id ~ kid.id) }}">
+                                    <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg transition shadow-md">
+                                        Désinscrire
+                                    </button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{{ path('app_subscription_subscribe', {'courseId': course.id, 'kidId': kid.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('subscribe' ~ course.id ~ kid.id) }}">
+                                    <button type="submit" class="w-full bg-primary hover:bg-blue-400 text-white font-bold py-3 rounded-lg transition shadow-md">
+                                        Inscrire
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {# Course Info Card #}
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Informations</h3>
+            <div class="space-y-3 text-gray-700">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 mr-3 text-primary mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <div>
+                        <p class="font-semibold text-gray-800">Durée de formation</p>
+                        <p>{{ course.durationTraining }} semaines</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 mr-3 text-primary mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <div>
+                        <p class="font-semibold text-gray-800">Statut</p>
+                        <p class="text-green-600 font-semibold">Accepté</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 mr-3 text-primary mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <div>
+                        <p class="font-semibold text-gray-800">Date de création</p>
+                        <p>{{ course.createdAt|date('d/m/Y') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

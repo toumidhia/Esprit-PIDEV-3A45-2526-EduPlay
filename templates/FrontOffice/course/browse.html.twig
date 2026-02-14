@@ -1,0 +1,776 @@
+{# templates/FrontOffice/course/browse.html.twig #}
+{% extends 'FrontOffice/base.html.twig' %}
+
+{% block title %}Parcourir les Cours - EduOnly{% endblock %}
+
+{% block body %}
+    {# Define isKidView variable - use isEnfant() method #}
+    {% set isKidView = isKidView is defined ? isKidView : (app.user and app.user.isEnfant ? true : false) %}
+
+    {# OR you can also use the type property directly #}
+    {% set isKidView = isKidView is defined ? isKidView : (app.user and app.user.type == 'kid' ? true : false) %}
+
+    {# Header Section #}
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+            {% if isKidView %}
+                Mes Cours
+            {% else %}
+                Parcourir les Cours
+            {% endif %}
+        </h1>
+        <p class="text-gray-600">
+            {% if isKidView %}
+                Découvre tous tes cours inscrits
+            {% else %}
+                Découvrez tous nos cours et inscrivez vos enfants
+            {% endif %}
+        </p>
+    </div>
+
+    {# ============================================ #}
+    {# AI-POWERED RECOMMENDATIONS SECTION FOR KIDS  #}
+    {# ============================================ #}
+    {% if isKidView and recommendations is defined and recommendations is not empty %}
+        <div class="mb-10">
+            <div class="bg-gradient-to-r from-purple-50 via-pink-50 to-yellow-50 rounded-2xl p-6 shadow-md border border-purple-200">
+                <div class="flex items-center mb-4">
+                    <div class="bg-gradient-to-r from-purple-600 to-pink-500 rounded-full p-2 mr-3 shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800">✨ Découvre ces cours !</h2>
+                    <span class="ml-3 bg-purple-600 text-white text-xs font-semibold px-2 py-1 rounded-full animate-pulse">IA</span>
+                </div>
+                <p class="text-gray-700 mb-6 text-lg">
+                    Basés sur tes cours et les enfants comme toi 🚀
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for rec in recommendations %}
+                        <div class="bg-white rounded-xl p-4 hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-300 transform hover:-translate-y-1">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-gray-800 text-lg line-clamp-1">{{ rec.course.title }}</h3>
+                                <div class="flex items-center">
+                                    <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                        {{ (rec.score * 100)|round }}% match
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap gap-1 mb-3">
+                                <span class="inline-block bg-{{
+                                rec.course.level == 'Beginner' ? 'green' :
+                                (rec.course.level == 'Intermediate' ? 'yellow' : 'red')
+                                }}-100 text-{{
+                                rec.course.level == 'Beginner' ? 'green' :
+                                (rec.course.level == 'Intermediate' ? 'yellow' : 'red')
+                                }}-800 text-xs px-2 py-1 rounded-full">
+                                    {{ rec.course.level == 'Beginner' ? 'Débutant' :
+                                    (rec.course.level == 'Intermediate' ? 'Intermédiaire' : 'Avancé') }}
+                                </span>
+                                <span class="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
+                                    📅 {{ rec.course.durationTraining }} sem.
+                                </span>
+                                {% set enrollmentCount = 0 %}
+                                {% for subscription in rec.course.subscriptions %}
+                                    {% if subscription.active %}
+                                        {% set enrollmentCount = enrollmentCount + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if enrollmentCount > 0 %}
+                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                        👥 {{ enrollmentCount }} inscrits
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="flex items-center text-xs text-gray-500 mb-2">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                {{ rec.course.teacherId.fullName }}
+                            </div>
+
+                            {% if rec.reasons|length > 0 %}
+                                <ul class="text-xs text-gray-600 mb-3 space-y-1 bg-gray-50 p-2 rounded-lg">
+                                    {% for reason in rec.reasons|slice(0, 2) %}
+                                        <li class="flex items-start">
+                                            <svg class="w-3 h-3 text-green-500 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            {{ reason }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+
+                            <a href="{{ path('app_course_detail', {id: rec.course.id}) }}"
+                               class="mt-2 block w-full text-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-semibold py-2 px-3 rounded-lg transition shadow-md">
+                                🔍 Découvrir ce cours
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-6 text-center bg-white bg-opacity-50 p-3 rounded-lg">
+                    <p class="text-sm text-gray-700">
+                        💡 <span class="font-semibold">Astuce :</span> Demande à tes parents de t'inscrire à ces cours ! Ils sont faits pour toi.
+                    </p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {# ============================================ #}
+    {# AI-POWERED RECOMMENDATIONS SECTION FOR PARENTS #}
+    {# ============================================ #}
+    {% if not isKidView and recommendations is defined and recommendations is not empty %}
+        <div class="mb-10">
+            <div class="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-2xl p-6 shadow-md border border-purple-100">
+                <div class="flex items-center mb-4">
+                    <div class="bg-purple-600 rounded-full p-2 mr-3">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800">Recommandations Personnalisées</h2>
+                    <span class="ml-3 bg-purple-600 text-white text-xs font-semibold px-2 py-1 rounded-full">IA</span>
+                </div>
+                <p class="text-gray-700 mb-6">Basées sur l'âge, le niveau et les préférences de vos enfants</p>
+
+                {% for kidRec in recommendations %}
+                    <div class="mb-8 last:mb-0 bg-white rounded-xl p-5 shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full w-10 h-10 flex items-center justify-center mr-3 shadow-md">
+                                <span class="font-bold text-white">{{ kidRec.kid.firstName|first }}{{ kidRec.kid.lastName|first }}</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800">
+                                    {{ kidRec.kid.firstName }} {{ kidRec.kid.lastName }}
+                                </h3>
+                                <p class="text-sm text-gray-600">
+                                    🎂 {{ kidRec.kid.age }} ans · 📚 {{ kidRec.kid.niveau|default('Niveau non défini') }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {% if kidRec.recommendations|length > 0 %}
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {% for rec in kidRec.recommendations %}
+                                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-purple-300">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <h4 class="font-bold text-gray-800 line-clamp-1">{{ rec.course.title }}</h4>
+                                            <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                                {{ (rec.score * 100)|round }}%
+                                            </span>
+                                        </div>
+
+                                        <div class="flex flex-wrap gap-1 mb-3">
+                                            <span class="inline-block bg-{{
+                                            rec.course.level == 'Beginner' ? 'green' :
+                                            (rec.course.level == 'Intermediate' ? 'yellow' : 'red')
+                                            }}-100 text-{{
+                                            rec.course.level == 'Beginner' ? 'green' :
+                                            (rec.course.level == 'Intermediate' ? 'yellow' : 'red')
+                                            }}-800 text-xs px-2 py-1 rounded">
+                                                {{ rec.course.level == 'Beginner' ? 'Débutant' :
+                                                (rec.course.level == 'Intermediate' ? 'Intermédiaire' : 'Avancé') }}
+                                            </span>
+                                            <span class="inline-block bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">
+                                                📆 {{ rec.course.durationTraining }} sem.
+                                            </span>
+                                            {% set enrollmentCount = 0 %}
+                                            {% for subscription in rec.course.subscriptions %}
+                                                {% if subscription.active %}
+                                                    {% set enrollmentCount = enrollmentCount + 1 %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% if enrollmentCount > 0 %}
+                                                <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                                                    👥 {{ enrollmentCount }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="flex items-center text-xs text-gray-500 mb-2">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                            </svg>
+                                            {{ rec.course.teacherId.fullName }}
+                                        </div>
+
+                                        {% if rec.reasons|length > 0 %}
+                                            <ul class="text-xs text-gray-600 mb-3 space-y-1">
+                                                {% for reason in rec.reasons|slice(0, 2) %}
+                                                    <li class="flex items-start">
+                                                        <svg class="w-3 h-3 text-green-500 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                        {{ reason }}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+
+                                        <a href="{{ path('app_course_detail', {id: rec.course.id}) }}"
+                                           class="mt-2 block w-full text-center bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2 px-3 rounded-lg transition shadow-md">
+                                            Voir le cours
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600 italic">Aucune recommandation disponible pour le moment</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {# Advanced Search, Filter & Sort Section #}
+    <div class="mb-8 bg-white rounded-2xl shadow-md p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                </svg>
+                Recherche Avancée
+            </h2>
+            <button id="resetFilters" class="text-sm text-red-500 hover:text-red-700 font-semibold flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Réinitialiser
+            </button>
+        </div>
+
+        {# Real-time Search Bar #}
+        <div class="mb-4">
+            <div class="relative">
+                <input type="text" id="liveSearch"
+                       placeholder="🔍 Recherche instantanée par titre, enseignant ou description..."
+                       class="w-full px-6 py-4 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none text-base shadow-sm"/>
+                <span id="searchCount" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm text-gray-500"></span>
+            </div>
+        </div>
+
+        {# Filters Row #}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            {# Level Filter #}
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Niveau</label>
+                <select id="levelFilter" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none">
+                    <option value="">Tous les niveaux</option>
+                    <option value="beginner">Débutant</option>
+                    <option value="intermediate">Intermédiaire</option>
+                    <option value="advanced">Avancé</option>
+                </select>
+            </div>
+
+            {# Duration Filter #}
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Durée (semaines)</label>
+                <select id="durationFilter" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none">
+                    <option value="">Toutes durées</option>
+                    <option value="1-4">1-4 semaines</option>
+                    <option value="5-8">5-8 semaines</option>
+                    <option value="9-12">9-12 semaines</option>
+                    <option value="13+">13+ semaines</option>
+                </select>
+            </div>
+
+            {# Teacher Filter #}
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Enseignant</label>
+                <select id="teacherFilter" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none">
+                    <option value="">Tous les enseignants</option>
+                    {% set teachers = [] %}
+                    {% for course in courses %}
+                        {% if course.teacherId.fullName not in teachers %}
+                            {% set teachers = teachers|merge([course.teacherId.fullName]) %}
+                        {% endif %}
+                    {% endfor %}
+                    {% for teacher in teachers|sort %}
+                        <option value="{{ teacher }}">{{ teacher }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {# Sort By #}
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Trier par</label>
+                <select id="sortBy" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none">
+                    <option value="default">Par défaut</option>
+                    <option value="title-asc">Titre (A-Z)</option>
+                    <option value="title-desc">Titre (Z-A)</option>
+                    <option value="duration-asc">Durée (croissante)</option>
+                    <option value="duration-desc">Durée (décroissante)</option>
+                    <option value="level-asc">Niveau (facile→difficile)</option>
+                    <option value="level-desc">Niveau (difficile→facile)</option>
+                    <option value="popularity">Popularité</option>
+                </select>
+            </div>
+        </div>
+
+        {# Active Filters Display #}
+        <div id="activeFilters" class="flex flex-wrap gap-2 hidden">
+            <span class="text-sm font-semibold text-gray-700">Filtres actifs:</span>
+        </div>
+
+        {# Results Counter #}
+        <div class="mt-4 pt-4 border-t border-gray-200">
+            <p id="resultsCount" class="text-sm text-gray-600 font-semibold"></p>
+        </div>
+    </div>
+
+    {# Courses Grid #}
+    {% if courses|length > 0 %}
+        <div id="coursesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for course in courses %}
+                {% set enrollmentCount = 0 %}
+                {% for subscription in course.subscriptions %}
+                    {% if subscription.active %}
+                        {% set enrollmentCount = enrollmentCount + 1 %}
+                    {% endif %}
+                {% endfor %}
+                <div class="course-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                     data-title="{{ course.title|lower }}"
+                     data-level="{{ course.level|lower }}"
+                     data-duration="{{ course.durationTraining }}"
+                     data-teacher="{{ course.teacherId.fullName|lower }}"
+                     data-description="{{ course.description|lower }}"
+                     data-popularity="{{ enrollmentCount }}">
+                    {# Course Header #}
+                    <div class="bg-gradient-to-r from-primary to-blue-400 p-6">
+                        <h3 class="text-2xl font-bold text-white mb-2">{{ course.title }}</h3>
+                        <div class="flex flex-wrap items-center gap-2">
+                            {% if course.level == 'Beginner' %}
+                                <span class="bg-green-400 text-white text-sm font-semibold px-3 py-1 rounded-full">Débutant</span>
+                            {% elseif course.level == 'Intermediate' %}
+                                <span class="bg-yellow-400 text-white text-sm font-semibold px-3 py-1 rounded-full">Intermédiaire</span>
+                            {% else %}
+                                <span class="bg-red-400 text-white text-sm font-semibold px-3 py-1 rounded-full">Avancé</span>
+                            {% endif %}
+                            <span class="bg-white bg-opacity-30 text-white text-sm font-semibold px-3 py-1 rounded-full">
+                                {{ course.durationTraining }} semaines
+                            </span>
+                            {% if enrollmentCount > 0 %}
+                                <span class="bg-purple-500 bg-opacity-90 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                                    👥 {{ enrollmentCount }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Course Body #}
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 line-clamp-3">{{ course.description|slice(0, 150) }}...</p>
+
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            {{ course.teacherId.fullName }}
+                        </div>
+
+                        {% if course.pdfFile %}
+                            <a href="{{ asset('uploads/courses/' ~ course.pdfFile) }}" target="_blank"
+                               class="inline-flex items-center text-primary hover:text-blue-400 font-semibold mb-4 transition">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                </svg>
+                                Télécharger PDF
+                            </a>
+                        {% endif %}
+
+                        {# Subscription Section for Parents #}
+                        {% if not isKidView and kids|length > 0 %}
+                            <div class="border-t pt-4 mt-4">
+                                <p class="font-semibold text-gray-700 mb-3">Inscrire mes enfants:</p>
+                                <div class="space-y-2">
+                                    {% for kid in kids %}
+                                        {% set isSubscribed = false %}
+                                        {% for subscription in course.subscriptions %}
+                                            {% if subscription.kid.id == kid.id and subscription.active %}
+                                                {% set isSubscribed = true %}
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition">
+                                            <div class="flex items-center space-x-2">
+                                                <div class="bg-gradient-to-br from-pink-500 to-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm shadow-md">
+                                                    {{ kid.firstName|slice(0, 1) }}
+                                                </div>
+                                                <span class="font-medium text-gray-700">{{ kid.firstName }}</span>
+                                            </div>
+
+                                            {% if isSubscribed %}
+                                                <form method="post" action="{{ path('app_course_unsubscribe', {'id': course.id}) }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('unsubscribe' ~ course.id) }}">
+                                                    <input type="hidden" name="kid_id" value="{{ kid.id }}">
+                                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition text-sm shadow">
+                                                        Désinscrire
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <form method="post" action="{{ path('app_course_subscribe', {'id': course.id}) }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('subscribe' ~ course.id) }}">
+                                                    <input type="hidden" name="kid_id" value="{{ kid.id }}">
+                                                    <button type="submit" class="bg-primary hover:bg-blue-400 text-white font-semibold px-4 py-2 rounded-lg transition text-sm shadow">
+                                                        Inscrire
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {# View Details Button #}
+                        <div class="mt-4">
+                            <a href="{{ path('app_course_detail', {'id': course.id}) }}"
+                               class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 rounded-lg transition">
+                                Voir les détails
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-16">
+            <svg class="w-32 h-32 mx-auto text-gray-300 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h3 class="text-2xl font-bold text-gray-600 mb-2">
+                {% if isKidView %}
+                    Aucun cours inscrit
+                {% else %}
+                    Aucun cours disponible
+                {% endif %}
+            </h3>
+            <p class="text-gray-500">
+                {% if isKidView %}
+                    Demande à tes parents de t'inscrire à un cours ! 🎯
+                {% else %}
+                    Revenez plus tard pour découvrir nos nouveaux cours ✨
+                {% endif %}
+            </p>
+        </div>
+    {% endif %}
+
+    {# Advanced Filtering, Sorting & Search JavaScript #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ========================================
+            // CONFIGURATION & INITIALIZATION
+            // ========================================
+            const coursesGrid = document.getElementById('coursesGrid');
+            const courseCards = Array.from(document.querySelectorAll('.course-card'));
+            const liveSearch = document.getElementById('liveSearch');
+            const levelFilter = document.getElementById('levelFilter');
+            const durationFilter = document.getElementById('durationFilter');
+            const teacherFilter = document.getElementById('teacherFilter');
+            const sortBy = document.getElementById('sortBy');
+            const resetBtn = document.getElementById('resetFilters');
+            const resultsCount = document.getElementById('resultsCount');
+            const searchCount = document.getElementById('searchCount');
+            const activeFiltersDiv = document.getElementById('activeFilters');
+
+            let currentFilters = {
+                search: '',
+                level: '',
+                duration: '',
+                teacher: '',
+                sort: 'default'
+            };
+
+            // Level order for sorting
+            const levelOrder = { 'beginner': 1, 'intermediate': 2, 'advanced': 3 };
+
+            // ========================================
+            // UTILITY FUNCTIONS
+            // ========================================
+
+            /**
+             * Normalize text for case-insensitive comparison
+             */
+            function normalizeText(text) {
+                return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            }
+
+            /**
+             * Check if a course matches current filters
+             */
+            function matchesFilters(card) {
+                const title = normalizeText(card.dataset.title);
+                const level = card.dataset.level;
+                const duration = parseInt(card.dataset.duration);
+                const teacher = normalizeText(card.dataset.teacher);
+                const description = normalizeText(card.dataset.description);
+
+                // Search filter (checks title, teacher, and description)
+                if (currentFilters.search) {
+                    const searchTerm = normalizeText(currentFilters.search);
+                    const matches = title.includes(searchTerm) ||
+                        teacher.includes(searchTerm) ||
+                        description.includes(searchTerm);
+                    if (!matches) return false;
+                }
+
+                // Level filter
+                if (currentFilters.level && level !== currentFilters.level) {
+                    return false;
+                }
+
+                // Duration filter
+                if (currentFilters.duration) {
+                    const ranges = {
+                        '1-4': [1, 4],
+                        '5-8': [5, 8],
+                        '9-12': [9, 12],
+                        '13+': [13, 999]
+                    };
+                    const [min, max] = ranges[currentFilters.duration];
+                    if (duration < min || duration > max) {
+                        return false;
+                    }
+                }
+
+                // Teacher filter
+                if (currentFilters.teacher && teacher !== normalizeText(currentFilters.teacher)) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            /**
+             * Sort courses based on selected criteria
+             */
+            function sortCourses(cards) {
+                const sortedCards = [...cards];
+
+                switch (currentFilters.sort) {
+                    case 'title-asc':
+                        sortedCards.sort((a, b) => a.dataset.title.localeCompare(b.dataset.title));
+                        break;
+                    case 'title-desc':
+                        sortedCards.sort((a, b) => b.dataset.title.localeCompare(a.dataset.title));
+                        break;
+                    case 'duration-asc':
+                        sortedCards.sort((a, b) => parseInt(a.dataset.duration) - parseInt(b.dataset.duration));
+                        break;
+                    case 'duration-desc':
+                        sortedCards.sort((a, b) => parseInt(b.dataset.duration) - parseInt(a.dataset.duration));
+                        break;
+                    case 'level-asc':
+                        sortedCards.sort((a, b) => levelOrder[a.dataset.level] - levelOrder[b.dataset.level]);
+                        break;
+                    case 'level-desc':
+                        sortedCards.sort((a, b) => levelOrder[b.dataset.level] - levelOrder[a.dataset.level]);
+                        break;
+                    case 'popularity':
+                        sortedCards.sort((a, b) => parseInt(b.dataset.popularity || 0) - parseInt(a.dataset.popularity || 0));
+                        break;
+                    default:
+                        break;
+                }
+
+                return sortedCards;
+            }
+
+            /**
+             * Update the display of active filter badges
+             */
+            function updateActiveFiltersBadges() {
+                const badges = [];
+
+                if (currentFilters.search) {
+                    badges.push(`<span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">Recherche: "${currentFilters.search}"</span>`);
+                }
+                if (currentFilters.level) {
+                    const levelNames = { 'beginner': 'Débutant', 'intermediate': 'Intermédiaire', 'advanced': 'Avancé' };
+                    badges.push(`<span class="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">Niveau: ${levelNames[currentFilters.level]}</span>`);
+                }
+                if (currentFilters.duration) {
+                    badges.push(`<span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">Durée: ${currentFilters.duration} sem</span>`);
+                }
+                if (currentFilters.teacher) {
+                    badges.push(`<span class="bg-purple-100 text-purple-800 text-xs font-semibold px-3 py-1 rounded-full">Prof: ${currentFilters.teacher}</span>`);
+                }
+                if (currentFilters.sort !== 'default') {
+                    badges.push(`<span class="bg-pink-100 text-pink-800 text-xs font-semibold px-3 py-1 rounded-full">Tri actif</span>`);
+                }
+
+                if (badges.length > 0) {
+                    activeFiltersDiv.innerHTML = '<span class="text-sm font-semibold text-gray-700">Filtres actifs:</span>' + badges.join('');
+                    activeFiltersDiv.classList.remove('hidden');
+                } else {
+                    activeFiltersDiv.classList.add('hidden');
+                }
+            }
+
+            /**
+             * Apply all filters and sorting, update display
+             */
+            function applyFiltersAndSort() {
+                if (!coursesGrid) return;
+
+                // Filter courses
+                const visibleCards = courseCards.filter(card => matchesFilters(card));
+                const hiddenCards = courseCards.filter(card => !matchesFilters(card));
+
+                // Sort visible courses
+                const sortedCards = sortCourses(visibleCards);
+
+                // Update DOM
+                sortedCards.forEach(card => {
+                    card.style.display = 'block';
+                    card.classList.add('animate-fadeIn');
+                });
+
+                hiddenCards.forEach(card => {
+                    card.style.display = 'none';
+                });
+
+                // Re-append cards in sorted order
+                sortedCards.forEach(card => coursesGrid.appendChild(card));
+
+                // Update counters
+                const visibleCount = visibleCards.length;
+                const totalCount = courseCards.length;
+
+                if (resultsCount) {
+                    resultsCount.textContent = `${visibleCount} cours affichés sur ${totalCount}`;
+                }
+                if (searchCount) {
+                    searchCount.textContent = visibleCount > 0 ? `${visibleCount} résultat${visibleCount > 1 ? 's' : ''}` : 'Aucun résultat';
+                }
+
+                // Update active filters display
+                updateActiveFiltersBadges();
+            }
+
+            // ========================================
+            // EVENT LISTENERS
+            // ========================================
+
+            // Live search with debouncing
+            let searchTimeout;
+            if (liveSearch) {
+                liveSearch.addEventListener('input', function(e) {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentFilters.search = e.target.value;
+                        applyFiltersAndSort();
+                    }, 300);
+                });
+            }
+
+            // Filter changes
+            if (levelFilter) {
+                levelFilter.addEventListener('change', function(e) {
+                    currentFilters.level = e.target.value;
+                    applyFiltersAndSort();
+                });
+            }
+
+            if (durationFilter) {
+                durationFilter.addEventListener('change', function(e) {
+                    currentFilters.duration = e.target.value;
+                    applyFiltersAndSort();
+                });
+            }
+
+            if (teacherFilter) {
+                teacherFilter.addEventListener('change', function(e) {
+                    currentFilters.teacher = e.target.value;
+                    applyFiltersAndSort();
+                });
+            }
+
+            if (sortBy) {
+                sortBy.addEventListener('change', function(e) {
+                    currentFilters.sort = e.target.value;
+                    applyFiltersAndSort();
+                });
+            }
+
+            // Reset all filters
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    if (liveSearch) liveSearch.value = '';
+                    if (levelFilter) levelFilter.value = '';
+                    if (durationFilter) durationFilter.value = '';
+                    if (teacherFilter) teacherFilter.value = '';
+                    if (sortBy) sortBy.value = 'default';
+
+                    currentFilters = {
+                        search: '',
+                        level: '',
+                        duration: '',
+                        teacher: '',
+                        sort: 'default'
+                    };
+
+                    applyFiltersAndSort();
+
+                    resetBtn.classList.add('scale-95');
+                    setTimeout(() => resetBtn.classList.remove('scale-95'), 100);
+                });
+            }
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    if (liveSearch) liveSearch.focus();
+                }
+                if (e.key === 'Escape' && document.activeElement === liveSearch) {
+                    if (liveSearch) {
+                        liveSearch.value = '';
+                        currentFilters.search = '';
+                        applyFiltersAndSort();
+                        liveSearch.blur();
+                    }
+                }
+            });
+
+            // ========================================
+            // INITIALIZATION
+            // ========================================
+
+            // Initial count update
+            applyFiltersAndSort();
+
+            // Add CSS animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.3s ease-out;
+                }
+                .animate-pulse {
+                    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                }
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.7; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            console.log('🎯 Advanced Course Filtering System Initialized');
+        });
+    </script>
+{% endblock %}

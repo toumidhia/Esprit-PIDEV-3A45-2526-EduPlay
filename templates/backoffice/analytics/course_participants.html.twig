@@ -1,0 +1,298 @@
+{% extends 'BackOffice/base.html.twig' %}
+
+{% block title %}Participants - {{ course.title }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Analyse des Participants</h1>
+            <p class="text-muted mb-0">{{ course.title }}</p>
+        </div>
+        <div>
+            <a href="{{ path('app_course_show', {id: course.id}) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour au cours
+            </a>
+            <a href="{{ path('app_analytics_dashboard') }}" class="btn btn-outline-primary">
+                <i class="bi bi-graph-up"></i> Tableau de bord
+            </a>
+        </div>
+    </div>
+
+    <!-- Course Info Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="card-title mb-3">{{ course.title }}</h5>
+                    <p class="card-text text-muted">{{ course.description }}</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-2">
+                        <strong>Niveau:</strong> 
+                        <span class="badge bg-info">{{ course.level }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Durée:</strong> {{ course.durationTraining }} semaines
+                    </div>
+                    <div class="mb-2">
+                        <strong>Enseignant:</strong> {{ course.teacherId.fullName }}
+                    </div>
+                    <div>
+                        <strong>Statut:</strong> 
+                        {% if course.status == 'accepted' %}
+                            <span class="badge bg-success">Accepté</span>
+                        {% elseif course.status == 'pending' %}
+                            <span class="badge bg-warning">En attente</span>
+                        {% else %}
+                            <span class="badge bg-danger">Rejeté</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Row -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h2 class="text-primary mb-0">{{ totalParticipants }}</h2>
+                    <p class="text-muted mb-0">Participants Inscrits</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h2 class="text-info mb-0">{{ ageDistribution|length }}</h2>
+                    <p class="text-muted mb-0">Groupes d'Âge</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h2 class="text-success mb-0">{{ levelDistribution|length }}</h2>
+                    <p class="text-muted mb-0">Niveaux Scolaires</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Participants List -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people-fill"></i> Liste des Participants
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    {% if subscriptions is empty %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                            <p class="mt-3">Aucun participant inscrit pour le moment</p>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Enfant</th>
+                                        <th>Âge</th>
+                                        <th>Niveau</th>
+                                        <th>Parent</th>
+                                        <th>Date d'inscription</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for subscription in subscriptions %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ subscription.kid.fullName }}</strong>
+                                        </td>
+                                        <td>
+                                            {{ subscription.kid.age ?? 'N/A' }} ans
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ subscription.kid.niveau ?? 'N/A' }}</span>
+                                        </td>
+                                        <td>{{ subscription.parent.fullName }}</td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ subscription.subscribedAt|date('d/m/Y') }}
+                                            </small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Charts -->
+        <div class="col-lg-6">
+            <!-- Age Distribution -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart-fill"></i> Distribution par Âge
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if ageDistribution is empty %}
+                        <div class="text-center text-muted py-4">
+                            <p>Aucune donnée disponible</p>
+                        </div>
+                    {% else %}
+                        {% for ageGroup, count in ageDistribution %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span><strong>{{ ageGroup }} ans</strong></span>
+                                <span class="badge bg-info">{{ count }} enfant{{ count > 1 ? 's' : '' }}</span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-info" 
+                                     role="progressbar" 
+                                     style="width: {{ (count / totalParticipants * 100)|round }}%"
+                                     aria-valuenow="{{ count }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="{{ totalParticipants }}">
+                                    {{ (count / totalParticipants * 100)|round }}%
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Level Distribution -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-book-fill"></i> Distribution par Niveau Scolaire
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if levelDistribution is empty %}
+                        <div class="text-center text-muted py-4">
+                            <p>Aucune donnée disponible</p>
+                        </div>
+                    {% else %}
+                        {% for level, count in levelDistribution %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span><strong>{{ level }}</strong></span>
+                                <span class="badge bg-success">{{ count }} enfant{{ count > 1 ? 's' : '' }}</span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-success" 
+                                     role="progressbar" 
+                                     style="width: {{ (count / totalParticipants * 100)|round }}%"
+                                     aria-valuenow="{{ count }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="{{ totalParticipants }}">
+                                    {{ (count / totalParticipants * 100)|round }}%
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Actions -->
+    <div class="card mt-4">
+        <div class="card-body text-center">
+            <h5 class="mb-3">Actions</h5>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Imprimer
+                </button>
+                <button type="button" class="btn btn-outline-success" onclick="exportToCSV()">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Exporter CSV
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function exportToCSV() {
+    const rows = [
+        ['Enfant', 'Âge', 'Niveau', 'Parent', 'Email Parent', 'Date Inscription']
+    ];
+    
+    {% for subscription in subscriptions %}
+    rows.push([
+        '{{ subscription.kid.fullName|escape('js') }}',
+        '{{ subscription.kid.age ?? 'N/A' }}',
+        '{{ subscription.kid.niveau ?? 'N/A'|escape('js') }}',
+        '{{ subscription.parent.fullName|escape('js') }}',
+        '{{ subscription.parent.email|escape('js') }}',
+        '{{ subscription.subscribedAt|date('d/m/Y') }}'
+    ]);
+    {% endfor %}
+    
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+    rows.forEach(row => {
+        csvContent += row.join(';') + "\r\n";
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "participants_{{ course.title|replace({' ': '_', '/': '-'})|escape('js') }}.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Print styles
+const style = document.createElement('style');
+style.textContent = `
+    @media print {
+        .btn, .card-header, nav, .sidebar { display: none !important; }
+        .card { border: 1px solid #ddd; page-break-inside: avoid; }
+        .container-fluid { max-width: 100%; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+<style>
+    .progress {
+        background-color: #e9ecef;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .card-header h5 {
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

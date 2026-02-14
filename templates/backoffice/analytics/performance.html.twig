@@ -1,0 +1,321 @@
+{% extends 'BackOffice/base.html.twig' %}
+
+{% block title %}Performances des Cours{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Performances des Cours</h1>
+            <p class="text-muted mb-0">Analyse des cours populaires et à améliorer</p>
+        </div>
+        <div>
+            <a href="{{ path('app_analytics_dashboard') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Retour au tableau de bord
+            </a>
+        </div>
+    </div>
+
+    <!-- Average Subscriptions Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body text-center py-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <i class="bi bi-trophy-fill text-warning" style="font-size: 4rem;"></i>
+                        </div>
+                        <div class="col-md-10 text-start">
+                            <h2 class="text-primary mb-2 display-4">{{ avgSubscriptions }}</h2>
+                            <h5 class="mb-1">Moyenne d'Inscriptions par Cours</h5>
+                            <p class="text-muted mb-0">
+                                Indicateur de performance global - Les cours avec plus d'inscriptions que cette moyenne sont considérés comme performants
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Most Popular Courses -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 border-success shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up-arrow"></i> Cours les Plus Populaires
+                    </h5>
+                    <small>Top 10 - Meilleure performance</small>
+                </div>
+                <div class="card-body">
+                    {% if popularCourses is empty %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                            <p class="mt-3">Aucun cours disponible</p>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th width="50">#</th>
+                                        <th>Cours</th>
+                                        <th>Niveau</th>
+                                        <th>Enseignant</th>
+                                        <th class="text-center">Inscriptions</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for index, result in popularCourses %}
+                                    {% set course = result[0] %}
+                                    {% set count = result['subscriptionCount'] %}
+                                    <tr>
+                                        <td>
+                                            {% if index == 0 %}
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="bi bi-trophy-fill"></i> 1
+                                                </span>
+                                            {% elseif index == 1 %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="bi bi-trophy"></i> 2
+                                                </span>
+                                            {% elseif index == 2 %}
+                                                <span class="badge bg-danger">
+                                                    <i class="bi bi-trophy"></i> 3
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">{{ index + 1 }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>{{ course.title }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ course.durationTraining }} semaines</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ course.level }}</span>
+                                        </td>
+                                        <td>
+                                            <small>{{ course.teacherId.fullName }}</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success fs-6">{{ count }}</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ path('app_course_show', {id: course.id}) }}" 
+                                                   class="btn btn-outline-primary btn-sm" 
+                                                   title="Voir le cours">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{{ path('app_analytics_course_participants', {id: course.id}) }}" 
+                                                   class="btn btn-outline-info btn-sm" 
+                                                   title="Voir les participants">
+                                                    <i class="bi bi-people"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Least Popular Courses (Need Attention) -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 border-warning shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Cours à Améliorer
+                    </h5>
+                    <small>Top 10 - Besoin d'attention</small>
+                </div>
+                <div class="card-body">
+                    {% if unpopularCourses is empty %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                            <p class="mt-3">Aucun cours disponible</p>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th width="50">#</th>
+                                        <th>Cours</th>
+                                        <th>Niveau</th>
+                                        <th>Enseignant</th>
+                                        <th class="text-center">Inscriptions</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for index, result in unpopularCourses %}
+                                    {% set course = result[0] %}
+                                    {% set count = result['subscriptionCount'] %}
+                                    <tr class="{{ count == 0 ? 'table-danger' : '' }}">
+                                        <td>{{ index + 1 }}</td>
+                                        <td>
+                                            <strong>{{ course.title }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ course.durationTraining }} semaines</small>
+                                            {% if count == 0 %}
+                                                <br>
+                                                <span class="badge bg-danger">Aucune inscription</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ course.level }}</span>
+                                        </td>
+                                        <td>
+                                            <small>{{ course.teacherId.fullName }}</small>
+                                        </td>
+                                        <td class="text-center">
+                                            {% if count == 0 %}
+                                                <span class="badge bg-danger fs-6">{{ count }}</span>
+                                            {% elseif count < avgSubscriptions %}
+                                                <span class="badge bg-warning text-dark fs-6">{{ count }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary fs-6">{{ count }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ path('app_course_show', {id: course.id}) }}" 
+                                                   class="btn btn-outline-primary btn-sm" 
+                                                   title="Voir le cours">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                {% if count > 0 %}
+                                                <a href="{{ path('app_analytics_course_participants', {id: course.id}) }}" 
+                                                   class="btn btn-outline-info btn-sm" 
+                                                   title="Voir les participants">
+                                                    <i class="bi bi-people"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div class="alert alert-warning mt-3" role="alert">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-lightbulb-fill"></i> Recommandations
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>Revoir le contenu et la description des cours avec peu d'inscriptions</li>
+                                <li>Vérifier l'adéquation niveau/public cible</li>
+                                <li>Considérer des actions promotionnelles pour ces cours</li>
+                                <li>Analyser les cours populaires pour identifier les facteurs de succès</li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Insights -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-info shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb"></i> Indicateurs de Performance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="border rounded p-3">
+                                <i class="bi bi-star-fill text-warning" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2 mb-0">
+                                    {% if popularCourses is not empty %}
+                                        {{ popularCourses[0]['subscriptionCount'] }}
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                </h4>
+                                <small class="text-muted">Meilleur Performance</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="border rounded p-3">
+                                <i class="bi bi-graph-up text-success" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2 mb-0">{{ avgSubscriptions }}</h4>
+                                <small class="text-muted">Moyenne Globale</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="border rounded p-3">
+                                <i class="bi bi-mortarboard text-primary" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2 mb-0">{{ popularCourses|length + unpopularCourses|length }}</h4>
+                                <small class="text-muted">Cours Analysés</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="border rounded p-3">
+                                <i class="bi bi-flag-fill text-danger" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2 mb-0">
+                                    {% set zeroCount = 0 %}
+                                    {% for result in unpopularCourses %}
+                                        {% if result['subscriptionCount'] == 0 %}
+                                            {% set zeroCount = zeroCount + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ zeroCount }}
+                                </h4>
+                                <small class="text-muted">Sans Inscription</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .card {
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .badge {
+        font-weight: 500;
+    }
+    
+    @media print {
+        .btn, .card-header { 
+            background-color: #fff !important; 
+            color: #000 !important; 
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'BackOffice/base.html.twig' %}
+
+{% block title %}Modifier le Cours - EduPlay{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-pencil"></i> Modifier le Cours</h4>
+            </div>
+            <div class="card-body">
+                {{ form_start(form) }}
+                
+                <div class="mb-3">
+                    {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.title, {'attr': {'class': errors.title is defined ? 'form-control is-invalid' : 'form-control'}}) }}
+                    {% if errors.title is defined %}
+                        <div class="form-error">{{ errors.title }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.description, {'attr': {'class': errors.description is defined ? 'form-control is-invalid' : 'form-control'}}) }}
+                    {% if errors.description is defined %}
+                        <div class="form-error">{{ errors.description }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.durationTraining, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.durationTraining, {'attr': {'class': errors.durationTraining is defined ? 'form-control is-invalid' : 'form-control'}}) }}
+                        {% if errors.durationTraining is defined %}
+                            <div class="form-error">{{ errors.durationTraining }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.level, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.level, {'attr': {'class': errors.level is defined ? 'form-control is-invalid' : 'form-control'}}) }}
+                        {% if errors.level is defined %}
+                            <div class="form-error">{{ errors.level }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.pdfFile, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.pdfFile) }}
+                    {% if course.pdfFile %}
+                        <small class="text-muted">Fichier actuel: {{ course.pdfFile }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ path('app_course_index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Enregistrer
+                    </button>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

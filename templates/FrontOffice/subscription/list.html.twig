@@ -1,0 +1,174 @@
+{% extends 'FrontOffice/base.html.twig' %}
+
+{% block title %}Mes Inscriptions - EduPlay{% endblock %}
+
+{% block body %}
+    {# Header Section #}
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Mes Inscriptions</h1>
+        <p class="text-gray-600">Gérez les cours de vos enfants</p>
+    </div>
+
+    {% if subscriptions|length > 0 %}
+        {# Calculate statistics before displaying #}
+        {% set uniqueCourseIds = [] %}
+        {% set uniqueKidIds = [] %}
+        {% for subscription in subscriptions %}
+            {% if subscription.course.id not in uniqueCourseIds %}
+                {% set uniqueCourseIds = uniqueCourseIds|merge([subscription.course.id]) %}
+            {% endif %}
+            {% if subscription.kid.id not in uniqueKidIds %}
+                {% set uniqueKidIds = uniqueKidIds|merge([subscription.kid.id]) %}
+            {% endif %}
+        {% endfor %}
+
+        <div class="space-y-6">
+            {% for subscription in subscriptions %}
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                    <div class="md:flex">
+                        {# Course Info Section #}
+                        <div class="md:w-2/3 p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ subscription.course.title }}</h2>
+                                    <div class="flex flex-wrap gap-2 mb-3">
+                                        {% if subscription.course.level == 'Beginner' %}
+                                            <span class="bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">Débutant</span>
+                                        {% elseif subscription.course.level == 'Intermediate' %}
+                                            <span class="bg-yellow-100 text-yellow-800 text-sm font-semibold px-3 py-1 rounded-full">Intermédiaire</span>
+                                        {% else %}
+                                            <span class="bg-red-100 text-red-800 text-sm font-semibold px-3 py-1 rounded-full">Avancé</span>
+                                        {% endif %}
+                                        <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full">
+                                        {{ subscription.course.durationTraining }} semaines
+                                    </span>
+                                    </div>
+                                </div>
+                                {% if subscription.active %}
+                                    <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Active
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <p class="text-gray-600 mb-4 line-clamp-2">{{ subscription.course.description|slice(0, 200) }}...</p>
+
+                            <div class="flex items-center text-sm text-gray-500 space-x-4">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                    <span>{{ subscription.course.teacherId.fullName }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span>Inscrit le {{ subscription.subscribedAt|date('d/m/Y') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Kid Info & Actions Section #}
+                        <div class="md:w-1/3 bg-gradient-to-br from-primary to-blue-400 p-6 text-white flex flex-col justify-between">
+                            <div>
+                                <p class="text-sm text-white text-opacity-80 mb-2">Enfant inscrit</p>
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <div class="bg-white bg-opacity-30 rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
+                                        {{ subscription.kid.firstName|slice(0, 1) }}
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-lg">{{ subscription.kid.firstName }} {{ subscription.kid.lastName }}</p>
+                                        {% if subscription.kid.age %}
+                                            <p class="text-sm text-white text-opacity-80">{{ subscription.kid.age }} ans</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <a href="{{ path('app_course_detail', {'id': subscription.course.id}) }}"
+                                   class="block w-full bg-white text-primary font-semibold py-3 px-4 rounded-lg text-center hover:bg-opacity-90 transition">
+                                    Voir le cours
+                                </a>
+
+                                {% if subscription.active %}
+                                    <form method="post" action="{{ path('app_subscription_unsubscribe', {'courseId': subscription.course.id, 'kidId': subscription.kid.id}) }}"
+                                          onsubmit="return confirm('Êtes-vous sûr de vouloir désinscrire {{ subscription.kid.firstName }} de ce cours ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('unsubscribe' ~ subscription.course.id ~ subscription.kid.id) }}">
+                                        <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg transition">
+                                            Désinscrire
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-16 bg-white rounded-3xl shadow-lg">
+            <svg class="w-32 h-32 mx-auto text-gray-300 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <h3 class="text-2xl font-bold text-gray-600 mb-2">Aucune inscription</h3>
+            <p class="text-gray-500 mb-6">Vos enfants ne sont inscrits à aucun cours pour le moment</p>
+            <a href="{{ path('app_course_index') }}" class="inline-block bg-primary hover:bg-blue-400 text-white font-bold py-3 px-8 rounded-xl transition shadow-lg">
+                Parcourir les cours
+            </a>
+        </div>
+    {% endif %}
+
+    {# Statistics Summary #}
+    {% if subscriptions|length > 0 %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white text-opacity-80 text-sm mb-1">Total Inscriptions</p>
+                        <p class="text-4xl font-bold">{{ subscriptions|length }}</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white text-opacity-80 text-sm mb-1">Cours Différents</p>
+                        <p class="text-4xl font-bold">{{ uniqueCourseIds|length }}</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white text-opacity-80 text-sm mb-1">Enfants Inscrits</p>
+                        <p class="text-4xl font-bold">{{ uniqueKidIds|length }}</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full p-4">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock %}

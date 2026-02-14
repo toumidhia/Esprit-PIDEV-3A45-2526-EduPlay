@@ -1,0 +1,318 @@
+{# templates/BackOffice/admin/users.html.twig #}
+{% extends 'BackOffice/base.html.twig' %}
+
+{% block title %}Gestion des Utilisateurs - EduPlay{% endblock %}
+
+{% block body %}
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <h1 class="h3">
+                <i class="bi bi-people-fill"></i> Gestion des Utilisateurs
+            </h1>
+            <div>
+                <a href="{{ path('app_admin_admin_new') }}" class="btn btn-danger me-2">
+                    <i class="bi bi-person-plus"></i> Nouvel Administrateur
+                </a>
+                <a href="{{ path('app_admin_enseignant_new') }}" class="btn btn-success">
+                    <i class="bi bi-person-plus"></i> Nouvel Enseignant
+                </a>
+            </div>
+        </div>
+
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Utilisateurs</li>
+        </ol>
+
+        <!-- Statistiques -->
+        <div class="row">
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+                <div class="card bg-primary text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-0">Total</h6>
+                                <h2 class="mt-2 mb-0">{{ stats.total }}</h2>
+                            </div>
+                            <i class="bi bi-people" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+                <div class="card bg-danger text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-0">Admins</h6>
+                                <h2 class="mt-2 mb-0">{{ stats.admin }}</h2>
+                            </div>
+                            <i class="bi bi-shield-lock" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+                <div class="card bg-success text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-0">Enseignants</h6>
+                                <h2 class="mt-2 mb-0">{{ stats.enseignant }}</h2>
+                            </div>
+                            <i class="bi bi-mortarboard" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+                <div class="card bg-warning text-dark h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-0">Parents</h6>
+                                <h2 class="mt-2 mb-0">{{ stats.parent }}</h2>
+                            </div>
+                            <i class="bi bi-person-badge" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+                <div class="card bg-info text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-0">Enfants</h6>
+                                <h2 class="mt-2 mb-0">{{ stats.enfant }}</h2>
+                            </div>
+                            <i class="bi bi-emoji-smile" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtres et recherche -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-funnel"></i> Filtres
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="search-wrapper">
+                            <i class="bi bi-search"></i>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un utilisateur...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select id="typeFilter" class="form-select">
+                            <option value="">Tous les types</option>
+                            <option value="admin">Administrateurs</option>
+                            <option value="teacher">Enseignants</option>
+                            <option value="parent">Parents</option>
+                            <option value="kid">Enfants</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select id="statusFilter" class="form-select">
+                            <option value="">Tous les statuts</option>
+                            <option value="1">Actifs</option>
+                            <option value="0">Inactifs</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button id="resetFilters" class="btn btn-secondary w-100">
+                            <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tableau des utilisateurs -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-table me-1"></i>
+                Liste des utilisateurs ({{ users|length }})
+            </div>
+            <div class="card-body">
+                {% if users|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="usersTable">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Utilisateur</th>
+                                <th>Contact</th>
+                                <th>Type</th>
+                                <th>Rôles</th>
+                                <th>Date d'inscription</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in users %}
+                                <tr class="user-row"
+                                    data-type="{{ user.type }}"
+                                    data-status="{{ user.active ? 1 : 0 }}"
+                                    data-name="{{ user.fullName|lower }}"
+                                    data-email="{{ user.email|lower }}">
+                                    <td>#{{ user.id }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="user-avatar bg-{{
+                                            user.type == 'admin' ? 'admin' :
+                                            (user.type == 'teacher' ? 'enseignant' :
+                                            (user.type == 'parent' ? 'parent' : 'enfant'))
+                                            }} me-3">
+                                                {{ user.firstName|first }}{{ user.lastName|first }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ user.fullName }}</strong>
+                                                {% if user.type == 'kid' and user.parent %}
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-person"></i> Parent: {{ user.parent.fullName }}
+                                                    </small>
+                                                {% endif %}
+                                                {% if user.username %}
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-person-badge"></i> {{ user.username }}
+                                                    </small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-envelope"></i> {{ user.email }}<br>
+                                        {% if user.telephone %}
+                                            <i class="bi bi-telephone"></i> {{ user.telephone }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{
+                                        user.type == 'admin' ? 'danger' :
+                                        (user.type == 'teacher' ? 'success' :
+                                        (user.type == 'parent' ? 'warning' : 'info'))
+                                        }}">
+                                            {{ user.type == 'admin' ? 'ADMIN' :
+                                            (user.type == 'teacher' ? 'ENSEIGNANT' :
+                                            (user.type == 'parent' ? 'PARENT' : 'ENFANT')) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% for role in user.roles %}
+                                            {% if role != 'ROLE_USER' %}
+                                                <span class="badge bg-secondary">{{ role|replace({'ROLE_': ''}) }}</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                                    <td>
+                                        {% if user.active %}
+                                            <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            {% if user != app.user %}
+                                                <form method="post" action="{{ path('app_admin_user_toggle', {'id': user.id}) }}" style="display: inline-block;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ user.id) }}">
+                                                    <button type="submit" class="btn btn-sm {% if user.active %}btn-warning{% else %}btn-success{% endif %}"
+                                                            title="{% if user.active %}Désactiver{% else %}Activer{% endif %}">
+                                                        <i class="bi bi-{% if user.active %}pause-circle{% else %}play-circle{% endif %}"></i>
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{{ path('app_admin_user_delete', {'id': user.id}) }}"
+                                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer {{ user.fullName }} ? Cette action est irréversible.');"
+                                                      style="display: inline-block;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <span class="badge bg-info">Vous</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted my-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                        <p class="mt-3">Aucun utilisateur trouvé.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const typeFilter = document.getElementById('typeFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            const resetBtn = document.getElementById('resetFilters');
+            const rows = document.querySelectorAll('.user-row');
+
+            function filterTable() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedType = typeFilter.value;
+                const selectedStatus = statusFilter.value;
+
+                rows.forEach(row => {
+                    let show = true;
+
+                    // Filtre de recherche
+                    if (searchTerm) {
+                        const name = row.dataset.name || '';
+                        const email = row.dataset.email || '';
+                        if (!name.includes(searchTerm) && !email.includes(searchTerm)) {
+                            show = false;
+                        }
+                    }
+
+                    // Filtre par type
+                    if (show && selectedType) {
+                        if (row.dataset.type !== selectedType) {
+                            show = false;
+                        }
+                    }
+
+                    // Filtre par statut
+                    if (show && selectedStatus !== '') {
+                        if (row.dataset.status !== selectedStatus) {
+                            show = false;
+                        }
+                    }
+
+                    row.style.display = show ? '' : 'none';
+                });
+            }
+
+            searchInput.addEventListener('keyup', filterTable);
+            typeFilter.addEventListener('change', filterTable);
+            statusFilter.addEventListener('change', filterTable);
+
+            resetBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                typeFilter.value = '';
+                statusFilter.value = '';
+                filterTable();
+            });
+        });
+    </script>
+{% endblock %}

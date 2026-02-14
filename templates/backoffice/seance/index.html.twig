@@ -1,0 +1,82 @@
+{% extends 'BackOffice/base.html.twig' %}
+
+{% block title %}Gérer les Séances - EduPlay{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3"><i class="bi bi-calendar-event"></i> Gestion des Séances</h1>
+    <a href="{{ path('app_seance_new') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nouvelle Séance
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list-ul"></i> Liste des Séances ({{ seances|length }})
+    </div>
+    <div class="card-body">
+        {% if seances|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titre</th>
+                            <th>Cours</th>
+                            <th>Date</th>
+                            <th>Horaire</th>
+                            <th>Lieu</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for seance in seances %}
+                            <tr>
+                                <td>#{{ seance.id }}</td>
+                                <td><strong>{{ seance.title }}</strong></td>
+                                <td>{{ seance.course.title }}</td>
+                                <td>{{ seance.date|date('d/m/Y') }}</td>
+                                <td>{{ seance.startTime|date('H:i') }} - {{ seance.endTime|date('H:i') }}</td>
+                                <td>{{ seance.location }}</td>
+                                <td>
+                                    {% if seance.status == 'scheduled' %}
+                                        <span class="badge bg-primary">Planifiée</span>
+                                    {% elseif seance.status == 'ongoing' %}
+                                        <span class="badge bg-success">En cours</span>
+                                    {% elseif seance.status == 'completed' %}
+                                        <span class="badge bg-secondary">Terminée</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Annulée</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ path('app_seance_show', {'id': seance.id}) }}" class="btn btn-sm btn-info">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ path('app_seance_edit', {'id': seance.id}) }}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_seance_delete', {'id': seance.id}) }}" style="display:inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ seance.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette séance?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-center text-muted my-5">
+                <i class="bi bi-inbox" style="font-size: 3rem;"></i><br>
+                Aucune séance programmée.
+            </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

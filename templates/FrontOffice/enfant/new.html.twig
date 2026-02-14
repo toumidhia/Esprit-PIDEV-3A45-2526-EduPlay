@@ -1,0 +1,105 @@
+{% extends 'FrontOffice/base.html.twig' %}
+
+{% block title %}Ajouter un enfant - EduPlay{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Back Button -->
+        <a href="{{ path('app_course_index') }}" class="inline-flex items-center text-primary hover:text-blue-400 mb-6">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Retour aux cours
+        </a>
+
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Ajouter un enfant</h1>
+            <p class="text-gray-600">Remplissez les informations de votre enfant pour l'inscrire à des cours</p>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            {{ form_start(form) }}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- First Name -->
+                <div>
+                    {{ form_label(form.firstName, 'Prénom', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.firstName, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none'}}) }}
+                    {{ form_errors(form.firstName) }}
+                </div>
+
+                <!-- Last Name -->
+                <div>
+                    {{ form_label(form.lastName, 'Nom', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.lastName, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none'}}) }}
+                    {{ form_errors(form.lastName) }}
+                </div>
+
+                <!-- Birth Date -->
+                <div>
+                    {{ form_label(form.birthDate, 'Date de naissance', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.birthDate, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none'}}) }}
+                    {{ form_errors(form.birthDate) }}
+                </div>
+
+                <!-- Email -->
+                <div>
+                    {{ form_label(form.email, 'Email', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.email, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none'}}) }}
+                    {{ form_errors(form.email) }}
+                </div>
+
+                <!-- Password -->
+                <div>
+                    {{ form_label(form.password, 'Mot de passe', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.password, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none'}}) }}
+                    {{ form_errors(form.password) }}
+                    <p class="text-sm text-gray-500 mt-1">Minimum 6 caractères</p>
+                </div>
+
+                <!-- Niveau -->
+                <div>
+                    {{ form_label(form.niveau, 'Niveau scolaire', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.niveau, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none'}}) }}
+                    {{ form_errors(form.niveau) }}
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-8">
+                <button type="submit" class="w-full bg-primary hover:bg-blue-400 text-white font-bold py-4 px-6 rounded-xl transition shadow-lg">
+                    Ajouter mon enfant
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+
+        <!-- Information -->
+        <div class="mt-8 bg-blue-50 rounded-2xl p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Informations importantes</h3>
+            <ul class="space-y-3">
+                <li class="flex items-start">
+                    <svg class="w-6 h-6 text-green-500 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span class="text-gray-700">Votre enfant pourra se connecter avec l'email et le mot de passe que vous définissez</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-6 h-6 text-green-500 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span class="text-gray-700">Vous pourrez ensuite inscrire votre enfant à différents cours</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-6 h-6 text-green-500 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span class="text-gray-700">Le niveau scolaire permet de recommander des cours adaptés à l'âge de votre enfant</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}

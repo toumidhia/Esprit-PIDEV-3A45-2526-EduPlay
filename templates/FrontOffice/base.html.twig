@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html class="light" lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}EduPlay - Learn, Play, and Grow!{% endblock %}</title>
+    
+    {# Tailwind CSS #}
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    
+    {% block stylesheets %}
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#63b7f2",
+                        "accent-yellow": "#F7C56E",
+                        "accent-pink": "#F29BAE",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101b22",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+    {% endblock %}
+</head>
+<body class="bg-background-light">
+    {# Top Navigation Bar #}
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-3xl font-bold">
+                        <span class="text-primary">Edu</span><span class="text-gray-800">Play</span>
+                    </h1>
+                </div>
+
+                <nav class="hidden md:flex space-x-6">
+                    <a href="{{ path('app_course_index') }}" class="text-gray-700 hover:text-primary font-semibold transition">Cours</a>
+                    {% if app.user and app.user.isParent %}
+                        <a href="{{ path('app_subscription_list') }}" class="text-gray-700 hover:text-primary font-semibold transition">Mes Inscriptions</a>
+                        <a href="{{ path('app_enfant_new') }}" class="text-gray-700 hover:text-primary font-semibold transition">Ajouter un enfant</a>
+                    {% endif %}
+                </nav>
+
+                <div class="flex items-center space-x-4">
+                    {% if app.user %}
+                        <div class="flex items-center space-x-2">
+                            <div class="bg-primary text-white rounded-full w-10 h-10 flex items-center justify-center font-bold">
+                                {{ app.user.firstName|slice(0, 1) }}{{ app.user.lastName|slice(0, 1) }}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800">{{ app.user.firstName }}</p>
+                                <p class="text-xs text-gray-500">{{ app.user.type|capitalize }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if app.user.isParent or app.user.isEnfant %}
+                            <a href="{{ path('app_logout') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition">
+                                Déconnexion
+                            </a>
+                        {% else %}
+                            <a href="{{ path('app_dashboard') }}" class="bg-primary hover:bg-blue-400 text-white font-semibold py-2 px-4 rounded-lg transition">
+                                Dashboard
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ path('app_login') }}" class="bg-primary hover:bg-blue-400 text-white font-semibold py-2 px-4 rounded-lg transition">
+                            Connexion
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {# Flash Messages #}
+    <div class="container mx-auto px-6 mt-4">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="{% if label == 'success' %}bg-green-100 border-green-400 text-green-700{% elseif label == 'error' or label == 'danger' %}bg-red-100 border-red-400 text-red-700{% else %}bg-blue-100 border-blue-400 text-blue-700{% endif %} border-l-4 p-4 mb-4 rounded-lg shadow-md">
+                    <p class="font-semibold">{{ message }}</p>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+    {# Main Content #}
+    <main class="container mx-auto px-6 py-8">
+        {% block body %}{% endblock %}
+    </main>
+
+    {# Footer #}
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-8">
+            <div class="flex flex-wrap justify-between">
+                <div class="w-full md:w-1/3 mb-6 md:mb-0">
+                    <h3 class="text-2xl font-bold mb-4">
+                        <span class="text-primary">Edu</span>Play
+                    </h3>
+                    <p class="text-gray-400">Apprenez, jouez et grandissez avec nos cours pour enfants!</p>
+                </div>
+                
+                <div class="w-full md:w-1/3">
+                    <h4 class="font-semibold mb-4">Liens Rapides</h4>
+                    <ul class="space-y-2">
+                        <li><a href="{{ path('app_course_parent_browse') }}" class="text-gray-400 hover:text-primary transition">Parcourir les Cours</a></li>
+                        <li><a href="{{ path('app_home') }}" class="text-gray-400 hover:text-primary transition">Accueil</a></li>
+
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
+                <p>&copy; 2026 EduPlay. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

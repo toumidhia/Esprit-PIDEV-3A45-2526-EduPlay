@@ -1,0 +1,138 @@
+{% extends 'BackOffice/base.html.twig' %}
+
+{% block title %}Liste des Cours - EduPlay{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3"><i class="bi bi-book"></i> Gestion des Cours</h1>
+        {% if is_granted('ROLE_TEACHER') %}
+            <a href="{{ path('app_course_new') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nouveau Cours
+            </a>
+        {% endif %}
+    </div>
+
+    {# Search Bar #}
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="{{ path('app_course_index') }}">
+                <div class="search-wrapper">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher un cours..."
+                           value="{{ filters.search|default('') }}">
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# Courses Table #}
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-list-ul"></i> Liste des Cours ({{ courses|length }})
+        </div>
+        <div class="card-body">
+            {% if courses|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titre</th>
+                            <th>Niveau</th>
+                            <th>Durée</th>
+                            <th>Enseignant</th>
+                            <th>Statut</th>
+                            <th>Créé le</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for course in courses %}
+                            <tr>
+                                <td>#{{ course.id }}</td>
+                                <td>
+                                    <strong>{{ course.title }}</strong>
+                                    {% if course.pdfFile %}
+                                        <i class="bi bi-file-pdf text-danger" title="PDF disponible"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if course.level == 'Beginner' %}
+                                        <span class="badge bg-success">Débutant</span>
+                                    {% elseif course.level == 'Intermediate' %}
+                                        <span class="badge bg-warning">Intermédiaire</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Avancé</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ course.durationTraining }}</td>
+                                <td>
+                                    {% if course.teacherId %}
+                                        {{ course.teacherId.firstName }} {{ course.teacherId.lastName }}
+                                    {% else %}
+                                        <span class="text-muted">Non assigné</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if course.status == 'pending' %}
+                                        <span class="badge bg-warning">En attente</span>
+                                    {% elseif course.status == 'accepted' %}
+                                        <span class="badge bg-success">Accepté</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Rejeté</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ course.createdAt|date('d/m/Y') }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ path('app_course_show', {'id': course.id}) }}" class="btn btn-sm btn-info" title="Voir">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                        {% if is_granted('ROLE_ADMIN') %}
+                                            {% if course.status == 'pending' %}
+                                                <form method="post" action="{{ path('app_course_accept', {'id': course.id}) }}" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ course.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Approuver" onclick="return confirm('Approuver ce cours?')">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{{ path('app_course_reject', {'id': course.id}) }}" style="display:inline;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ course.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-warning" title="Rejeter" onclick="return confirm('Rejeter ce cours?')">
+                                                        <i class="bi bi-x-circle"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        {% endif %}
+
+                                        {% if is_granted('ROLE_TEACHER') and course.teacherId and course.teacherId.id == app.user.id and course.status == 'pending' %}
+                                            <a href="{{ path('app_course_edit', {'id': course.id}) }}" class="btn btn-sm btn-primary" title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        {% endif %}
+
+                                        {% if is_granted('ROLE_ADMIN') or (is_granted('ROLE_TEACHER') and course.teacherId and course.teacherId.id == app.user.id and course.status == 'pending') %}
+                                            <form method="post" action="{{ path('app_course_delete', {'id': course.id}) }}" style="display:inline;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ course.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Supprimer" onclick="return confirm('Supprimer ce cours?')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-center text-muted my-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem;"></i><br>
+                    Aucun cours trouvé.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

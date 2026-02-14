@@ -1,0 +1,130 @@
+{% extends 'BackOffice/base.html.twig' %}
+
+{% block title %}{{ seance.title }} - EduPlay{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <a href="{{ path('app_seance_index') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Retour à la liste
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-calendar-event"></i> {{ seance.title }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <label class="fw-bold">Cours associé:</label>
+                    <p>
+                        <a href="{{ path('app_course_show', {'id': seance.course.id}) }}" class="text-decoration-none">
+                            <i class="bi bi-book"></i> {{ seance.course.title }}
+                        </a>
+                    </p>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold"><i class="bi bi-calendar3"></i> Date:</label>
+                        <p>{{ seance.date|date('d/m/Y') }} ({{ seance.date|date('l') }})</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold"><i class="bi bi-clock"></i> Horaire:</label>
+                        <p>{{ seance.startTime|date('H:i') }} - {{ seance.endTime|date('H:i') }}</p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold"><i class="bi bi-geo-alt"></i> Lieu:</label>
+                        <p>{{ seance.location }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold"><i class="bi bi-flag"></i> Statut:</label>
+                        <p>
+                            {% if seance.status == 'scheduled' %}
+                                <span class="badge bg-primary">Planifiée</span>
+                            {% elseif seance.status == 'ongoing' %}
+                                <span class="badge bg-success">En cours</span>
+                            {% elseif seance.status == 'completed' %}
+                                <span class="badge bg-secondary">Terminée</span>
+                            {% else %}
+                                <span class="badge bg-danger">Annulée</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                {% if seance.description %}
+                    <div class="mb-3">
+                        <label class="fw-bold"><i class="bi bi-file-text"></i> Description:</label>
+                        <p class="text-muted">{{ seance.description }}</p>
+                    </div>
+                {% endif %}
+
+                <div class="mt-4 d-flex gap-2">
+                    <a href="{{ path('app_seance_edit', {'id': seance.id}) }}" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Modifier
+                    </a>
+                    
+                    <form method="post" action="{{ path('app_seance_delete', {'id': seance.id}) }}" style="display:inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ seance.id) }}">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette séance ?')">
+                            <i class="bi bi-trash"></i> Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-info-circle"></i> Détails du cours</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Titre:</strong><br>
+                    {{ seance.course.title }}
+                </p>
+
+                <p><strong>Niveau:</strong><br>
+                    {% if seance.course.level == 'Beginner' %}
+                        <span class="badge bg-success">Débutant</span>
+                    {% elseif seance.course.level == 'Intermediate' %}
+                        <span class="badge bg-warning">Intermédiaire</span>
+                    {% else %}
+                        <span class="badge bg-danger">Avancé</span>
+                    {% endif %}
+                </p>
+
+                <p><strong>Enseignant:</strong><br>
+                    {{ seance.course.teacherId.firstName }} {{ seance.course.teacherId.lastName }}
+                </p>
+
+                <p><strong>Durée du cours:</strong><br>
+                    {{ seance.course.durationTraining }} semaines
+                </p>
+
+                <a href="{{ path('app_course_show', {'id': seance.course.id}) }}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-eye"></i> Voir le cours
+                </a>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="bi bi-clock-history"></i> Durée de la séance</h5>
+            </div>
+            <div class="card-body">
+                {% set duration = seance.startTime.diff(seance.endTime) %}
+                <p class="text-center mb-0">
+                    <span class="h3">{{ duration.h }}h {{ duration.i }}min</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,214 @@
+{# templates/backoffice/course/show.html.twig #}
+{% extends 'BackOffice/base.html.twig' %}
+
+{% block title %}Détails du cours - {{ course.title }}{% endblock %}
+
+{% block body %}
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">
+            <i class="bi bi-book"></i> Détails du cours
+        </h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_course_index') }}">Cours</a></li>
+            <li class="breadcrumb-item active">{{ course.title }}</li>
+        </ol>
+
+        <div class="row">
+            <div class="col-xl-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Informations du cours
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Titre :</div>
+                            <div class="col-md-9">{{ course.title }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Description :</div>
+                            <div class="col-md-9">{{ course.description }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Niveau :</div>
+                            <div class="col-md-9">
+                            <span class="badge bg-{{
+                            course.level == 'Beginner' ? 'success' :
+                            (course.level == 'Intermediate' ? 'warning' : 'danger')
+                            }}">
+                                {{ course.level == 'Beginner' ? 'Débutant' :
+                                (course.level == 'Intermediate' ? 'Intermédiaire' : 'Avancé') }}
+                            </span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Durée :</div>
+                            <div class="col-md-9">{{ course.durationTraining }} semaines</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Enseignant :</div>
+                            <div class="col-md-9">{{ course.teacherId.fullName }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Date de création :</div>
+                            <div class="col-md-9">{{ course.createdAt|date('d/m/Y H:i') }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Statut :</div>
+                            <div class="col-md-9">
+                                {% if course.status == 'pending' %}
+                                    <span class="badge bg-warning">En attente</span>
+                                {% elseif course.status == 'accepted' %}
+                                    <span class="badge bg-success">Accepté</span>
+                                {% elseif course.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejeté</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">PDF :</div>
+                            <div class="col-md-9">
+                                {% if course.pdfFile %}
+                                    <a href="{{ asset('uploads/courses/' ~ course.pdfFile) }}" target="_blank" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-file-pdf"></i> Télécharger le PDF
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Aucun PDF</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="bi bi-people me-1"></i>
+                        Inscriptions ({{ course.subscriptions|length }})
+                    </div>
+                    <div class="card-body">
+                        {% if course.subscriptions|length > 0 %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                    <tr>
+                                        <th>Enfant</th>
+                                        <th>Parent</th>
+                                        <th>Date d'inscription</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for subscription in course.subscriptions %}
+                                        <tr>
+                                            <td>{{ subscription.kid.fullName }}</td>
+                                            <td>{{ subscription.parent.fullName }}</td>
+                                            <td>{{ subscription.subscribedAt|date('d/m/Y') }}</td>
+                                            <td>
+                                                {% if subscription.active %}
+                                                    <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">Aucune inscription pour ce cours.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                {# Actions card #}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="bi bi-gear me-1"></i>
+                        Actions
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            {# Modifier le cours #}
+                            <a href="{{ path('app_course_edit', {'id': course.id}) }}" class="btn btn-warning">
+                                <i class="bi bi-pencil"></i> Modifier
+                            </a>
+
+                            {# Actions admin - CORRIGÉ: utilise accept et reject au lieu de approve #}
+                            {% if is_granted('ROLE_ADMIN') and course.status == 'pending' %}
+                                <form method="post" action="{{ path('app_course_accept', {'id': course.id}) }}" style="display: inline-block;" class="w-100">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ course.id) }}">
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="bi bi-check-circle"></i> Accepter le cours
+                                    </button>
+                                </form>
+
+                                <form method="post" action="{{ path('app_course_reject', {'id': course.id}) }}" style="display: inline-block;" class="w-100">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ course.id) }}">
+                                    <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce cours ?');">
+                                        <i class="bi bi-x-circle"></i> Rejeter le cours
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                            {# Supprimer le cours - uniquement pour admin ou teacher du cours #}
+                            {% if is_granted('ROLE_ADMIN') or (is_granted('ROLE_TEACHER') and app.user == course.teacherId and course.status == 'pending') %}
+                                <form method="post" action="{{ path('app_course_delete', {'id': course.id}) }}"
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible.');"
+                                      class="w-100">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ course.id) }}">
+                                    <button type="submit" class="btn btn-danger w-100">
+                                        <i class="bi bi-trash"></i> Supprimer
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                            <hr>
+
+                            <a href="{{ path('app_course_index') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Retour à la liste
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {# Statistiques rapides #}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="bi bi-bar-chart me-1"></i>
+                        Statistiques
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Inscriptions actives
+                                <span class="badge bg-primary rounded-pill">
+                                {% set activeCount = 0 %}
+                                    {% for sub in course.subscriptions %}
+                                        {% if sub.active %}
+                                            {% set activeCount = activeCount + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ activeCount }}
+                            </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Séances
+                                <span class="badge bg-primary rounded-pill">{{ course.seances|length }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Statut
+                                <span class="badge bg-{{ course.status == 'pending' ? 'warning' : (course.status == 'accepted' ? 'success' : 'danger') }}">
+                                {{ course.status == 'pending' ? 'En attente' : (course.status == 'accepted' ? 'Accepté' : 'Rejeté') }}
+                            </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

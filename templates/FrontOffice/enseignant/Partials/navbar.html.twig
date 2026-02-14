@@ -1,0 +1,38 @@
+<header class="bg-white border-b border-gray-200 px-6 py-4">
+    <div class="flex items-center justify-between">
+
+        <div class="flex items-center gap-4">
+            <button class="mobile-menu-btn p-2 rounded-lg hover:bg-gray-100 md:hidden">
+                <span class="material-symbols-outlined text-gray-700">menu</span>
+            </button>
+
+            <div class="hidden md:flex items-center gap-2 text-sm">
+                <a href="#" class="text-gray-600 hover:text-blue-600">Dashboard</a>
+                <span class="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
+                <span class="text-gray-900 font-medium">Overview</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="hidden md:block relative">
+                <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+                <input
+                    type="text"
+                    class="pl-10 pr-4 py-2 w-64 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                    placeholder="Search users, courses..."
+                >
+            </div>
+
+            <button class="p-2 rounded-lg hover:bg-gray-100 relative">
+                <span class="material-symbols-outlined text-gray-700">notifications</span>
+                <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
+            </button>
+
+            <a href="{{ path('app_course_new') }}" class="hidden md:flex px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm gap-2">
+                <span class="material-symbols-outlined text-sm">add</span>
+                New Course
+            </a>
+        </div>
+
+    </div>
+</header>

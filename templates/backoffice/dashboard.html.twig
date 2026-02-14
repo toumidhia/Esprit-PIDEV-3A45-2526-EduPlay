@@ -1,0 +1,299 @@
+{% extends 'backoffice/base.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body %}
+    <!-- [ page-header ] start -->
+    <div class="page-header">
+        <div class="page-header-left d-flex align-items-center">
+            <div class="page-header-title">
+                <h5 class="m-b-10">Dashboard</h5>
+            </div>
+        </div>
+    </div>
+    <!-- [ page-header ] end -->
+
+    <!-- [ Main Content ] start -->
+    <div class="main-content">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <!-- Total Courses Card -->
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="fw-bold d-block">
+                                <span class="d-block text-muted">Total Courses</span>
+                                <span class="fs-20 fw-bold d-block text-dark">{{ statistics.total ?? 0 }}</span>
+                            </div>
+                            <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                                <i class="feather-book-open"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Courses Card -->
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="fw-bold d-block">
+                                <span class="d-block text-muted">Pending</span>
+                                <span class="fs-20 fw-bold d-block text-warning">{{ statistics.pending ?? 0 }}</span>
+                            </div>
+                            <div class="avatar-text avatar-lg bg-soft-warning text-warning">
+                                <i class="feather-clock"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accepted Courses Card -->
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="fw-bold d-block">
+                                <span class="d-block text-muted">Accepted</span>
+                                <span class="fs-20 fw-bold d-block text-success">{{ statistics.accepted ?? 0 }}</span>
+                            </div>
+                            <div class="avatar-text avatar-lg bg-soft-success text-success">
+                                <i class="feather-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rejected Courses Card -->
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="fw-bold d-block">
+                                <span class="d-block text-muted">Rejected</span>
+                                <span class="fs-20 fw-bold d-block text-danger">{{ statistics.rejected ?? 0 }}</span>
+                            </div>
+                            <div class="avatar-text avatar-lg bg-soft-danger text-danger">
+                                <i class="feather-x-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seances Statistics (Admin Only) -->
+        {% if is_granted('ROLE_ADMIN') and seanceStatistics %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card stretch stretch-full">
+                        <div class="card-header">
+                            <h5 class="card-title">Seances Overview</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar-text avatar-md bg-soft-info text-info me-3">
+                                            <i class="feather-calendar"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted">Total Seances</small>
+                                            <div class="fw-medium">{{ seanceStatistics.total ?? 0 }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar-text avatar-md bg-soft-success text-success me-3">
+                                            <i class="feather-arrow-up"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted">Upcoming</small>
+                                            <div class="fw-medium">{{ seanceStatistics.upcoming ?? 0 }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar-text avatar-md bg-soft-warning text-warning me-3">
+                                            <i class="feather-arrow-down"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted">Past</small>
+                                            <div class="fw-medium">{{ seanceStatistics.past ?? 0 }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Recent Courses & Pending Approval -->
+        <div class="row">
+            <!-- Recent Courses -->
+            <div class="col-lg-8">
+                <div class="card stretch stretch-full">
+                    <div class="card-header">
+                        <h5 class="card-title">Recent Courses</h5>
+                        <a href="{{ path('app_course_index') }}" class="btn btn-sm btn-light-brand">View All</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Course Title</th>
+                                    <th>Teacher</th>
+                                    <th>Level</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for course in recentCourses %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ path('app_course_show', {id: course.id}) }}" class="fw-bold text-dark">
+                                                {{ course.title|length > 30 ? course.title|slice(0, 30) ~ '...' : course.title }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            {% if course.teacherId %}
+                                                {{ course.teacherId.firstName }} {{ course.teacherId.lastName }}
+                                            {% else %}
+                                                <span class="text-muted">Not assigned</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ course.level }}</td>
+                                        <td>
+                                            {% if course.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elseif course.status == 'accepted' %}
+                                                <span class="badge bg-success">Accepted</span>
+                                            {% elseif course.status == 'rejected' %}
+                                                <span class="badge bg-danger">Rejected</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('app_course_show', {id: course.id}) }}" class="btn btn-sm btn-light-brand">
+                                                <i class="feather-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <div class="text-muted">
+                                                <i class="feather-inbox fs-1 mb-3 d-block"></i>
+                                                <p>No courses found</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Approval (Admin Only) -->
+            {% if is_granted('ROLE_ADMIN') %}
+                <div class="col-lg-4">
+                    <div class="card stretch stretch-full">
+                        <div class="card-header">
+                            <h5 class="card-title">Pending Approval</h5>
+                            <span class="badge bg-warning">{{ pendingCourses|length }}</span>
+                        </div>
+                        <div class="card-body">
+                            {% if pendingCourses is not empty %}
+                                <div class="list-group list-group-flush">
+                                    {% for course in pendingCourses %}
+                                        <div class="list-group-item border-0 px-0 py-3">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <a href="{{ path('app_course_show', {id: course.id}) }}" class="fw-bold text-dark">
+                                                    {{ course.title|length > 25 ? course.title|slice(0, 25) ~ '...' : course.title }}
+                                                </a>
+                                                <span class="badge bg-warning">Pending</span>
+                                            </div>
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <small class="text-muted">
+                                                    {% if course.teacherId %}
+                                                        {{ course.teacherId.firstName }} {{ course.teacherId.lastName }}
+                                                    {% endif %}
+                                                </small>
+                                                <div class="btn-group btn-group-sm">
+                                                    <form method="post" action="{{ path('app_course_accept', {id: course.id}) }}" class="d-inline">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ course.id) }}">
+                                                        <button type="submit" class="btn btn-sm btn-success">
+                                                            <i class="feather-check"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" action="{{ path('app_course_reject', {id: course.id}) }}" class="d-inline">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ course.id) }}">
+                                                        <button type="submit" class="btn btn-sm btn-danger">
+                                                            <i class="feather-x"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="{{ path('app_course_index', {status: 'pending'}) }}" class="btn btn-light-brand btn-sm">
+                                        View All Pending Courses
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="feather-check-circle fs-1 mb-3 d-block"></i>
+                                        <p>No pending courses</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card stretch stretch-full mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title">Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+
+                                <a href="{{ path('app_seance_new') }}" class="btn btn-info">
+                                    <i class="feather-calendar me-2"></i>Schedule Seance
+                                </a>
+                                <a href="{{ path('app_seance_index') }}" class="btn btn-light-brand">
+                                    <i class="feather-list me-2"></i>View All Seances
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- [ Main Content ] end -->
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Initialize any dashboard-specific JavaScript here
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard loaded');
+        });
+    </script>
+{% endblock %}

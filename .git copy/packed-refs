@@ -1,0 +1,6 @@
+# pack-refs with: peeled fully-peeled sorted 
+a64dd0d510738d9d3c43c316fcb91c6ee5ad7ce5 refs/remotes/origin/gestionBibliotheque
+11151bedcedf907e33e743f9b63733f2c5bc879b refs/remotes/origin/gestionEvent
+e95aad29b69142143fa406ba32cc7ef8865785fe refs/remotes/origin/gestionMarketplace
+179db4433f4ffc2b062a7e92f37144d605de5331 refs/remotes/origin/gestionUser
+53686db972dea885766c98e24820a81483e7e250 refs/remotes/origin/main

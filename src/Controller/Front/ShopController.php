@@ -3,7 +3,7 @@
 namespace App\Controller\Front;
 
 use App\Repository\ProductRepository;
-use App\Service\RecommendationService;
+use App\Service\RecommendationProductService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ShopController extends AbstractController
 {
     public function __construct(
-        private RecommendationService $recommendationService,
+        private RecommendationProductService $RecommendationProductService,
     ) {
     }
 
@@ -30,7 +30,7 @@ class ShopController extends AbstractController
         $stats = $productRepository->getStatsFront();
         
         // Recommandations intelligentes
-        $recommendations = $this->recommendationService->getRecommendationsForUser(null, 4);
+        $recommendations = $this->RecommendationProductService->getRecommendationsForUser(null, 4);
 
         return $this->render('front/shop/index.html.twig', [
             'products' => $products,
@@ -53,8 +53,8 @@ class ShopController extends AbstractController
         }
 
         // Recommandations : produits similaires et fréquemment achetés ensemble
-        $similarProducts = $this->recommendationService->getContentBasedRecommendations($product, 3);
-        $frequentlyBoughtTogether = $this->recommendationService->getFrequentlyBoughtTogether($product, 3);
+        $similarProducts = $this->RecommendationProductService->getContentBasedRecommendations($product, 3);
+        $frequentlyBoughtTogether = $this->RecommendationProductService->getFrequentlyBoughtTogether($product, 3);
 
         return $this->render('front/shop/show.html.twig', [
             'product' => $product,

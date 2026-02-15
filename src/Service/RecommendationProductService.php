@@ -7,7 +7,7 @@ use App\Entity\User;
 use App\Repository\CommandeRepository;
 use App\Repository\ProductRepository;
 
-class RecommendationService
+class RecommendationProductService
 {
     public function __construct(
         private ProductRepository $productRepository,

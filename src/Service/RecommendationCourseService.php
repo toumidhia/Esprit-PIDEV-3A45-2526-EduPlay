@@ -1,5 +1,5 @@
 <?php
-// src/Service/RecommendationService.php
+// src/Service/RecommendationCourseService.php
 
 namespace App\Service;
 
@@ -18,7 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
  * 3. Content-Based: Similar to already enrolled courses
  * 4. Popularity-Based: Trending courses
  */
-class RecommendationService
+class RecommendationCourseService
 {
     private EntityManagerInterface $entityManager;
     private CourseRepository $courseRepository;

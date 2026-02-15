@@ -35,7 +35,7 @@
         "symfony/validator": "6.4.*",
         "symfony/yaml": "6.4.*",
         "tecnickcom/tcpdf": "^6.10",
-        "vich/uploader-bundle": "^2.9"
+        "vich/uploader-bundle": "^2.9",
         "twig/twig": "^3.0"
     },
     "require-dev": {

@@ -8,7 +8,7 @@ use App\Form\CourseType;
 use App\Repository\CourseRepository;
 use App\Repository\UserRepository;
 use App\Repository\SubscriptionRepository;
-use App\Service\RecommendationService;
+use App\Service\RecommendationCourseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,7 +46,7 @@ final class CourseController extends AbstractController
         CourseRepository $courseRepository,
         UserRepository $userRepository,
         SubscriptionRepository $subscriptionRepository,
-        RecommendationService $recommendationService
+        RecommendationCourseService $RecommendationCourseService
     ): Response
     {
         // Check if user is authenticated
@@ -87,7 +87,7 @@ final class CourseController extends AbstractController
             // Get recommendations for each kid
             $recommendations = [];
             foreach ($kids as $kid) {
-                $kidRecs = $recommendationService->getRecommendationsForKid($kid, 4);
+                $kidRecs = $RecommendationCourseService->getRecommendationsForKid($kid, 4);
                 if (!empty($kidRecs)) {
                     $recommendations[] = [
                         'kid' => $kid,
@@ -106,7 +106,7 @@ final class CourseController extends AbstractController
             $kids = [];
 
             // Get recommendations for this kid (courses they are NOT subscribed to)
-            $recommendations = $recommendationService->getRecommendationsForKid($user, 6);
+            $recommendations = $RecommendationCourseService->getRecommendationsForKid($user, 6);
         } else {
             // Admin sees all courses with filters
             $courses = $courseRepository->findAll();
@@ -636,7 +636,7 @@ final class CourseController extends AbstractController
         CourseRepository $courseRepository,
         UserRepository $userRepository,
         SubscriptionRepository $subscriptionRepository,
-        RecommendationService $recommendationService
+        RecommendationCourseService $RecommendationCourseService
     ): Response {
         /** @var \App\Entity\User $parent */
         $parent = $this->getUser();
@@ -658,7 +658,7 @@ final class CourseController extends AbstractController
         // AI RECOMMENDATIONS for parent
         $recommendations = [];
         foreach ($kids as $kid) {
-            $kidRecs = $recommendationService->getRecommendationsForKid($kid, 4);
+            $kidRecs = $RecommendationCourseService->getRecommendationsForKid($kid, 4);
             if (!empty($kidRecs)) {
                 $recommendations[] = [
                     'kid' => $kid,

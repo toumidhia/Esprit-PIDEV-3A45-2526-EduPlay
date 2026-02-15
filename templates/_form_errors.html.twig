@@ -1,0 +1,12 @@
+{% macro show(field) %}
+    {% if field is defined and field is not null %}
+        {% set errors = field.vars.errors %}
+        {% if errors|length > 0 %}
+            <ul class="text-sm text-red-600 mt-2 space-y-1">
+                {% for err in errors %}
+                    <li>{{ err.message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endif %}
+{% endmacro %}

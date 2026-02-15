@@ -12,6 +12,13 @@ parameters:
     app.admin_email: 'noreply@eduplay.com'
     app.admin_name: 'EduPlay'
 
+    upload_directory: '%kernel.project_dir%/public/uploads/games'
+    upload_tmp_directory_games: '%kernel.project_dir%/public/uploads/tmp'
+    event_images_dir: '%kernel.project_dir%/public/uploads/events'
+    uploads_directory: '%kernel.project_dir%/public/uploads'
+    uploads_path: '/uploads'
+    dfs_directory: '%kernel.project_dir%/public/pdfs'
+
 services:
     # default configuration for services in *this* file
     _defaults:

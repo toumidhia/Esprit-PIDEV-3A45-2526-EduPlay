@@ -1,0 +1,143 @@
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#63b7f2",
+              "accent-yellow": "#F7C56E",
+              "accent-pink": "#F29BAE",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101b22",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .blob {
+        position: absolute;
+        filter: blur(60px);
+        z-index: -1;
+        opacity: 0.4;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+
+
+
+
+
+
+
+
+
+
+
+{% block body %}
+<div class="container mx-auto px-6 py-8 max-w-4xl">
+
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{{ path('teacher_level_index') }}"
+           class="inline-flex items-center gap-2 text-primary font-bold hover:underline">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Back to Levels
+        </a>
+    </div>
+
+    <!-- Level Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-primary to-accent-pink p-8 text-white">
+            <h1 class="text-4xl font-extrabold mb-2">{{ level.name }}</h1>
+
+            {% if level.description %}
+                <p class="text-white/90">{{ level.description }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Details -->
+        <div class="p-8 space-y-6">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Name -->
+                <div class="flex items-start gap-4 p-4 bg-background-light dark:bg-gray-900 rounded-lg">
+                    <div class="bg-primary/10 p-3 rounded-full">
+                        <span class="material-symbols-outlined text-primary">signal_cellular_alt</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-[#111518] dark:text-white mb-1">Level Name</h3>
+                        <p class="text-[#617989] dark:text-gray-400">{{ level.name }}</p>
+                    </div>
+                </div>
+
+                <!-- Games Count -->
+                <div class="flex items-start gap-4 p-4 bg-background-light dark:bg-gray-900 rounded-lg">
+                    <div class="bg-accent-pink/10 p-3 rounded-full">
+                        <span class="material-symbols-outlined text-accent-pink">sports_esports</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-[#111518] dark:text-white mb-1">Games Count</h3>
+                        <p class="text-[#617989] dark:text-gray-400">
+                            {{ gamesCount|length }}
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Games List -->
+            {% if gamesCount > 0 %}
+    <div class="pt-6 border-t border-[#dbe1e6] dark:border-gray-700">
+        <h3 class="font-bold text-lg mb-4">Games in this level</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for game in games %}
+                <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg flex justify-between items-center">
+                    <span>{{ game.name }}</span>
+                    <a href="{{ path('teacher_game_show', {'id': game.id}) }}"
+                       class="text-primary text-sm font-bold hover:underline">
+                        View
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+            <!-- Actions -->
+            <div class="flex flex-wrap gap-4 pt-6 border-t border-[#dbe1e6] dark:border-gray-700">
+
+                <a href="{{ path('teacher_level_edit', {'id': level.id}) }}"
+                   class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform shadow-lg">
+                    <span class="material-symbols-outlined">edit</span>
+                    Edit Level
+                </a>
+                <div>
+
+                {{ include('BackOffice/teacher/level/_delete_form.html.twig') }}</div>
+
+                <a href="{{ path('teacher_level_index') }}"
+                   class="flex items-center gap-2 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-[#111518] dark:text-white rounded-full font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Back to List
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

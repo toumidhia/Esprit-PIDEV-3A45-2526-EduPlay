@@ -3,133 +3,289 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>{% block title %}EduPlay - Learn, Play, and Grow!{% endblock %}</title>
-    
-    {# Tailwind CSS #}
+    <title>EduPlay - Apprendre, Jouer et Grandir !</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-    
-    {% block stylesheets %}
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#63b7f2",
-                        "accent-yellow": "#F7C56E",
-                        "accent-pink": "#F29BAE",
-                        "background-light": "#f6f7f8",
-                        "background-dark": "#101b22",
-                    },
-                    fontFamily: {
-                        "display": ["Plus Jakarta Sans"]
-                    },
-                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
-                },
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#63b7f2",
+              "accent-yellow": "#F7C56E",
+              "accent-pink": "#F29BAE",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101b22",
             },
-        }
+            fontFamily: {
+              "display": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
     </script>
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
+      .blob {
+        position: absolute;
+        filter: blur(60px);
+        z-index: -1;
+        opacity: 0.4;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
     </style>
-    {% endblock %}
 </head>
-<body class="bg-background-light">
-    {# Top Navigation Bar #}
-    <header class="bg-white shadow-md">
-        <div class="container mx-auto px-6 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-4">
-                    <h1 class="text-3xl font-bold">
-                        <span class="text-primary">Edu</span><span class="text-gray-800">Play</span>
-                    </h1>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111518] dark:text-white transition-colors duration-300">
+    <!-- Formes décoratives -->
+    <div class="blob bg-primary w-64 h-64 top-0 -left-20"></div>
+    <div class="blob bg-accent-pink w-96 h-96 top-1/2 -right-20"></div>
+    <div class="blob bg-accent-yellow w-72 h-72 bottom-0 left-1/4"></div>
+    
+    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+        <!-- Barre de navigation -->
+        <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#dbe1e6] dark:border-gray-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-6 md:px-20 lg:px-40 py-4 sticky top-0 z-50">
+            <div class="flex items-center gap-3">
+                <div class="size-10 bg-primary rounded-full flex items-center justify-center text-white">
+                    <span class="material-symbols-outlined text-2xl">rocket_launch</span>
                 </div>
-
-                <nav class="hidden md:flex space-x-6">
-                    <a href="{{ path('app_course_index') }}" class="text-gray-700 hover:text-primary font-semibold transition">Cours</a>
-                    {% if app.user and app.user.isParent %}
-                        <a href="{{ path('app_subscription_list') }}" class="text-gray-700 hover:text-primary font-semibold transition">Mes Inscriptions</a>
-                        <a href="{{ path('app_enfant_new') }}" class="text-gray-700 hover:text-primary font-semibold transition">Ajouter un enfant</a>
-                    {% endif %}
-                </nav>
-
-                <div class="flex items-center space-x-4">
-                    {% if app.user %}
-                        <div class="flex items-center space-x-2">
-                            <div class="bg-primary text-white rounded-full w-10 h-10 flex items-center justify-center font-bold">
-                                {{ app.user.firstName|slice(0, 1) }}{{ app.user.lastName|slice(0, 1) }}
+                <h2 class="text-2xl font-extrabold tracking-tight">EduPlay</h2>
+            </div>
+            <nav class="hidden md:flex items-center gap-8">
+                <a class="text-sm font-bold hover:text-primary transition-colors" href="#">Jeux</a>
+                <a class="text-sm font-bold hover:text-primary transition-colors" href="{{ path('app_library') }}">Bibliothèque</a>
+                <a class="text-sm font-bold hover:text-primary transition-colors" href="#">Boutique</a>
+                <a class="text-sm font-bold hover:text-primary transition-colors" href="#">Pour les Enseignants</a>
+                <a class="text-sm font-bold hover:text-primary transition-colors" href="#">Pour les Parents</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <button class="hidden sm:flex text-sm font-bold px-4 py-2">S'inscrire</button>
+                <button class="flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-11 px-6 bg-primary text-white text-sm font-bold leading-normal shadow-lg shadow-primary/30 hover:scale-105 transition-transform">
+                    <span>Connexion</span>
+                </button>
+            </div>
+        </header>
+        
+        <main class="flex-1">
+            <!-- Section Héros -->
+            <section class="px-6 md:px-20 lg:px-40 py-12 md:py-24">
+                <div class="flex flex-col lg:flex-row items-center gap-12 max-w-[1280px] mx-auto">
+                    <div class="flex flex-col gap-8 flex-1">
+                        <div class="flex flex-col gap-4">
+                            <span class="bg-primary/20 text-primary font-bold px-4 py-1 rounded-full w-fit text-sm">Bienvenue sur EduPlay ✨</span>
+                            <h1 class="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-[-0.04em]">
+                                Apprenez, Jouez et <span class="text-primary">Grandissez</span> Chaque Jour !
+                            </h1>
+                            <p class="text-lg md:text-xl text-[#617989] dark:text-gray-400 font-medium max-w-[500px] leading-relaxed">
+                                La plateforme tout-en-un pour les enfants curieux, les parents bienveillants et les enseignants créatifs.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-4">
+                            <button class="flex min-w-[200px] cursor-pointer items-center justify-center rounded-full h-14 px-8 bg-accent-yellow text-[#111518] text-lg font-extrabold shadow-xl shadow-accent-yellow/20 hover:scale-105 transition-all">
+                                <span>Commencez à Jouer</span>
+                            </button>
+                            <button class="flex items-center gap-2 font-bold px-6 h-14 rounded-full border-2 border-primary/20 hover:bg-primary/5 transition-colors">
+                                <span class="material-symbols-outlined">play_circle</span>
+                                Voir comment ça marche
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex-1 w-full">
+                        <div class="relative w-full aspect-square md:aspect-video lg:aspect-square bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-2xl border-8 border-white dark:border-gray-900 group">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent-pink/20 z-0"></div>
+                            <img alt="Éducation" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Enfants heureux jouant avec des tablettes éducatives dans une classe moderne" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZCQH6FNyxXsPsOb2NzNVSE7YcUwa1a3WWJDZPKpR5JgVh4e0Om2IxaKtgl3cQ5YOnLVzO_j-Om1lFUEGIGnpRrwTRp3EgNXjgSlXvudpt-pJbRPdiWdD6RYbA8xiPIRfVXR5RVWG6e0Csu5a1qcRSVfPhAqOEU1x3AhOYr9scOkCxVTvl4luUuJECxTLVlPoIc-lwPSTUEKl8dkPiB0kjG9KHhSL769fpDyvpPpgs8WkBKWT7ej8h3a-XPNgtPidku2-x0tdOH8kT"/>
+                            <div class="absolute bottom-6 left-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-4 rounded-lg flex items-center gap-3 shadow-lg">
+                                <div class="bg-accent-yellow p-2 rounded-full">
+                                    <span class="material-symbols-outlined text-white">star</span>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-sm">50 000+ Enfants</p>
+                                    <p class="text-xs text-[#617989]">Apprenants Actifs Aujourd'hui</p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="font-semibold text-gray-800">{{ app.user.firstName }}</p>
-                                <p class="text-xs text-gray-500">{{ app.user.type|capitalize }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Grille de Cartes (Section Catégories) -->
+            <section class="px-6 md:px-20 lg:px-40 py-16 bg-white dark:bg-background-dark/40">
+                <div class="max-w-[1280px] mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-end mb-10 px-4">
+                        <div class="flex flex-col gap-2">
+                            <h2 class="text-3xl font-extrabold tracking-tight">Explorez la Zone de Jeu</h2>
+                            <p class="text-[#617989] dark:text-gray-400 font-medium">Cliquez sur un monde pour commencer votre aventure</p>
+                        </div>
+                        <button class="text-primary font-bold flex items-center gap-2 hover:underline">
+                            Voir toutes les catégories <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- Carte Zone de Jeu -->
+                        <div class="group relative overflow-hidden bg-primary rounded-xl aspect-[4/5] p-8 flex flex-col justify-between cursor-pointer shadow-2xl shadow-primary/20 hover:-translate-y-2 transition-transform duration-300">
+                            <div class="absolute -right-10 -top-10 bg-white/10 w-40 h-40 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+                            <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-md">
+                                <span class="material-symbols-outlined text-white text-3xl">sports_esports</span>
+                            </div>
+                            <div class="text-white z-10">
+                                <h3 class="text-3xl font-extrabold mb-2">Zone de Jeu</h3>
+                                <p class="text-white/80 font-medium mb-6">100+ jeux éducatifs pour les 4-12 ans.</p>
+                                <span class="inline-flex items-center justify-center bg-white text-primary font-extrabold px-6 py-3 rounded-full text-sm">
+                                    Plongez-vous
+                                </span>
                             </div>
                         </div>
                         
-                        {% if app.user.isParent or app.user.isEnfant %}
-                            <a href="{{ path('app_logout') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition">
-                                Déconnexion
-                            </a>
-                        {% else %}
-                            <a href="{{ path('app_dashboard') }}" class="bg-primary hover:bg-blue-400 text-white font-semibold py-2 px-4 rounded-lg transition">
-                                Dashboard
-                            </a>
-                        {% endif %}
-                    {% else %}
-                        <a href="{{ path('app_login') }}" class="bg-primary hover:bg-blue-400 text-white font-semibold py-2 px-4 rounded-lg transition">
-                            Connexion
-                        </a>
-                    {% endif %}
+                        <!-- Carte Coin Lecture -->
+                        <div class="group relative overflow-hidden bg-accent-pink rounded-xl aspect-[4/5] p-8 flex flex-col justify-between cursor-pointer shadow-2xl shadow-accent-pink/20 hover:-translate-y-2 transition-transform duration-300">
+                            <div class="absolute -right-10 -top-10 bg-white/10 w-40 h-40 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+                            <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-md">
+                                <span class="material-symbols-outlined text-white text-3xl">menu_book</span>
+                            </div>
+                            <div class="text-white z-10">
+                                <h3 class="text-3xl font-extrabold mb-2">Coin Lecture</h3>
+                                <p class="text-white/80 font-medium mb-6">Histoires interactives et livres narrés pour jeunes lecteurs.</p>
+                                <span class="inline-flex items-center justify-center bg-white text-accent-pink font-extrabold px-6 py-3 rounded-full text-sm">
+                                    Lisez Maintenant
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Carte Boutique Jouets -->
+                        <div class="group relative overflow-hidden bg-accent-yellow rounded-xl aspect-[4/5] p-8 flex flex-col justify-between cursor-pointer shadow-2xl shadow-accent-yellow/20 hover:-translate-y-2 transition-transform duration-300">
+                            <div class="absolute -right-10 -top-10 bg-white/10 w-40 h-40 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+                            <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-md">
+                                <span class="material-symbols-outlined text-white text-3xl">shopping_basket</span>
+                            </div>
+                            <div class="text-[#111518] z-10">
+                                <h3 class="text-3xl font-extrabold mb-2">Boutique Jouets</h3>
+                                <p class="text-[#111518]/70 font-medium mb-6">Kits STEM et outils d'apprentissage physique pour la maison.</p>
+                                <span class="inline-flex items-center justify-center bg-white text-[#111518] font-extrabold px-6 py-3 rounded-full text-sm">
+                                    Magasinez
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </header>
-
-    {# Flash Messages #}
-    <div class="container mx-auto px-6 mt-4">
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="{% if label == 'success' %}bg-green-100 border-green-400 text-green-700{% elseif label == 'error' or label == 'danger' %}bg-red-100 border-red-400 text-red-700{% else %}bg-blue-100 border-blue-400 text-blue-700{% endif %} border-l-4 p-4 mb-4 rounded-lg shadow-md">
-                    <p class="font-semibold">{{ message }}</p>
-                </div>
-            {% endfor %}
-        {% endfor %}
-    </div>
-
-    {# Main Content #}
-    <main class="container mx-auto px-6 py-8">
-        {% block body %}{% endblock %}
-    </main>
-
-    {# Footer #}
-    <footer class="bg-gray-800 text-white mt-16">
-        <div class="container mx-auto px-6 py-8">
-            <div class="flex flex-wrap justify-between">
-                <div class="w-full md:w-1/3 mb-6 md:mb-0">
-                    <h3 class="text-2xl font-bold mb-4">
-                        <span class="text-primary">Edu</span>Play
-                    </h3>
-                    <p class="text-gray-400">Apprenez, jouez et grandissez avec nos cours pour enfants!</p>
-                </div>
-                
-                <div class="w-full md:w-1/3">
-                    <h4 class="font-semibold mb-4">Liens Rapides</h4>
-                    <ul class="space-y-2">
-                        <li><a href="{{ path('app_course_parent_browse') }}" class="text-gray-400 hover:text-primary transition">Parcourir les Cours</a></li>
-                        <li><a href="{{ path('app_home') }}" class="text-gray-400 hover:text-primary transition">Accueil</a></li>
-
-                    </ul>
-                </div>
-            </div>
+            </section>
             
-            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
-                <p>&copy; 2026 EduPlay. Tous droits réservés.</p>
+            <!-- Section Fonctionnalités -->
+            <section class="px-6 md:px-20 lg:px-40 py-24">
+                <div class="max-w-[1280px] mx-auto">
+                    <div class="text-center flex flex-col gap-4 mb-16 items-center">
+                        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight">Pourquoi EduPlay ?</h2>
+                        <p class="text-lg text-[#617989] dark:text-gray-400 font-medium max-w-[600px]">
+                            Conçu pour la sécurité, l'alignement pédagogique et le pur plaisir. Rejoignez des milliers d'éducateurs et de parents.
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="bg-white dark:bg-gray-800 p-10 rounded-xl border border-[#dbe1e6] dark:border-gray-700 hover:shadow-xl transition-all">
+                            <div class="bg-primary/10 text-primary w-14 h-14 rounded-full flex items-center justify-center mb-6">
+                                <span class="material-symbols-outlined text-3xl">shield</span>
+                            </div>
+                            <h3 class="text-xl font-extrabold mb-3">Sécurité d'abord</h3>
+                            <p class="text-[#617989] dark:text-gray-400 leading-relaxed font-medium">
+                                Un environnement complètement sécurisé et sans publicité pour que les enfants puissent explorer sans souci.
+                            </p>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-10 rounded-xl border border-[#dbe1e6] dark:border-gray-700 hover:shadow-xl transition-all">
+                            <div class="bg-accent-pink/10 text-accent-pink w-14 h-14 rounded-full flex items-center justify-center mb-6">
+                                <span class="material-symbols-outlined text-3xl">school</span>
+                            </div>
+                            <h3 class="text-xl font-extrabold mb-3">Approuvé par les Enseignants</h3>
+                            <p class="text-[#617989] dark:text-gray-400 leading-relaxed font-medium">
+                                Contenu créé par des experts pédagogiques et aligné sur les standards scolaires mondiaux.
+                            </p>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-10 rounded-xl border border-[#dbe1e6] dark:border-gray-700 hover:shadow-xl transition-all">
+                            <div class="bg-accent-yellow/10 text-accent-yellow w-14 h-14 rounded-full flex items-center justify-center mb-6">
+                                <span class="material-symbols-outlined text-3xl">sentiment_satisfied</span>
+                            </div>
+                            <h3 class="text-xl font-extrabold mb-3">Plaisir Garanti</h3>
+                            <p class="text-[#617989] dark:text-gray-400 leading-relaxed font-medium">
+                                Activités très engageantes qui maintiennent les enfants motivés et enthousiastes à apprendre.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section Newsletter/CTA -->
+            <section class="px-6 md:px-20 lg:px-40 py-20">
+                <div class="max-w-[1280px] mx-auto bg-primary rounded-xl p-8 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden relative">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+                    <div class="flex flex-col gap-4 z-10 max-w-[500px]">
+                        <h2 class="text-4xl font-extrabold text-white">Rejoignez la Communauté EduPlay !</h2>
+                        <p class="text-white/80 font-medium">Recevez des conseils d'apprentissage hebdomadaires et un accès anticipé exclusif aux jeux dans votre boîte mail.</p>
+                    </div>
+                    <div class="w-full md:w-auto flex flex-col sm:flex-row gap-4 z-10">
+                        <input class="w-full sm:min-w-[300px] h-14 px-6 rounded-full border-none focus:ring-4 focus:ring-accent-yellow/50 text-[#111518]" placeholder="Email parent ou enseignant" type="email"/>
+                        <button class="h-14 px-10 rounded-full bg-accent-yellow text-[#111518] font-extrabold shadow-lg hover:scale-105 transition-transform whitespace-nowrap">
+                            S'abonner
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Pied de page -->
+        <footer class="bg-white dark:bg-background-dark border-t border-[#dbe1e6] dark:border-gray-800 px-6 md:px-20 lg:px-40 py-16">
+            <div class="max-w-[1280px] mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
+                <div class="flex flex-col gap-6">
+                    <div class="flex items-center gap-3">
+                        <div class="size-8 bg-primary rounded-full flex items-center justify-center text-white">
+                            <span class="material-symbols-outlined text-xl">rocket_launch</span>
+                        </div>
+                        <h2 class="text-xl font-extrabold tracking-tight">EduPlay</h2>
+                    </div>
+                    <p class="text-sm text-[#617989] dark:text-gray-400 leading-relaxed">Faire de l'apprentissage une aventure pour chaque enfant, partout.</p>
+                    <div class="flex gap-4">
+                        <a class="w-10 h-10 rounded-full bg-background-light dark:bg-gray-800 flex items-center justify-center text-primary" href="#"><span class="material-symbols-outlined">social_leaderboard</span></a>
+                        <a class="w-10 h-10 rounded-full bg-background-light dark:bg-gray-800 flex items-center justify-center text-primary" href="#"><span class="material-symbols-outlined">camera_enhance</span></a>
+                        <a class="w-10 h-10 rounded-full bg-background-light dark:bg-gray-800 flex items-center justify-center text-primary" href="#"><span class="material-symbols-outlined">alternate_email</span></a>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <h4 class="font-extrabold">Découvrir</h4>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Jeux Éducatifs</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Bibliothèque de Lecture</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Kits STEM</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Outils pour Enseignants</a>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <h4 class="font-extrabold">Support</h4>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Centre d'Aide</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Directives de Sécurité</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Politique de Confidentialité</a>
+                    <a class="text-sm text-[#617989] hover:text-primary transition-colors" href="#">Contactez-nous</a>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <h4 class="font-extrabold">Applications</h4>
+                    <div class="flex flex-col gap-3">
+                        <button class="bg-[#111518] text-white p-3 rounded-lg flex items-center gap-3">
+                            <span class="material-symbols-outlined">phone_iphone</span>
+                            <div class="text-left">
+                                <p class="text-[10px] uppercase font-bold text-white/50">Télécharger sur</p>
+                                <p class="text-sm font-bold">App Store</p>
+                            </div>
+                        </button>
+                        <button class="bg-[#111518] text-white p-3 rounded-lg flex items-center gap-3">
+                            <span class="material-symbols-outlined">play_arrow</span>
+                            <div class="text-left">
+                                <p class="text-[10px] uppercase font-bold text-white/50">Disponible sur</p>
+                                <p class="text-sm font-bold">Google Play</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
-    </footer>
-
-    {% block javascripts %}{% endblock %}
+            <div class="max-w-[1280px] mx-auto border-t border-[#dbe1e6] dark:border-gray-800 mt-12 pt-8 text-center md:text-left">
+                <p class="text-xs text-[#617989]">© 2024 EduPlay Médias Éducatifs. Tous droits réservés.</p>
+            </div>
+        </footer>
+    </div>
 </body>
 </html>

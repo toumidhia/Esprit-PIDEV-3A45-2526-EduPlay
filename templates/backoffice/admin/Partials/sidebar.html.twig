@@ -13,20 +13,36 @@
     </div>
 
     <nav class="sidebar-nav flex-1 p-4 space-y-2">
-        <a href="{{ path('app_admin_dashboard') }}"  class="active flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50">
+        <a href="{{ path('app_admin_dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 {{ app.request.get('_route') == 'app_admin_dashboard' ? 'active' : '' }}">
             Dashboard
         </a>
 
-        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50">
+        <a href="{{ path('app_back_product_index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 {{ app.request.get('_route') starts with 'app_back_product' ? 'active' : '' }}">
+            Produits
+        </a>
+
+        <a href="{{ path('app_back_commande_index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 {{ app.request.get('_route') starts with 'app_back_commande' ? 'active' : '' }}">
+            Commandes
+        </a>
+
+        <a href="{{ path('admin_library_index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50">
             Library
         </a>
 
-        <a href="{{ path('app_admin_users') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50">
+        <a href="{{ path('app_admin_users') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 {{ app.request.get('_route') == 'app_admin_users' ? 'active' : '' }}">
             Users
         </a>
 
-        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50">
-            Settings
+        <a href="{{path('admin_event_index')}}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50">
+            Events
+        </a>
+
+        <a href="{{path('admin_stats')}}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50">
+            Statistiques
+        </a>
+
+        <a href="{{ path('admin_resource_index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50">
+            Ressources
         </a>
     </nav>
 

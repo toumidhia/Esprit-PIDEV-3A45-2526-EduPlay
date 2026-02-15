@@ -1,0 +1,386 @@
+{% extends 'BackOffice/admin/base_admin.html.twig' %}
+
+{% block title %}Gestion des Bibliothèques{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <!-- HEADER AVEC BACKGROUND GRADIENT -->
+    <div class="px-8 py-10 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold mb-2">📚 Gestion des Bibliothèques</h1>
+                <p class="text-blue-100">Explorez, recherchez et gérez votre collection de bibliothèques</p>
+            </div>
+            <a href="{{ path('admin_library_new') }}" 
+               class="inline-flex items-center px-6 py-3 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Nouvelle Bibliothèque
+            </a>
+        </div>
+    </div>
+
+    <!-- CARTE DES FILTRES AVEC DESIGN ÉLÉGANT -->
+    <div class="p-8">
+        <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 shadow-xl p-6 mb-8">
+            <div class="flex items-center mb-6">
+                <div class="p-3 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-xl mr-4">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Filtres & Recherche</h2>
+                    <p class="text-gray-500">Affinez votre recherche avec les critères ci-dessous</p>
+                </div>
+            </div>
+
+            {{ form_start(searchForm, {'attr': {'class': 'space-y-6'}}) }}
+            
+            <!-- PREMIÈRE LIGNE : RECHERCHE ET FILTRES -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-5">
+                <!-- Recherche avec icône intégrée -->
+                <div class="relative group">
+                    {{ form_label(searchForm.keyword, null, {
+                        'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-2 pl-1'}
+                    }) }}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        {{ form_widget(searchForm.keyword, {
+                            'attr': {
+                                'class': 'pl-10 pr-4 py-3 w-full border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 group-hover:border-blue-300',
+                                'placeholder': 'Nom, thème, description...'
+                            }
+                        }) }}
+                    </div>
+                </div>
+
+                <!-- Niveau avec style amélioré -->
+                <div class="relative group">
+                    {{ form_label(searchForm.level, null, {
+                        'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-2 pl-1'}
+                    }) }}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        {{ form_widget(searchForm.level, {
+                            'attr': {
+                                'class': 'pl-10 pr-10 py-3 w-full border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 group-hover:border-blue-300 appearance-none bg-white'
+                            }
+                        }) }}
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thème avec icône -->
+                <div class="relative group">
+                    {{ form_label(searchForm.theme, null, {
+                        'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-2 pl-1'}
+                    }) }}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                            </svg>
+                        </div>
+                        {{ form_widget(searchForm.theme, {
+                            'attr': {
+                                'class': 'pl-10 pr-4 py-3 w-full border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 group-hover:border-blue-300',
+                                'placeholder': 'Filtrer par thème...'
+                            }
+                        }) }}
+                    </div>
+                </div>
+
+                <!-- Tri avec style premium -->
+                <div class="relative group">
+                    {{ form_label(searchForm.sortBy, null, {
+                        'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-2 pl-1'}
+                    }) }}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"/>
+                            </svg>
+                        </div>
+                        {{ form_widget(searchForm.sortBy, {
+                            'attr': {
+                                'class': 'pl-10 pr-10 py-3 w-full border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 group-hover:border-blue-300 appearance-none bg-white'
+                            }
+                        }) }}
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DEUXIÈME LIGNE : BOUTONS ET COMPTEUR -->
+            <div class="flex flex-col sm:flex-row justify-between items-center pt-6 border-t border-gray-100">
+                <!-- Compteur avec style -->
+                <div class="mb-4 sm:mb-0">
+                    {% if libraries|length > 0 %}
+                        <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-100">
+                            <span class="inline-flex items-center justify-center w-6 h-6 mr-2 bg-green-500 text-white text-xs font-bold rounded-full">
+                                {{ libraries|length }}
+                            </span>
+                            <span class="text-green-700 font-semibold">
+                                bibliothèque{{ libraries|length > 1 ? 's' : '' }} trouvée{{ libraries|length > 1 ? 's' : '' }}
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Boutons avec design moderne -->
+                <div class="flex space-x-4">
+                    {{ form_widget(searchForm.reset, {
+                        'attr': {
+                            'class': 'px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center'
+                        }
+                    }) }}
+                    
+                    {{ form_widget(searchForm.search, {
+                        'attr': {
+                            'class': 'px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center'
+                        }
+                    }) }}
+                </div>
+            </div>
+            
+            {{ form_end(searchForm) }}
+        </div>
+
+        <!-- MESSAGES FLASH AVEC ANIMATION -->
+        {% for message in app.flashes('success') %}
+            <div class="mb-6 animate-fade-in-down">
+                <div class="flex items-center p-4 mb-4 text-green-800 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500">
+                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00 1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <div class="font-medium">{{ message }}</div>
+                </div>
+            </div>
+        {% endfor %}
+        
+        {% for message in app.flashes('error') %}
+            <div class="mb-6 animate-fade-in-down">
+                <div class="flex items-center p-4 mb-4 text-red-800 rounded-xl bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500">
+                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <div class="font-medium">{{ message }}</div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <!-- LISTE DES BIBLIOTHÈQUES -->
+        {% if libraries|length > 0 %}
+            <div class="mb-6 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">Résultats de votre recherche</h3>
+                <div class="text-sm text-gray-500">
+                    <span class="font-semibold text-blue-600">{{ libraries|length }}</span> résultat{{ libraries|length > 1 ? 's' : '' }}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for library in libraries %}
+                    <!-- CARTE BIBLIOTHÈQUE AMÉLIORÉE -->
+                    <div class="group bg-white rounded-2xl border-2 border-gray-100 hover:border-blue-300 transition-all duration-500 hover:shadow-2xl overflow-hidden transform hover:-translate-y-2">
+                        <!-- HEADER AVEC IMAGE ET NIVEAU -->
+                        <div class="h-56 relative overflow-hidden">
+                            {% if library.coverImage %}
+                                <img src="{{ asset('uploads/' ~ library.coverImage) }}" 
+                                     alt="{{ library.name }}" 
+                                     class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100">
+                                    <svg class="w-20 h-20 text-blue-300 transform group-hover:scale-110 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- BADGE NIVEAU AVEC COULEUR DYNAMIQUE -->
+                            <div class="absolute top-4 right-4">
+                                {% set level_colors = {
+                                    'Débutant': 'bg-gradient-to-r from-green-400 to-emerald-500',
+                                    'Intermédiaire': 'bg-gradient-to-r from-yellow-400 to-amber-500',
+                                    'Avancé': 'bg-gradient-to-r from-orange-400 to-red-500',
+                                    'Expert': 'bg-gradient-to-r from-red-500 to-pink-600'
+                                } %}
+                                <span class="px-4 py-2 {{ level_colors[library.level]|default('bg-gradient-to-r from-gray-600 to-gray-700') }} text-white text-xs font-bold rounded-full shadow-lg backdrop-blur-sm">
+                                    {{ library.level }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- CONTENU -->
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                                {{ library.name }}
+                            </h3>
+                            
+                            <!-- MÉTADONNÉES -->
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ library.minAge }} - {{ library.maxAge }} ans
+                                </span>
+                                <span class="inline-flex items-center px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full">
+                                    {{ library.theme }}
+                                </span>
+                            </div>
+                            
+                            <!-- DESCRIPTION -->
+                            <p class="text-gray-600 text-sm mb-6 line-clamp-2 leading-relaxed">
+                                {{ library.description|slice(0, 120) }}{% if library.description|length > 120 %}...{% endif %}
+                            </p>
+                            
+                            <!-- BOUTONS D'ACTION AVEC SUPPRESSION - CORRIGÉ -->
+                            <div class="flex space-x-2">
+                                <!-- Bouton Voir -->
+                                <a href="{{ path('admin_library_show', {'id': library.id}) }}" 
+                                   class="flex-1 min-w-0 inline-flex items-center justify-center px-3 py-3 border border-gray-200 text-sm font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 group/btn">
+                                    <svg class="w-4 h-4 mr-2 text-gray-500 group-hover/btn:text-blue-500 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                    <span class="truncate">Voir</span>
+                                </a>
+                                
+                                <!-- Bouton Modifier -->
+                                <a href="{{ path('admin_library_edit', {'id': library.id}) }}" 
+                                   class="flex-1 min-w-0 inline-flex items-center justify-center px-3 py-3 border border-blue-200 text-sm font-semibold rounded-xl text-blue-700 bg-blue-50 hover:bg-blue-100 hover:border-blue-300 transition-all duration-300 group/btn">
+                                    <svg class="w-4 h-4 mr-2 text-blue-600 group-hover/btn:text-blue-700 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    <span class="truncate">Modifier</span>
+                                </a>
+                                
+                                <!-- Bouton Supprimer - CORRIGÉ -->
+                                <form method="post" 
+                                      action="{{ path('admin_library_delete', {'id': library.id}) }}" 
+                                      class="flex-1 min-w-0"
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer « {{ library.name }} » ? Cette action est irréversible.');">
+                                    <input type="hidden" name="_token" 
+                                           value="{{ csrf_token('delete' ~ library.id) }}">
+                                    <button type="submit" 
+                                            class="w-full h-full inline-flex items-center justify-center px-3 py-3 border border-red-200 text-sm font-semibold rounded-xl text-red-700 bg-red-50 hover:bg-red-100 hover:border-red-300 transition-all duration-300 group/btn">
+                                        <svg class="w-4 h-4 mr-2 text-red-600 group-hover/btn:text-red-700 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        <span class="truncate"></span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- ÉTAT VIDE AVEC DESIGN AMÉLIORÉ -->
+            <div class="text-center py-20 animate-fade-in">
+                <div class="inline-flex items-center justify-center w-32 h-32 mb-8 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-3xl">
+                    <svg class="w-16 h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-700 mb-3">
+                    {% if activeFilters is defined and activeFilters|length > 0 %}
+                        🧐 Aucun résultat trouvé
+                    {% else %}
+                        📖 Aucune Bibliothèque disponible
+                    {% endif %}
+                </h3>
+                <p class="text-gray-500 mb-8 max-w-md mx-auto">
+                    {% if activeFilters is defined and activeFilters|length > 0 %}
+                        Aucune bibliothèque ne correspond à vos critères de recherche.<br>
+                        Essayez de modifier vos filtres.
+                    {% else %}
+                        Commencez à enrichir votre collection en créant votre première bibliothèque.
+                    {% endif %}
+                </p>
+                <a href="{{ path('admin_library_new') }}" 
+                   class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Créer une Bibliothèque
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+@keyframes fade-in-down {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-down {
+    animation: fade-in-down 0.5s ease-out;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.8s ease-out;
+}
+
+/* Empêcher le débordement des textes dans les boutons */
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Assurer que les boutons aient une largeur minimale */
+.min-w-0 {
+    min-width: 0;
+}
+</style>
+{% endblock %}

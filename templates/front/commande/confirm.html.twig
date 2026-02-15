@@ -1,0 +1,44 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Commande confirmée{% endblock %}
+
+{% block body %}
+    <div class="max-w-2xl mx-auto text-center py-12">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 text-green-600 mb-8">
+            <span class="material-symbols-outlined text-5xl">check_circle</span>
+        </div>
+        <h1 class="text-3xl font-extrabold mb-4">Commande enregistrée</h1>
+        <p class="text-[#617989] mb-8">Merci ! Votre commande a bien été prise en compte.</p>
+
+        <div class="bg-white rounded-xl border border-[#dbe1e6] p-8 text-left mb-8">
+            <h2 class="text-lg font-bold mb-4">Récapitulatif</h2>
+            <dl class="space-y-2">
+                <div class="flex justify-between">
+                    <dt class="text-[#617989]">N° commande</dt>
+                    <dd class="font-bold">#{{ commande.id }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-[#617989]">Produit</dt>
+                    <dd class="font-bold">{{ commande.product.name }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-[#617989]">Quantité</dt>
+                    <dd class="font-bold">{{ commande.quantity }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-[#617989]">Date</dt>
+                    <dd class="font-bold">{{ commande.dateCommande ? commande.dateCommande|date('d/m/Y') : '-' }}</dd>
+                </div>
+                <div class="flex justify-between pt-2 border-t border-[#dbe1e6]">
+                    <dt class="font-bold">Total</dt>
+                    <dd class="font-bold text-primary">{{ commande.totalAmount|number_format(0, ',', ' ') }} DT</dd>
+                </div>
+            </dl>
+        </div>
+
+        <a href="{{ path('app_front_shop') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-full hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined">shopping_bag</span>
+            Continuer mes achats
+        </a>
+    </div>
+{% endblock %}

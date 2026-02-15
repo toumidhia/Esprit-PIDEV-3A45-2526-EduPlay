@@ -1,0 +1,252 @@
+{% extends 'BackOffice/teacher/Partials/base_admin.html.twig' %}
+{% block body %}
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#63b7f2",
+              "accent-yellow": "#F7C56E",
+              "accent-pink": "#F29BAE",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101b22",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .blob {
+        position: absolute;
+        filter: blur(60px);
+        z-index: -1;
+        opacity: 0.4;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+
+
+
+
+
+
+
+
+
+
+
+<div class="container mx-auto px-6 py-8">
+
+    {# Flash Messages #}
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="flash-message mb-4 p-4 rounded-lg
+                {% if type == 'success' %}bg-green-100 text-green-800
+                {% elseif type == 'error' %}bg-red-100 text-red-800
+                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# Header #}
+    <div class="flex justify-between items-start mb-8">
+        <div>
+            <h1 class="text-4xl font-extrabold text-[#111518] dark:text-white">Level Management</h1>
+            <p class="text-[#617989] dark:text-gray-400 mt-2">
+                Manage your levels
+            </p>
+        </div>
+
+        <a href="{{ path('teacher_level_new') }}"
+           class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform shadow-lg">
+            <span class="material-symbols-outlined">add_circle</span>
+            Create New Level
+        </a>
+    </div>
+
+    {# Statistics #}
+    {% if statistics is defined and statistics %}
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-primary">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm uppercase font-bold">Total Levels</p>
+                        <p class="text-3xl font-extrabold">{{ statistics.total }}</p>
+                    </div>
+                    <span class="material-symbols-outlined text-primary text-4xl">signal_cellular_alt</span>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-yellow-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm uppercase font-bold">Avg Difficulty</p>
+                        <p class="text-3xl font-extrabold">{{ statistics.avgDifficulty }}</p>
+                    </div>
+                    <span class="material-symbols-outlined text-yellow-500 text-4xl">psychology</span>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm uppercase font-bold">Age Range</p>
+                        <p class="text-lg font-extrabold">
+                            {{ statistics.minAge }} - {{ statistics.maxAge }}
+                        </p>
+                    </div>
+                    <span class="material-symbols-outlined text-blue-500 text-4xl">child_care</span>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-red-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm uppercase font-bold">Top Used Level</p>
+                        <p class="text-lg font-extrabold">{{ statistics.topLevel }}</p>
+                    </div>
+                    <span class="material-symbols-outlined text-red-500 text-4xl">star</span>
+                </div>
+            </div>
+
+        </div>
+    {% endif %}
+
+    {# Filters #}
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <form method="get" action="{{ path('teacher_level_index') }}" class="space-y-4">
+
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-[#111518] dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined">filter_list</span>
+                    Filters & Search
+                </h3>
+
+                <a href="#" id="clearFiltersBtn" class="text-sm text-primary font-bold hover:underline">
+                    Clear All Filters
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">search</span>
+                        Search
+                    </label>
+                    <input type="text" name="search" value="{{ filters.search ?? '' }}"
+                           placeholder="Search by name or description..."
+                           class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">tune</span>
+                        Difficulty
+                    </label>
+                    <input type="number" name="difficulty" value="{{ filters.difficulty ?? '' }}"
+                           placeholder="Ex: 1..10"
+                           class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">child_care</span>
+                        Min Age
+                    </label>
+                    <input type="number" name="minAge" value="{{ filters.minAge ?? '' }}"
+                           placeholder="Ex: 6"
+                           class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-[#111518] dark:text-white mb-2">
+                        <span class="material-symbols-outlined text-sm inline">child_care</span>
+                        Max Age
+                    </label>
+                    <input type="number" name="maxAge" value="{{ filters.maxAge ?? '' }}"
+                           placeholder="Ex: 12"
+                           class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                </div>
+
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit"
+                        class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform">
+                    <span class="material-symbols-outlined">search</span>
+                    Apply Filters
+                </button>
+
+                <select name="sort"
+                        class="px-4 py-2 rounded-full border-2 border-primary/20 bg-white dark:bg-gray-800 font-bold">
+                    <option value="id" {% if (sortBy ?? 'id') == 'id' %}selected{% endif %}>Newest First</option>
+                    <option value="name" {% if (sortBy ?? '') == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                    <option value="difficulty" {% if (sortBy ?? '') == 'difficulty' %}selected{% endif %}>Difficulty</option>
+                    <option value="minAge" {% if (sortBy ?? '') == 'minAge' %}selected{% endif %}>Min Age</option>
+                    <option value="maxAge" {% if (sortBy ?? '') == 'maxAge' %}selected{% endif %}>Max Age</option>
+                </select>
+
+                <select name="order"
+                        class="px-4 py-2 rounded-full border-2 border-primary/20 bg-white dark:bg-gray-800 font-bold">
+                    <option value="DESC" {% if (sortOrder ?? 'DESC') == 'DESC' %}selected{% endif %}>DESC</option>
+                    <option value="ASC" {% if (sortOrder ?? '') == 'ASC' %}selected{% endif %}>ASC</option>
+                </select>
+            </div>
+
+        </form>
+    </div>
+
+    {# Results #}
+    <div id="levels-results">
+        {{ include('BackOffice/teacher/level/_grid.html.twig', { levels: levels }) }}
+    </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form[action="{{ path('teacher_level_index') }}"]');
+    const results = document.getElementById('levels-results');
+    const clearBtn = document.getElementById('clearFiltersBtn');
+    if (!form || !results) return;
+
+    async function loadLevels(url) {
+        const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }});
+        if (!response.ok) return;
+        results.innerHTML = await response.text();
+        window.history.replaceState({}, '', url);
+    }
+
+    // APPLY
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const params = new URLSearchParams(new FormData(form));
+        loadLevels(form.action + '?' + params.toString());
+    });
+
+    // CLEAR
+    if (clearBtn) {
+        clearBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            form.reset();
+            loadLevels(form.action);
+        });
+    }
+});
+</script>
+
+{% endblock %}

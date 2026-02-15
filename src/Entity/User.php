@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -31,6 +32,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotNull(message: 'Le mot de passe est obligatoire.', groups: ['Default', 'edit', 'login'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
@@ -54,39 +56,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: EventRegistration::class, mappedBy: 'parent')]
     private Collection $eventRegistrations;
 
-    // Parent relationship
-    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'enfants')]
-    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true)]
-    private ?User $parent = null;
-
-    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
-    private Collection $enfants;
-
-    // Additional properties from database
-    #[ORM\Column(length: 100, nullable: true, unique: true)]
-    private ?string $username = null;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
-
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $telephone = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $adresse = null;
-
-    #[ORM\Column(length: 100, nullable: true)]
-    private ?string $specialite = null;
-
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $niveau = null;
+    /**
+     * @var Collection<int, Commande>
+     */
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'user')]
+    private Collection $commandes;
 
     public function __construct()
     {
         $this->courses = new ArrayCollection();
         $this->eventRegistrations = new ArrayCollection();
-        $this->enfants = new ArrayCollection();
-        $this->createdAt = new \DateTime();
+        $this->commandes = new ArrayCollection();
     }
 
     // Parent methods
@@ -367,11 +347,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // UserInterface methods
-    public function eraseCredentials(): void
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
     {
-        // If you store any temporary, sensitive data on the user, clear it here
+        return $this->commandes;
     }
+
+    // === MÉTHODES POUR L'INTERFACE USERINTERFACE ===
 
     public function getUserIdentifier(): string
     {

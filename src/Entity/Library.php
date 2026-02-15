@@ -1,12 +1,13 @@
 <?php
+// src/Entity/Library.php
 
 namespace App\Entity;
 
 use App\Repository\LibraryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: LibraryRepository::class)]
 class Library
@@ -16,31 +17,56 @@ class Library
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: 'Le nom de la bibliothèque est requis')]
+    #[Assert\Length(
+        min: 3,
+        max: 20,
+        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[A-Za-zÀ-ÿ0-9\s\-\']+$/u',
+        message: 'Caractères spéciaux non autorisés (sauf tiret et apostrophe)'
+    )]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100, maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères')]
     private ?string $description = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $coverImage = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'L\'âge minimum est requis')]
+    #[Assert\Range(min: 3, minMessage: 'L\'âge minimum doit être d\'au moins {{ limit }} ans')]
     private ?int $minAge = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'L\'âge maximum est requis')]
+    #[Assert\Range(max: 12, maxMessage: 'L\'âge maximum ne peut pas dépasser {{ limit }} ans')]
     private ?int $maxAge = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: 'Le niveau de difficulté est requis')]
+    #[Assert\Choice(
+        choices: ['Débutant', 'Intermédiaire', 'Avancé', 'Expert'],
+        message: 'Veuillez sélectionner un niveau valide'
+    )]
     private ?string $level = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: 'Le thème est requis')]
+    #[Assert\Length(
+        min: 2,
+        max: 20,
+        minMessage: 'Le thème doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le thème ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $theme = null;
 
-    /**
-     * @var Collection<int, Resource>
-     */
-    #[ORM\OneToMany(targetEntity: Resource::class, mappedBy: 'libraryId', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Resource::class, mappedBy: 'libraryId')]
     private Collection $resources;
 
     public function __construct()
@@ -48,6 +74,7 @@ class Library
         $this->resources = new ArrayCollection();
     }
 
+    // Getters et setters
     public function getId(): ?int
     {
         return $this->id;
@@ -61,7 +88,6 @@ class Library
     public function setName(string $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -70,10 +96,9 @@ class Library
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -82,10 +107,9 @@ class Library
         return $this->coverImage;
     }
 
-    public function setCoverImage(string $coverImage): static
+    public function setCoverImage(?string $coverImage): static
     {
         $this->coverImage = $coverImage;
-
         return $this;
     }
 
@@ -97,7 +121,6 @@ class Library
     public function setMinAge(int $minAge): static
     {
         $this->minAge = $minAge;
-
         return $this;
     }
 
@@ -109,7 +132,6 @@ class Library
     public function setMaxAge(int $maxAge): static
     {
         $this->maxAge = $maxAge;
-
         return $this;
     }
 
@@ -121,7 +143,6 @@ class Library
     public function setLevel(string $level): static
     {
         $this->level = $level;
-
         return $this;
     }
 
@@ -133,7 +154,6 @@ class Library
     public function setTheme(string $theme): static
     {
         $this->theme = $theme;
-
         return $this;
     }
 
@@ -165,5 +185,28 @@ class Library
         }
 
         return $this;
+    }
+
+    // Méthode utilitaire pour obtenir le nombre de ressources
+    public function getResourceCount(): int
+    {
+        return $this->resources->count();
+    }
+
+    // Méthode de validation personnalisée (pour vérifier minAge < maxAge)
+    #[Assert\Callback]
+    public function validateAges(mixed $context): void
+    {
+        if ($this->minAge !== null && $this->maxAge !== null && $this->minAge > $this->maxAge) {
+            $context->buildViolation("L'âge maximum doit être supérieur ou égal à l'âge minimum")
+                    ->atPath('maxAge')
+                    ->addViolation();
+        }
+    }
+
+    // Méthode toString pour l'affichage
+    public function __toString(): string
+    {
+        return $this->name ?? '';
     }
 }

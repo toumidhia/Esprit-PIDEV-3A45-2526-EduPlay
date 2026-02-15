@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <title>Liste des commandes - EduPlay</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 9px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { border: 1px solid #333; padding: 5px 6px; text-align: left; }
+        th { background: #f0f0f0; font-weight: bold; }
+        h1 { font-size: 16px; margin-bottom: 8px; }
+        .meta { color: #666; font-size: 8px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Liste des commandes - EduPlay</h1>
+    <p class="meta">Exporté le {{ "now"|date("d/m/Y H:i") }} — {{ commandes|length }} commande(s)</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Client</th>
+                <th>Produit</th>
+                <th>Qté</th>
+                <th>Date</th>
+                <th>Total (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for commande in commandes %}
+                <tr>
+                    <td>{{ commande.id }}</td>
+                    <td>{{ commande.user ? commande.user.firstName ~ ' ' ~ commande.user.lastName : '-' }}</td>
+                    <td>{{ commande.product ? commande.product.name : '-' }}</td>
+                    <td>{{ commande.quantity }}</td>
+                    <td>{{ commande.dateCommande ? commande.dateCommande|date('d/m/Y') : '-' }}</td>
+                    <td>{{ commande.totalAmount|number_format(0, ',', ' ') }} €</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6">Aucune commande.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

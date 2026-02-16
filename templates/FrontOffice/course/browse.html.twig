@@ -1,9 +1,9 @@
-{# templates/FrontOffice/course/browse.html.twig #}
-{% extends 'FrontOffice/base.html.twig' %}
+{# templates/FrontOffice/parent/Partials/base_parent.html.twig #}
+{% extends 'FrontOffice/parent/Partials/base_parent.html.twig' %}
 
 {% block title %}Parcourir les Cours - EduOnly{% endblock %}
 
-{% block body %}
+{% block content %}
     {# Define isKidView variable - use isEnfant() method #}
     {% set isKidView = isKidView is defined ? isKidView : (app.user and app.user.isEnfant ? true : false) %}
 

@@ -1,5 +1,4 @@
 <?php
-// src/Form/EnseignantType.php
 
 namespace App\Form;
 
@@ -8,10 +7,11 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -20,63 +20,47 @@ class EnseignantType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('firstName', TextType::class, [
-                'label' => 'Prénom',
-                'attr' => ['placeholder' => 'Entrez le prénom'],
-                'constraints' => [
-                    new NotBlank(['message' => 'Le prénom est obligatoire']),
-                    new Length(['min' => 2, 'max' => 255])
-                ]
-            ])
             ->add('lastName', TextType::class, [
                 'label' => 'Nom',
-                'attr' => ['placeholder' => 'Entrez le nom'],
-                'constraints' => [
-                    new NotBlank(['message' => 'Le nom est obligatoire']),
-                    new Length(['min' => 2, 'max' => 255])
-                ]
+                'required' => true,
+            ])
+            ->add('firstName', TextType::class, [
+                'label' => 'Prénom',
+                'required' => true,
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email',
-                'attr' => ['placeholder' => 'exemple@email.com'],
-                'constraints' => [
-                    new NotBlank(['message' => 'L\'email est obligatoire'])
-                ]
+                'required' => true,
+            ])
+            ->add('telephone', TelType::class, [
+                'label' => 'Téléphone',
+                'required' => false,
             ])
             ->add('specialite', TextType::class, [
                 'label' => 'Spécialité',
-                'attr' => ['placeholder' => 'Mathématiques, Français, etc.'],
-                'constraints' => [
-                    new NotBlank(['message' => 'La spécialité est obligatoire'])
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Ex: Mathématiques, Français, etc.'
                 ]
-            ])
-            ->add('telephone', TextType::class, [
-                'label' => 'Téléphone',
-                'required' => false,
-                'attr' => ['placeholder' => 'Optionnel']
-            ])
-            ->add('adresse', TextareaType::class, [
-                'label' => 'Adresse',
-                'required' => false,
-                'attr' => ['placeholder' => 'Optionnel', 'rows' => 3]
             ])
             ->add('password', RepeatedType::class, [
                 'type' => PasswordType::class,
+                'mapped' => false,
+                'required' => true,
                 'first_options' => [
                     'label' => 'Mot de passe',
-                    'attr' => ['placeholder' => 'Entrez le mot de passe'],
-                    'constraints' => [
-                        new NotBlank(['message' => 'Le mot de passe est obligatoire']),
-                        new Length(['min' => 6, 'max' => 255])
+                    'attr' => [
+                        'autocomplete' => 'new-password'
                     ]
                 ],
                 'second_options' => [
                     'label' => 'Confirmer le mot de passe',
-                    'attr' => ['placeholder' => 'Confirmez le mot de passe']
+                    'attr' => [
+                        'autocomplete' => 'new-password'
+                    ]
                 ],
-                'invalid_message' => 'Les mots de passe ne correspondent pas.'
-            ])
-        ;
+                'invalid_message' => 'Les mots de passe doivent correspondre',
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -75,38 +75,49 @@ class AdminController extends AbstractController
     }
 
     #[Route('/enseignant/new', name: 'app_admin_enseignant_new')]
-    public function newEnseignant(
-        Request $request,
-        UserPasswordHasherInterface $passwordHasher,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $enseignant = new User();
-        $form = $this->createForm(EnseignantType::class, $enseignant);
-        $form->handleRequest($request);
+public function newEnseignant(
+    Request $request,
+    UserPasswordHasherInterface $passwordHasher,
+    EntityManagerInterface $entityManager
+): Response {
+    $enseignant = new User();
+    $form = $this->createForm(EnseignantType::class, $enseignant, [
+        'validation_groups' => false,  // ✅ DÉSACTIVER LA VALIDATION
+    ]);
+    
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $enseignant->setType('teacher');
-            $enseignant->setRoles(['ROLE_TEACHER', 'ROLE_USER']);
-            $enseignant->setActive(true);
-            $enseignant->setCreatedAt(new \DateTime());
-
-            $hashedPassword = $passwordHasher->hashPassword(
-                $enseignant,
-                $form->get('password')->getData()
-            );
+    if ($form->isSubmitted()) {
+        
+        // Forcer les valeurs
+        $enseignant->setType('enseignant');
+        $enseignant->setActive(true);
+        $enseignant->setBirthDate(null);  // ✅ Explicitement NULL
+        $enseignant->setUsername(null);   // ✅ Explicitement NULL
+        
+        $plainPassword = $form->get('password')->getData();
+        
+        if ($plainPassword) {
+            $hashedPassword = $passwordHasher->hashPassword($enseignant, $plainPassword);
             $enseignant->setPassword($hashedPassword);
-
-            $entityManager->persist($enseignant);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'L\'enseignant a été créé avec succès.');
-            return $this->redirectToRoute('app_admin_users');
         }
 
-        return $this->render('BackOffice/admin/enseignant_new.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        try {
+            $entityManager->persist($enseignant);
+            $entityManager->flush();
+            
+            $this->addFlash('success', 'Enseignant créé !');
+            return $this->redirectToRoute('app_admin_users');
+            
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur : ' . $e->getMessage());
+        }
     }
+
+    return $this->render('BackOffice/admin/enseignant_new.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
 
     #[Route('/admin/{id}/delete', name: 'app_admin_admin_delete', methods: ['POST'])]
     public function deleteAdmin(

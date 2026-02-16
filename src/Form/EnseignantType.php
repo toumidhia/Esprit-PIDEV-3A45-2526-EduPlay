@@ -11,35 +11,37 @@ use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Email;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 class EnseignantType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('lastName', TextType::class, [
-                'label' => 'Nom',
-                'required' => true,
-            ])
             ->add('firstName', TextType::class, [
                 'label' => 'Prénom',
                 'required' => true,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('lastName', TextType::class, [
+                'label' => 'Nom',
+                'required' => true,
+                'attr' => ['class' => 'form-control']
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email',
                 'required' => true,
+                'attr' => ['class' => 'form-control']
             ])
             ->add('telephone', TelType::class, [
                 'label' => 'Téléphone',
                 'required' => false,
+                'attr' => ['class' => 'form-control']
             ])
             ->add('specialite', TextType::class, [
                 'label' => 'Spécialité',
                 'required' => false,
                 'attr' => [
+                    'class' => 'form-control',
                     'placeholder' => 'Ex: Mathématiques, Français, etc.'
                 ]
             ])
@@ -50,12 +52,15 @@ class EnseignantType extends AbstractType
                 'first_options' => [
                     'label' => 'Mot de passe',
                     'attr' => [
-                        'autocomplete' => 'new-password'
+                        'class' => 'form-control',
+                        'autocomplete' => 'new-password',
+                        'minlength' => 6
                     ]
                 ],
                 'second_options' => [
                     'label' => 'Confirmer le mot de passe',
                     'attr' => [
+                        'class' => 'form-control',
                         'autocomplete' => 'new-password'
                     ]
                 ],
@@ -67,6 +72,7 @@ class EnseignantType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'validation_groups' => false, 
         ]);
     }
 }

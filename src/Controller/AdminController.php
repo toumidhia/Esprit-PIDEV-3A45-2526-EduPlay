@@ -1,5 +1,4 @@
 <?php
-// src/Controller/AdminController.php
 
 namespace App\Controller;
 
@@ -22,15 +21,14 @@ class AdminController extends AbstractController
     #[Route('/users', name: 'app_admin_users')]
     public function users(UserRepository $userRepository): Response
     {
-        // Récupérer tous les utilisateurs triés par date de création
         $users = $userRepository->findBy([], ['createdAt' => 'DESC']);
 
-        // Compter par type
+        // ✅ CORRIGÉ : Types cohérents
         $stats = [
             'admin' => $userRepository->count(['type' => 'admin']),
-            'enseignant' => $userRepository->count(['type' => 'teacher']),
+            'enseignant' => $userRepository->count(['type' => 'enseignant']),
             'parent' => $userRepository->count(['type' => 'parent']),
-            'enfant' => $userRepository->count(['type' => 'kid']),
+            'enfant' => $userRepository->count(['type' => 'enfant']),
             'total' => count($users)
         ];
 
@@ -51,15 +49,18 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $admin->setType('admin');
-            $admin->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
-            $admin->setActive(true);
-            $admin->setCreatedAt(new \DateTime());
+            
+            $plainPassword = $form->get('password')->getData();
+            
+            if (!$plainPassword) {
+                $this->addFlash('error', 'Le mot de passe est obligatoire.');
+                return $this->render('BackOffice/admin/admin_new.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
 
-            $hashedPassword = $passwordHasher->hashPassword(
-                $admin,
-                $form->get('password')->getData()
-            );
+            $admin->setType('admin');
+            $hashedPassword = $passwordHasher->hashPassword($admin, $plainPassword);
             $admin->setPassword($hashedPassword);
 
             $entityManager->persist($admin);
@@ -75,49 +76,41 @@ class AdminController extends AbstractController
     }
 
     #[Route('/enseignant/new', name: 'app_admin_enseignant_new')]
-public function newEnseignant(
-    Request $request,
-    UserPasswordHasherInterface $passwordHasher,
-    EntityManagerInterface $entityManager
-): Response {
-    $enseignant = new User();
-    $form = $this->createForm(EnseignantType::class, $enseignant, [
-        'validation_groups' => false,  // ✅ DÉSACTIVER LA VALIDATION
-    ]);
-    
-    $form->handleRequest($request);
+    public function newEnseignant(
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $enseignant = new User();
+        $form = $this->createForm(EnseignantType::class, $enseignant);
+        $form->handleRequest($request);
 
-    if ($form->isSubmitted()) {
-        
-        // Forcer les valeurs
-        $enseignant->setType('enseignant');
-        $enseignant->setActive(true);
-        $enseignant->setBirthDate(null);  // ✅ Explicitement NULL
-        $enseignant->setUsername(null);   // ✅ Explicitement NULL
-        
-        $plainPassword = $form->get('password')->getData();
-        
-        if ($plainPassword) {
+        if ($form->isSubmitted() && $form->isValid()) {
+            
+            $plainPassword = $form->get('password')->getData();
+            
+            if (!$plainPassword) {
+                $this->addFlash('error', 'Le mot de passe est obligatoire.');
+                return $this->render('BackOffice/admin/enseignant_new.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+
+            $enseignant->setType('enseignant');
             $hashedPassword = $passwordHasher->hashPassword($enseignant, $plainPassword);
             $enseignant->setPassword($hashedPassword);
-        }
 
-        try {
             $entityManager->persist($enseignant);
             $entityManager->flush();
-            
-            $this->addFlash('success', 'Enseignant créé !');
-            return $this->redirectToRoute('app_admin_users');
-            
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur : ' . $e->getMessage());
-        }
-    }
 
-    return $this->render('BackOffice/admin/enseignant_new.html.twig', [
-        'form' => $form->createView(),
-    ]);
-}
+            $this->addFlash('success', 'L\'enseignant ' . $enseignant->getFullName() . ' a été créé avec succès.');
+            return $this->redirectToRoute('app_admin_users');
+        }
+
+        return $this->render('BackOffice/admin/enseignant_new.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
 
     #[Route('/admin/{id}/delete', name: 'app_admin_admin_delete', methods: ['POST'])]
     public function deleteAdmin(
@@ -125,7 +118,6 @@ public function newEnseignant(
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        // Empêcher la suppression de soi-même
         if ($admin === $this->getUser()) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
             return $this->redirectToRoute('app_admin_users');
@@ -164,7 +156,7 @@ public function newEnseignant(
         EntityManagerInterface $entityManager
     ): Response {
         if ($this->isCsrfTokenValid('toggle' . $user->getId(), $request->request->get('_token'))) {
-            // Empêcher la désactivation de soi-même
+            
             if ($user === $this->getUser()) {
                 $this->addFlash('error', 'Vous ne pouvez pas désactiver votre propre compte.');
                 return $this->redirectToRoute('app_admin_users');
@@ -187,7 +179,7 @@ public function newEnseignant(
         EntityManagerInterface $entityManager
     ): Response {
         if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
-            // Empêcher la suppression de soi-même
+            
             if ($user === $this->getUser()) {
                 $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
                 return $this->redirectToRoute('app_admin_users');

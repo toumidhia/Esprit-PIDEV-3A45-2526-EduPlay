@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Entity\Commande;
 use App\Form\EnfantType;
 use App\Form\FrontCommandeType;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

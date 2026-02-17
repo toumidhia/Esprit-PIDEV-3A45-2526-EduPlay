@@ -1,0 +1,875 @@
+{# templates/FrontOffice/resource/read_pdf.html.twig #}
+<!DOCTYPE html>
+<html class="light" lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{{ resource.title }} - Lecture Audio PDF - EduPlay</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    
+    <style>
+        .organic-shape {
+            position: fixed;
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.4;
+        }
+        
+        .listening {
+            animation: pulse 1.5s infinite;
+            background-color: #22c55e !important;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        
+        .audio-progress {
+            transition: width 0.3s ease;
+        }
+        
+        .type-badge {
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 9999px;
+        }
+        .type-book { background-color: #d1fae5; color: #065f46; }
+        .type-magazine { background-color: #fef3c7; color: #92400e; }
+        .type-journal { background-color: #fee2e2; color: #991b1b; }
+        .type-manual { background-color: #e0e7ff; color: #3730a3; }
+        
+        .pdf-container {
+            height: 600px;
+            overflow-y: auto;
+            background-color: #f9fafb;
+            border-radius: 1rem;
+            padding: 2rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            line-height: 1.8;
+            border: 1px solid #e5e7eb;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+        
+        .pdf-text {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .page-indicator {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        
+        /* Style pour le mot en cours de lecture */
+        .word-highlight {
+            background-color: #fef08a !important;
+            color: #000000 !important;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 0 2px;
+            box-shadow: 0 2px 8px rgba(250, 204, 21, 0.4);
+            transition: all 0.1s ease;
+            animation: gentlePulse 0.5s ease;
+        }
+        
+        @keyframes gentlePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Empêcher la sélection de texte */
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        /* Assurer que les contrôles restent cliquables */
+        button, select, input {
+            pointer-events: auto !important;
+            cursor: pointer;
+            position: relative;
+            z-index: 50;
+        }
+        
+        /* Style pour les pages avec texte uniquement */
+        .text-page {
+            margin-bottom: 2rem;
+        }
+        
+        /* Audio sidebar à droite */
+        .audio-sidebar {
+            position: sticky;
+            top: 100px;
+            right: 0;
+            width: 320px;
+            margin-left: 2rem;
+            float: right;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e6f2ff 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+            z-index: 30;
+        }
+        
+        .content-with-sidebar {
+            margin-right: 350px;
+        }
+        
+        /* Responsive pour mobile */
+        @media (max-width: 1024px) {
+            .audio-sidebar {
+                position: relative;
+                top: 0;
+                width: 100%;
+                float: none;
+                margin-left: 0;
+                margin-bottom: 2rem;
+            }
+            
+            .content-with-sidebar {
+                margin-right: 0;
+            }
+        }
+        
+        /* Mini lecteur compact */
+        .mini-player {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .player-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .player-button {
+            flex: 1;
+            min-width: 80px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .player-button.play {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .player-button.play:hover {
+            background-color: #2563eb;
+        }
+        
+        .player-button.pause {
+            background-color: #eab308;
+            color: white;
+        }
+        
+        .player-button.pause:hover {
+            background-color: #ca8a04;
+        }
+        
+        .player-button.stop {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .player-button.stop:hover {
+            background-color: #dc2626;
+        }
+        
+        .progress-container {
+            margin-top: 1rem;
+        }
+        
+        .progress-bar-bg {
+            width: 100%;
+            height: 0.5rem;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #3b82f6;
+            transition: width 0.3s ease;
+        }
+        
+        .control-slider {
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+        
+        /* Style pour le mot surligné */
+        .highlighted-word {
+            background-color: #fef08a;
+            color: #000;
+            font-weight: bold;
+            padding: 2px 0;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+    </style>
+</head>
+<body class="font-display bg-gray-50 min-h-screen relative overflow-x-hidden">
+    <!-- Formes de fond -->
+    <div class="organic-shape bg-blue-300 w-[500px] h-[500px] rounded-full -top-40 -left-40"></div>
+    <div class="organic-shape bg-purple-300 w-[600px] h-[600px] rounded-full -bottom-40 -right-40"></div>
+    
+    <div class="layout-container flex h-full grow flex-col">
+        <!-- Barre de navigation -->
+        <header class="flex items-center justify-between border-b border-solid border-[#dbe1e6] bg-white/80 backdrop-blur-md px-6 md:px-20 py-4 sticky top-0 z-50">
+            <div class="flex items-center gap-3">
+                <a href="{{ path('app_library') }}" class="flex items-center gap-3">
+                    <div class="size-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                        <span class="material-symbols-outlined text-2xl">rocket_launch</span>
+                    </div>
+                    <h2 class="text-2xl font-extrabold tracking-tight">EduPlay</h2>
+                </a>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <a href="{{ path('app_resource') }}" 
+                   class="text-sm font-bold text-gray-600 hover:text-blue-500 transition-colors flex items-center gap-1">
+                    <span class="material-symbols-outlined text-lg">arrow_back</span>
+                    Retour aux livres
+                </a>
+            </div>
+        </header>
+        
+        <main class="max-w-7xl mx-auto px-6 lg:px-20 py-8 w-full">
+            <!-- Fil d'Ariane -->
+            <nav class="flex items-center gap-2 text-sm font-bold text-gray-500 mb-6">
+                <a href="{{ path('app_library') }}" class="hover:text-blue-600">Bibliothèques</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                
+                {% if resource.libraryId %}
+                    <a href="{{ path('app_resource') }}" class="hover:text-blue-600">
+                        {{ resource.libraryId.name }}
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_resource') }}" class="hover:text-blue-600">
+                        Livres
+                    </a>
+                {% endif %}
+                
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="text-blue-600">{{ resource.title }}</span>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="text-green-600">Lecture audio</span>
+            </nav>
+            
+            <!-- En-tête du livre -->
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+                <div class="p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-20 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                            {% if resource.coverImage %}
+                                <img class="w-full h-full object-cover" 
+                                     alt="{{ resource.title }}" 
+                                     src="{{ asset('uploads/' ~ resource.coverImage) }}">
+                            {% else %}
+                                <div class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-3xl text-blue-300">book</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900">{{ resource.title }}</h1>
+                            <p class="text-gray-600">par {{ resource.author }}</p>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span class="type-badge type-{{ resource.type|lower }}">{{ resource.type }}</span>
+                                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                                    {{ resource.minAge }}-{{ resource.maxAge }} ans
+                                </span>
+                                <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                                    {{ resource.language }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if hasPdf %}
+                <div class="relative">
+                    <!-- ===== LECTEUR AUDIO À DROITE ===== -->
+                    <div class="audio-sidebar">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-500">headphones</span>
+                            Écouter le livre
+                        </h2>
+                        
+                        <div class="mini-player">
+                            <!-- Boutons de contrôle -->
+                            <div class="player-buttons">
+                                <button id="playPauseBtn" class="player-button play">
+                                    <span class="material-symbols-outlined" id="playIcon">play_arrow</span>
+                                    <span id="playPauseText">Lecture</span>
+                                </button>
+                                
+                                <button id="pauseBtn" class="player-button pause">
+                                    <span class="material-symbols-outlined">pause</span>
+                                    Pause
+                                </button>
+                                
+                                <button id="stopBtn" class="player-button stop">
+                                    <span class="material-symbols-outlined">stop</span>
+                                    Arrêt
+                                </button>
+                            </div>
+                            
+                            <!-- Indicateur de lecture -->
+                            <div id="speakingIndicator" class="hidden items-center gap-2 text-green-600 font-bold mt-2">
+                                <span class="material-symbols-outlined animate-pulse">volume_up</span>
+                                Lecture en cours...
+                            </div>
+                            
+                            <!-- Barre de progression -->
+                            <div class="progress-container">
+                                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>Progression</span>
+                                    <span id="progressPercent">0%</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div id="progressBar" class="progress-bar-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Contrôles avancés -->
+                            <div class="mt-4 space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">⚡ Vitesse</label>
+                                    <input type="range" id="speedControl" min="0.5" max="1.5" step="0.1" value="0.9" 
+                                           class="control-slider">
+                                    <div class="text-right text-sm font-bold text-blue-600" id="speedValue">0.9x</div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">🎵 Hauteur</label>
+                                    <input type="range" id="pitchControl" min="0.5" max="2" step="0.1" value="1.2" 
+                                           class="control-slider">
+                                    <div class="text-right text-sm font-bold text-purple-600" id="pitchValue">1.2</div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">🔊 Volume</label>
+                                    <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" 
+                                           class="control-slider">
+                                    <div class="text-right text-sm font-bold text-green-600" id="volumeValue">100%</div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">👤 Voix</label>
+                                    <select id="voiceSelect" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                                        <option value="">Voix par défaut</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Statistiques rapides -->
+                            <div class="mt-4 pt-4 border-t border-gray-200 text-xs text-gray-500">
+                                <div class="flex justify-between">
+                                    <span>Caractères:</span>
+                                    <span class="font-bold">{{ pdfContent|length }}</span>
+                                </div>
+                                {% set pageCount = 0 %}
+                                {% if pdfPages|length > 0 %}
+                                    {% for pageNum, pageText in pdfPages %}
+                                        {% set cleanText = pageText|striptags|trim %}
+                                        {% if cleanText|length > 100 and cleanText matches '/[a-zA-ZÀ-ÿ]{3,}/' %}
+                                            {% set pageCount = pageCount + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                {% if pageCount > 0 %}
+                                <div class="flex justify-between mt-1">
+                                    <span>Pages avec texte:</span>
+                                    <span class="font-bold">{{ pageCount }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ===== CONTENU DU PDF À GAUCHE ===== -->
+                    <div class="content-with-sidebar">
+                        <!-- AFFICHAGE DU CONTENU DU PDF - FILTRÉ -->
+                        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+                            <div class="p-4 bg-gray-50 border-b border-gray-200">
+                                <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-blue-500">menu_book</span>
+                                    Contenu du livre
+                                </h3>
+                            </div>
+                            
+                            <div class="pdf-container no-select" id="pdfContainer">
+                                {% set displayPages = [] %}
+                                
+                                {% if pdfPages|length > 0 %}
+                                    <!-- Filtrer les pages avec du texte réel -->
+                                    {% for pageNum, pageText in pdfPages %}
+                                        {% set cleanText = pageText|striptags|trim %}
+                                        {% set textLength = cleanText|length %}
+                                        
+                                        {# Ignorer les pages vides ou avec juste des numéros #}
+                                        {% if textLength > 100 and cleanText matches '/[a-zA-ZÀ-ÿ]{3,}/' %}
+                                            {% set displayPages = displayPages|merge([{
+                                                number: pageNum,
+                                                text: pageText
+                                            }]) %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    <!-- Afficher uniquement les pages avec du texte -->
+                                    {% if displayPages|length > 0 %}
+                                        {% for page in displayPages %}
+                                            <div class="text-page mb-8 pb-8 border-b border-gray-200 last:border-0">
+                                                <div class="page-indicator mb-4">
+                                                    Page {{ page.number }}
+                                                </div>
+                                                <div class="pdf-text text-gray-700" data-page="{{ page.number }}">
+                                                    {{ page.text|nl2br }}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <!-- Fallback vers le texte complet -->
+                                        <div class="pdf-text text-gray-700">
+                                            {{ pdfContent|nl2br }}
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <!-- Affichage du texte complet -->
+                                    <div class="pdf-text text-gray-700">
+                                        {{ pdfContent|nl2br }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Message d'erreur si le PDF n'a pas pu être extrait -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-8 text-center">
+                    <span class="material-symbols-outlined text-6xl text-yellow-400 mb-4">error</span>
+                    <h3 class="text-xl font-bold text-yellow-800 mb-2">Impossible de lire ce PDF</h3>
+                    <p class="text-yellow-700 mb-6">Le contenu de ce PDF n'a pas pu être extrait automatiquement.</p>
+                    
+                    <!-- Fallback : lire le résumé -->
+                    <div class="bg-white rounded-xl p-6 max-w-2xl mx-auto">
+                        <h4 class="font-bold text-gray-800 mb-3">Lire le résumé à la place :</h4>
+                        <p class="text-gray-600 mb-4">{{ resource.summary|default('Aucun résumé disponible.') }}</p>
+                        <a href="{{ path('app_resource_read', {'id': resource.id}) }}" 
+                           class="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600">
+                            <span class="material-symbols-outlined">headphones</span>
+                            Écouter le résumé
+                        </a>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <a href="{{ asset('pdfs/' ~ resource.pdfFile) }}" target="_blank" 
+                           class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800">
+                            <span class="material-symbols-outlined">picture_as_pdf</span>
+                            Ouvrir le PDF original
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </main>
+        
+        <footer class="bg-white border-t border-[#dbe1e6] px-6 md:px-20 py-8 mt-auto">
+            <p class="text-xs text-[#617989] text-center">© 2024 EduPlay Médias Éducatifs. Tous droits réservés.</p>
+        </footer>
+    </div>
+    
+    <!-- SCRIPT : Synthèse vocale synchronisée avec défilement -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // Vérifier si la synthèse vocale est supportée
+            if (!('speechSynthesis' in window)) {
+                alert("Désolé, votre navigateur ne supporte pas la synthèse vocale.");
+                return;
+            }
+            
+            // Éléments du DOM
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const playIcon = document.getElementById('playIcon');
+            const playPauseText = document.getElementById('playPauseText');
+            const speakingIndicator = document.getElementById('speakingIndicator');
+            const speedControl = document.getElementById('speedControl');
+            const speedValue = document.getElementById('speedValue');
+            const pitchControl = document.getElementById('pitchControl');
+            const pitchValue = document.getElementById('pitchValue');
+            const volumeControl = document.getElementById('volumeControl');
+            const volumeValue = document.getElementById('volumeValue');
+            const voiceSelect = document.getElementById('voiceSelect');
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = document.getElementById('progressPercent');
+            const pdfContainer = document.getElementById('pdfContainer');
+            
+            // Récupérer le texte du PDF
+            let textToSpeak = '';
+            let words = [];
+            let wordElements = [];
+            let currentHighlightedElement = null;
+            let autoScrollEnabled = true;
+            
+            if (pdfContainer) {
+                textToSpeak = pdfContainer.innerText || pdfContainer.textContent;
+                prepareWords();
+            }
+            
+            if (!textToSpeak || textToSpeak.trim() === '') {
+                textToSpeak = "{{ resource.title }} par {{ resource.author }}. {% if resource.summary %}{{ resource.summary }}{% endif %}";
+            }
+            
+            console.log('Texte à lire (longueur):', textToSpeak.length, 'caractères');
+            
+            /**
+             * Prépare les mots pour le surlignage
+             */
+            function prepareWords() {
+                // Récupérer tous les nœuds texte
+                const textNodes = [];
+                const walk = document.createTreeWalker(
+                    pdfContainer,
+                    NodeFilter.SHOW_TEXT,
+                    {
+                        acceptNode: function(node) {
+                            // Ignorer les espaces et les sauts de ligne
+                            if (node.textContent.trim().length === 0) return NodeFilter.FILTER_REJECT;
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                    }
+                );
+                
+                let node;
+                while (node = walk.nextNode()) {
+                    textNodes.push(node);
+                }
+                
+                console.log('Nœuds texte trouvés:', textNodes.length);
+            }
+            
+            // Variables d'état
+            let utterance = null;
+            let isPaused = false;
+            let isSpeaking = false;
+            let lastCharIndex = 0;
+            
+            // Remplir la liste des voix
+            function populateVoiceList() {
+                voiceSelect.innerHTML = '<option value="">Voix par défaut</option>';
+                
+                const voices = window.speechSynthesis.getVoices();
+                
+                if (voices.length === 0) return;
+                
+                // Voix françaises
+                const frenchVoices = voices.filter(voice => voice.lang.startsWith('fr'));
+                
+                frenchVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                });
+            }
+            
+            populateVoiceList();
+            window.speechSynthesis.onvoiceschanged = populateVoiceList;
+            
+            // Mise à jour des contrôles
+            speedControl.addEventListener('input', function() {
+                speedValue.textContent = this.value + 'x';
+                if (utterance) utterance.rate = parseFloat(this.value);
+            });
+            
+            pitchControl.addEventListener('input', function() {
+                pitchValue.textContent = this.value;
+                if (utterance) utterance.pitch = parseFloat(this.value);
+            });
+            
+            volumeControl.addEventListener('input', function() {
+                const percent = Math.round(this.value * 100);
+                volumeValue.textContent = percent + '%';
+                if (utterance) utterance.volume = parseFloat(this.value);
+            });
+            
+            /**
+             * Trouve et surligne le mot à la position donnée
+             */
+            function highlightWordAtPosition(charIndex) {
+                if (!pdfContainer) return;
+                
+                // Enlever le surlignage précédent
+                if (currentHighlightedElement) {
+                    const parent = currentHighlightedElement.parentNode;
+                    if (parent) {
+                        const text = currentHighlightedElement.textContent;
+                        const textNode = document.createTextNode(text);
+                        parent.replaceChild(textNode, currentHighlightedElement);
+                        currentHighlightedElement = null;
+                    }
+                }
+                
+                // Chercher le mot dans le texte
+                const walker = document.createTreeWalker(
+                    pdfContainer,
+                    NodeFilter.SHOW_TEXT,
+                    {
+                        acceptNode: function(node) {
+                            if (node.textContent.trim().length === 0) return NodeFilter.FILTER_REJECT;
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                    }
+                );
+                
+                let currentNode;
+                let currentPos = 0;
+                let targetNode = null;
+                let startOffset = 0;
+                let endOffset = 0;
+                
+                while (currentNode = walker.nextNode()) {
+                    const nodeText = currentNode.textContent;
+                    const nodeLength = nodeText.length;
+                    
+                    if (currentPos + nodeLength > charIndex) {
+                        // Le mot est dans ce nœud
+                        targetNode = currentNode;
+                        startOffset = charIndex - currentPos;
+                        
+                        // Trouver la fin du mot
+                        let endOffset = startOffset;
+                        while (endOffset < nodeLength && !/\s/.test(nodeText[endOffset])) {
+                            endOffset++;
+                        }
+                        
+                        if (startOffset < endOffset) {
+                            // Créer le span de surlignage
+                            const range = document.createRange();
+                            range.setStart(targetNode, startOffset);
+                            range.setEnd(targetNode, endOffset);
+                            
+                            const span = document.createElement('span');
+                            span.className = 'word-highlight';
+                            range.surroundContents(span);
+                            currentHighlightedElement = span;
+                            
+                            // Faire défiler jusqu'au mot si autoScroll est activé
+                            if (autoScrollEnabled) {
+                                span.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                });
+                            }
+                            
+                            break;
+                        }
+                    }
+                    
+                    currentPos += nodeLength;
+                }
+            }
+            
+            /**
+             * Met à jour la barre de progression
+             */
+            function updateProgress(charIndex) {
+                if (textToSpeak.length > 0) {
+                    const percent = Math.min(100, Math.round((charIndex / textToSpeak.length) * 100));
+                    progressBar.style.width = percent + '%';
+                    progressPercent.textContent = percent + '%';
+                }
+            }
+            
+            /**
+             * Réinitialise l'interface
+             */
+            function resetUI() {
+                isSpeaking = false;
+                isPaused = false;
+                utterance = null;
+                
+                playIcon.textContent = 'play_arrow';
+                playPauseText.textContent = 'Lecture';
+                speakingIndicator.classList.add('hidden');
+                
+                progressBar.style.width = '0%';
+                progressPercent.textContent = '0%';
+                
+                // Restaurer le texte original
+                if (currentHighlightedElement) {
+                    const parent = currentHighlightedElement.parentNode;
+                    if (parent) {
+                        const text = currentHighlightedElement.textContent;
+                        const textNode = document.createTextNode(text);
+                        parent.replaceChild(textNode, currentHighlightedElement);
+                        currentHighlightedElement = null;
+                    }
+                }
+            }
+            
+            /**
+             * Fonction pour démarrer la lecture
+             */
+            function speak() {
+                if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                }
+                
+                resetUI();
+                autoScrollEnabled = true;
+                
+                utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = 'fr-FR';
+                utterance.rate = parseFloat(speedControl.value);
+                utterance.pitch = parseFloat(pitchControl.value);
+                utterance.volume = parseFloat(volumeControl.value);
+                
+                const selectedVoiceName = voiceSelect.value;
+                if (selectedVoiceName) {
+                    const voices = window.speechSynthesis.getVoices();
+                    const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
+                    if (selectedVoice) utterance.voice = selectedVoice;
+                }
+                
+                // Événement à chaque mot
+                utterance.onboundary = function(event) {
+                    if (event.name === 'word') {
+                        highlightWordAtPosition(event.charIndex);
+                        updateProgress(event.charIndex);
+                    }
+                };
+                
+                utterance.onstart = function() {
+                    isSpeaking = true;
+                    isPaused = false;
+                    playIcon.textContent = 'pause';
+                    playPauseText.textContent = 'Pause';
+                    speakingIndicator.classList.remove('hidden');
+                };
+                
+                utterance.onpause = function() {
+                    isPaused = true;
+                    playIcon.textContent = 'play_arrow';
+                    playPauseText.textContent = 'Lecture';
+                };
+                
+                utterance.onresume = function() {
+                    isPaused = false;
+                    playIcon.textContent = 'pause';
+                    playPauseText.textContent = 'Pause';
+                };
+                
+                utterance.onend = function() {
+                    resetUI();
+                };
+                
+                utterance.onerror = function(event) {
+                    console.error('Erreur:', event);
+                    alert('Erreur de lecture. Veuillez réessayer.');
+                    resetUI();
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            }
+            
+            /**
+             * Met en pause la lecture
+             */
+            function pauseSpeech() {
+                if (isSpeaking && !isPaused) {
+                    window.speechSynthesis.pause();
+                }
+            }
+            
+            /**
+             * Arrête la lecture
+             */
+            function stopSpeech() {
+                if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                }
+                resetUI();
+            }
+            
+            // Désactiver l'auto-scroll quand l'utilisateur scroll manuellement
+            pdfContainer.addEventListener('wheel', function() {
+                autoScrollEnabled = false;
+            });
+            
+            pdfContainer.addEventListener('touchstart', function() {
+                autoScrollEnabled = false;
+            });
+            
+            // Réactiver l'auto-scroll au prochain mot si l'utilisateur n'a pas scrollé depuis longtemps
+            setInterval(function() {
+                if (isSpeaking && !autoScrollEnabled) {
+                    autoScrollEnabled = true;
+                }
+            }, 5000);
+            
+            // Écouteurs d'événements
+            playPauseBtn.addEventListener('click', function() {
+                if (!isSpeaking) {
+                    speak();
+                } else if (isPaused) {
+                    window.speechSynthesis.resume();
+                } else {
+                    window.speechSynthesis.pause();
+                }
+            });
+            
+            pauseBtn.addEventListener('click', pauseSpeech);
+            stopBtn.addEventListener('click', stopSpeech);
+            
+            // Nettoyer à la fermeture
+            window.addEventListener('beforeunload', function() {
+                if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                }
+            });
+            
+            // Réinitialiser si on change de voix
+            voiceSelect.addEventListener('change', function() {
+                if (isSpeaking) {
+                    stopSpeech();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

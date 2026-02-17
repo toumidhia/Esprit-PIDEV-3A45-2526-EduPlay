@@ -44,6 +44,10 @@ services:
             $router: '@router'
             $mailer: '@mailer'  # Changé de '@mailer.mailer' à '@mailer'
             $logger: '@logger'
+    App\Service\PdfExtractorService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+      

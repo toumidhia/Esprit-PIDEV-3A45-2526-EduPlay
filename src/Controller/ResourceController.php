@@ -15,6 +15,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
+use App\Service\PdfExtractorService;
+
 final class ResourceController extends AbstractController
 {
     // ===============================
@@ -269,4 +271,39 @@ final class ResourceController extends AbstractController
         
         return $this->redirectToRoute('admin_resource_index');
     }
+
+#[Route('FrontOffice/resource/{id}/read', name: 'app_resource_read', methods: ['GET'])]
+public function read(Resource $resource): Response
+{
+    return $this->render('FrontOffice/resource/read.html.twig', [
+        'resource' => $resource,
+    ]);
+ 
+}
+#[Route('FrontOffice/resource/{id}/read-pdf', name: 'app_resource_read_pdf', methods: ['GET'])]
+public function readPdf(Resource $resource, PdfExtractorService $pdfExtractor): Response
+{
+    // Extraire le texte du PDF
+    $pdfContent = null;
+    $pdfPages = [];
+    
+    if ($resource->getPdfFile()) {
+        // Essayer d'extraire le texte complet
+        $pdfContent = $pdfExtractor->extractTextFromPdf($resource->getPdfFile());
+        
+        // Essayer d'extraire page par page
+        $pdfPages = $pdfExtractor->extractTextByPages($resource->getPdfFile());
+    }
+    
+    return $this->render('FrontOffice/resource/read_pdf.html.twig', [
+        'resource' => $resource,
+        'pdfContent' => $pdfContent,
+        'pdfPages' => $pdfPages,
+        'hasPdf' => ($pdfContent !== null && !empty($pdfContent))
+    ]);
+}
+
+
+
+
 }

@@ -165,7 +165,7 @@
                                         <div class="d-flex align-items-center">
                                             <div class="user-avatar bg-{{
                                             user.type == 'admin' ? 'admin' :
-                                            (user.type == 'teacher' ? 'enseignant' :
+                                            (user.type == 'teacher' or user.type == 'enseignant' ? 'enseignant' :
                                             (user.type == 'parent' ? 'parent' : 'enfant'))
                                             }} me-3">
                                                 {{ user.firstName|first }}{{ user.lastName|first }}
@@ -195,15 +195,18 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-{{
-                                        user.type == 'admin' ? 'danger' :
-                                        (user.type == 'teacher' ? 'success' :
-                                        (user.type == 'parent' ? 'warning' : 'info'))
+                                            user.type == 'admin' ? 'danger' :
+                                            (user.type == 'teacher' or user.type == 'enseignant' ? 'success' :
+                                            (user.type == 'parent' ? 'warning' : 'info'))
                                         }}">
-                                            {{ user.type == 'admin' ? 'ADMIN' :
-                                            (user.type == 'teacher' ? 'ENSEIGNANT' :
-                                            (user.type == 'parent' ? 'PARENT' : 'ENFANT')) }}
+                                            {{
+                                                user.type == 'admin' ? 'ADMIN' :
+                                                (user.type == 'teacher' or user.type == 'enseignant' ? 'ENSEIGNANT' :
+                                                (user.type == 'parent' ? 'PARENT' : 'ENFANT'))
+                                            }}
                                         </span>
                                     </td>
+
                                     <td>
                                         {% for role in user.roles %}
                                             {% if role != 'ROLE_USER' %}

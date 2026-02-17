@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Front;
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -60,7 +60,7 @@ class CartController extends AbstractController
             $total += $lineTotal;
         }
 
-        return $this->render('front/cart/index.html.twig', [
+        return $this->render('FrontOffice/parent/cart/index.html.twig', [
             'items' => $items,
             'total' => $total,
         ]);

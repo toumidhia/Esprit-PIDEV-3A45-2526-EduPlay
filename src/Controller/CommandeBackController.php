@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Back;
+namespace App\Controller;
 
 use App\Entity\Commande;
 use App\Form\CommandeType;
@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/admin/commande')]
-class CommandeController extends AbstractController
+class CommandeBackController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -43,7 +43,7 @@ class CommandeController extends AbstractController
         $users = $this->userRepository->findBy([], ['lastName' => 'ASC']);
         $products = $this->productRepository->findBy([], ['name' => 'ASC']);
 
-        return $this->render('back/commande/index.html.twig', [
+        return $this->render('BackOffice/admin/commande/index.html.twig', [
             'commandes' => $commandes,
             'stats' => $stats,
             'users' => $users,
@@ -75,7 +75,7 @@ class CommandeController extends AbstractController
             return $this->redirectToRoute('app_back_commande_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('back/commande/new.html.twig', [
+        return $this->render('BackOffice/admin/commande/new.html.twig', [
             'commande' => $commande,
             'form' => $form->createView(),
         ]);
@@ -84,7 +84,7 @@ class CommandeController extends AbstractController
     #[Route('/{id}', name: 'app_back_commande_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(Commande $commande): Response
     {
-        return $this->render('back/commande/show.html.twig', [
+        return $this->render('BackOffice/admin/commande/show.html.twig', [
             'commande' => $commande,
         ]);
     }
@@ -103,7 +103,7 @@ class CommandeController extends AbstractController
             return $this->redirectToRoute('app_back_commande_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('back/commande/edit.html.twig', [
+        return $this->render('BackOffice/admin/commande/edit.html.twig', [
             'commande' => $commande,
             'form' => $form->createView(),
         ]);
@@ -134,7 +134,7 @@ class CommandeController extends AbstractController
         $sortOrder = strtoupper($request->query->get('order', 'DESC')) === 'ASC' ? 'ASC' : 'DESC';
         $commandes = $this->commandeRepository->searchFilterSort($search, $dateFrom, $dateTo, $userId, $productId, $sortBy, $sortOrder);
 
-        $html = $this->renderView('back/commande/export_pdf.html.twig', ['commandes' => $commandes]);
+        $html = $this->renderView('BackOffice/admin/commande/export_pdf.html.twig', ['commandes' => $commandes]);
         $pdf = $this->getPdfFromHtml($html);
 
         return new Response($pdf, 200, [

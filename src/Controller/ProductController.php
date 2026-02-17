@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Back;
+namespace App\Controller;
 
 use App\Entity\Product;
 use App\Form\ProductType;
@@ -40,7 +40,7 @@ class ProductController extends AbstractController
             'unavailable' => $this->productRepository->countUnavailable(),
         ];
 
-        return $this->render('back/product/index.html.twig', [
+        return $this->render('BackOffice/admin/product/index.html.twig', [
             'products' => $products,
             'stats' => $stats,
             'search' => $search,
@@ -84,7 +84,7 @@ class ProductController extends AbstractController
             return $this->redirectToRoute('app_back_product_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('back/product/new.html.twig', [
+        return $this->render('BackOffice/admin/product/new.html.twig', [
             'product' => $product,
             'form' => $form,
         ]);
@@ -93,7 +93,7 @@ class ProductController extends AbstractController
     #[Route('/{id}', name: 'app_back_product_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(Product $product): Response
     {
-        return $this->render('back/product/show.html.twig', [
+        return $this->render('BackOffice/admin/product/show.html.twig', [
             'product' => $product,
         ]);
     }
@@ -130,7 +130,7 @@ class ProductController extends AbstractController
             return $this->redirectToRoute('app_back_product_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('back/product/edit.html.twig', [
+        return $this->render('BackOffice/admin/product/edit.html.twig', [
             'product' => $product,
             'form' => $form,
         ]);
@@ -167,7 +167,7 @@ class ProductController extends AbstractController
         $sortOrder = strtoupper($request->query->get('order', 'DESC')) === 'ASC' ? 'ASC' : 'DESC';
         $products = $this->productRepository->searchFilterSort($search, $availability, $sortBy, $sortOrder);
 
-        $html = $this->renderView('back/product/export_pdf.html.twig', ['products' => $products]);
+        $html = $this->renderView('BackOffice/admin/product/export_pdf.html.twig', ['products' => $products]);
         $pdf = $this->getPdfFromHtml($html);
 
         return new Response($pdf, 200, [

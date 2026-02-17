@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Back;
+namespace App\Controller;
 
 use App\Service\AnomalyDetectionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,7 +20,7 @@ class AnomalyController extends AbstractController
     {
         $anomalies = $this->anomalyDetectionService->detectAllAnomalies();
 
-        return $this->render('back/anomalies/index.html.twig', [
+        return $this->render('BackOffice/admin/anomalies/index.html.twig', [
             'anomalies' => $anomalies,
         ]);
     }

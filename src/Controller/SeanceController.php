@@ -68,12 +68,12 @@ final class SeanceController extends AbstractController
                 ];
             }, $seances);
 
-            return $this->render('backoffice/seance/calendar.html.twig', [
+            return $this->render('BackOffice/seance/calendar.html.twig', [
                 'seances' => $formattedSeances,
             ]);
         }
 
-        return $this->render('backoffice/seance/index.html.twig', [
+        return $this->render('BackOffice/seance/index.html.twig', [
             'seances' => $seances,
             'filters' => $filters,
             'sortBy' => $sortBy,
@@ -120,7 +120,7 @@ final class SeanceController extends AbstractController
             return $this->redirectToRoute('app_seance_index');
         }
 
-        return $this->render('backoffice/seance/new.html.twig', [
+        return $this->render('BackOffice/seance/new.html.twig', [
             'seance' => $seance,
             'form' => $form,
         ]);
@@ -130,7 +130,7 @@ final class SeanceController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function show(Seance $seance): Response
     {
-        return $this->render('backoffice/seance/show.html.twig', [
+        return $this->render('BackOffice/seance/show.html.twig', [
             'seance' => $seance,
         ]);
     }
@@ -148,7 +148,7 @@ final class SeanceController extends AbstractController
             $course = $seance->getCourseId();
             if ($course && $course->getStatus() !== 'accepted') {
                 $this->addFlash('error', 'You can only assign sessions to accepted courses!');
-                return $this->render('backoffice/seance/edit.html.twig', [
+                return $this->render('BackOffice/seance/edit.html.twig', [
                     'seance' => $seance,
                     'form' => $form,
                 ]);
@@ -160,7 +160,7 @@ final class SeanceController extends AbstractController
             return $this->redirectToRoute('app_seance_index');
         }
 
-        return $this->render('backoffice/seance/edit.html.twig', [
+        return $this->render('BackOffice/seance/edit.html.twig', [
             'seance' => $seance,
             'form' => $form,
         ]);

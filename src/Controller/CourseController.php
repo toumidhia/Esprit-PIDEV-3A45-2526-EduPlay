@@ -74,12 +74,12 @@ final class CourseController extends AbstractController
         if (in_array('ROLE_TEACHER', $userRoles)) {
             // Teacher sees only their own courses
             $courses = $courseRepository->findByTeacher($user, $filters);
-            $template = 'backoffice/course/index.html.twig';
+            $template = 'BackOffice/course/index.html.twig';
             $recommendations = [];
         } elseif (in_array('ROLE_PARENT', $userRoles)) {
             // Parents see only accepted courses
             $courses = $courseRepository->findBy(['status' => 'accepted'], ['title' => 'ASC']);
-            $template = 'FrontOffice/course/browse.html.twig';
+            $template = 'FrontOffice/enseignant/course/browse.html.twig';
 
             // Get parent's kids for subscriptions
             $kids = $userRepository->findBy(['parent' => $user, 'type' => 'kid']);
@@ -102,7 +102,7 @@ final class CourseController extends AbstractController
             foreach ($subscriptions as $subscription) {
                 $courses[] = $subscription->getCourse();
             }
-            $template = 'FrontOffice/course/browse.html.twig';
+            $template = 'FrontOffice/enseignant/course/browse.html.twig';
             $kids = [];
 
             // Get recommendations for this kid (courses they are NOT subscribed to)
@@ -110,7 +110,7 @@ final class CourseController extends AbstractController
         } else {
             // Admin sees all courses with filters
             $courses = $courseRepository->findAll();
-            $template = 'backoffice/course/index.html.twig';
+            $template = 'BackOffice/course/index.html.twig';
             $recommendations = [];
             $kids = [];
         }
@@ -261,7 +261,7 @@ final class CourseController extends AbstractController
             return $this->redirectToRoute('app_course_index');
         }
 
-        return $this->render('backoffice/course/new.html.twig', [
+        return $this->render('BackOffice/course/new.html.twig', [
             'course' => $course,
             'form' => $form,
         ]);
@@ -306,8 +306,8 @@ final class CourseController extends AbstractController
 
         // Route to backoffice for admin/teacher, frontoffice for parent/kid
         $template = (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_TEACHER', $userRoles))
-            ? 'backoffice/course/show.html.twig'
-            : 'FrontOffice/course/show.html.twig';
+            ? 'BackOffice/course/show.html.twig'
+            : 'FrontOffice/enseignant/course/show.html.twig';
 
         return $this->render($template, [
             'course' => $course,
@@ -442,7 +442,7 @@ final class CourseController extends AbstractController
             return $this->redirectToRoute('app_course_index');
         }
 
-        return $this->render('backoffice/course/edit.html.twig', [
+        return $this->render('BackOffice/course/edit.html.twig', [
             'course' => $course,
             'form' => $form,
         ]);
@@ -667,7 +667,7 @@ final class CourseController extends AbstractController
             }
         }
 
-        return $this->render('FrontOffice/course/browse.html.twig', [
+        return $this->render('FrontOffice/enseignant/course/browse.html.twig', [
             'courses' => $courses,
             'kids' => $kids,
             'subscriptions' => $subscriptionMap,
@@ -745,8 +745,8 @@ final class CourseController extends AbstractController
 
         // Determine which template to use
         $template = (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_TEACHER', $userRoles))
-            ? 'backoffice/course/detail.html.twig'
-            : 'FrontOffice/course/detail.html.twig';
+            ? 'BackOffice/course/detail.html.twig'
+            : 'FrontOffice/enseignant/course/detail.html.twig';
 
         return $this->render($template, [
             'course' => $course,

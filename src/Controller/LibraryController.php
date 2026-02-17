@@ -23,7 +23,7 @@ final class LibraryController extends AbstractController
     #[Route('FrontOffice/library', name: 'app_library')]
     public function index(LibraryRepository $libraryRepository): Response
     {
-        return $this->render('FrontOffice/library/index.html.twig', [
+        return $this->render('FrontOffice/enfant/library/index.html.twig', [
             'libraries' => $libraryRepository->findAll(),
         ]);
     }
@@ -328,7 +328,7 @@ public function libraryResources(Library $library, ResourceRepository $resourceR
     $resources = $resourceRepository->findBy(['libraryId' => $library], ['title' => 'ASC']);
     
     // Utiliser le template qui existe déjà dans FrontOffice/resource/
-    return $this->render('FrontOffice/resource/index.html.twig', [
+    return $this->render('FrontOffice/enfant/resource/index.html.twig', [
         'library' => $library,
         'resources' => $resources,
     ]);

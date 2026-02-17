@@ -39,7 +39,7 @@ class DashboardController extends AbstractController
             $pendingCourses = $courseRepository->findPendingCourses(10);
         }
 
-        return $this->render('backoffice/dashboard.html.twig', [
+        return $this->render('BackOffice/dashboard.html.twig', [
             'userRole' => $this->getMainRole($userRoles),
             'statistics' => $statistics,
             'seanceStatistics' => $seanceStatistics,

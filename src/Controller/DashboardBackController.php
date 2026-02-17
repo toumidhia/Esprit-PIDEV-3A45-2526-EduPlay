@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Back;
+namespace App\Controller;
 
 use App\Repository\CommandeRepository;
 use App\Repository\ProductRepository;
@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/admin')]
-class DashboardController extends AbstractController
+class DashboardBackController extends AbstractController
 {
     public function __construct(
         private AnomalyDetectionService $anomalyDetectionService,

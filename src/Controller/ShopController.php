@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Front;
+namespace App\Controller;
 
 use App\Repository\ProductRepository;
 use App\Service\RecommendationProductService;
@@ -32,7 +32,7 @@ class ShopController extends AbstractController
         // Recommandations intelligentes
         $recommendations = $this->RecommendationProductService->getRecommendationsForUser(null, 4);
 
-        return $this->render('front/shop/index.html.twig', [
+        return $this->render('FrontOffice/parent/shop/index.html.twig', [
             'products' => $products,
             'stats' => $stats,
             'recommendations' => $recommendations,
@@ -56,7 +56,7 @@ class ShopController extends AbstractController
         $similarProducts = $this->RecommendationProductService->getContentBasedRecommendations($product, 3);
         $frequentlyBoughtTogether = $this->RecommendationProductService->getFrequentlyBoughtTogether($product, 3);
 
-        return $this->render('front/shop/show.html.twig', [
+        return $this->render('FrontOffice/parent/shop/show.html.twig', [
             'product' => $product,
             'similarProducts' => $similarProducts,
             'frequentlyBoughtTogether' => $frequentlyBoughtTogether,

@@ -81,6 +81,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $niveau = null;
 
+    /**
+     * @var Collection<int, Commande>
+     */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Commande::class)]
+    private Collection $commandes;
+
     public function __construct()
     {
         $this->courses = new ArrayCollection();
@@ -364,6 +370,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $eventRegistration->setParent(null);
             }
         }
+        return $this;
+    }
+
+    // Commande methods
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
+    {
+        return $this->commandes;
+    }
+
+    public function addCommande(Commande $commande): static
+    {
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes->add($commande);
+            $commande->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommande(Commande $commande): static
+    {
+        if ($this->commandes->removeElement($commande)) {
+            if ($commande->getUser() === $this) {
+                $commande->setUser(null);
+            }
+        }
+
         return $this;
     }
 

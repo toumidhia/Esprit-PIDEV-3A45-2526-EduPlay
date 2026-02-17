@@ -26,11 +26,18 @@ class CommandeRepository extends ServiceEntityRepository
         ?int $userId,
         ?int $productId,
         string $sortBy = 'dateCommande',
-        string $sortOrder = 'DESC'
+        string $sortOrder = 'DESC',
+        bool $paidOnly = true
     ): array {
         $qb = $this->createQueryBuilder('c')
             ->leftJoin('c.user', 'u')
             ->leftJoin('c.product', 'pr');
+        
+        // Filter to show only paid commandes by default
+        if ($paidOnly) {
+            $qb->andWhere('c.isPaid = true');
+        }
+        
         if ($search !== null && $search !== '') {
             $qb->andWhere('u.firstName LIKE :search OR u.lastName LIKE :search OR u.email LIKE :search OR pr.name LIKE :search')
                 ->setParameter('search', '%' . $search . '%');

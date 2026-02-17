@@ -153,7 +153,7 @@ class SubscriptionController extends AbstractController
                 $uniqueParents[$sub->getParent()->getId()] = true;
             }
 
-            return $this->render('BackOffice/subscription/list.html.twig', [
+            return $this->render('BackOffice/admin/subscription/list.html.twig', [
                 'subscriptions' => $subscriptions,
                 'uniqueCoursesCount' => count($uniqueCourses),
                 'uniqueKidsCount' => count($uniqueKids),
@@ -168,7 +168,7 @@ class SubscriptionController extends AbstractController
                 ['subscribedAt' => 'DESC']
             );
 
-            return $this->render('FrontOffice/subscription/list.html.twig', [
+            return $this->render('FrontOffice/enfant/subscription/list.html.twig', [
                 'subscriptions' => $subscriptions,
             ]);
         }

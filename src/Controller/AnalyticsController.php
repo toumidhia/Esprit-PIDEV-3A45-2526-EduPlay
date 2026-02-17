@@ -23,7 +23,7 @@ class AnalyticsController extends AbstractController
         // Get comprehensive statistics
         $stats = $this->getComprehensiveStats($courseRepository, $subscriptionRepository);
 
-        return $this->render('BackOffice/analytics/dashboard.html.twig', $stats);
+        return $this->render('BackOffice/admin/analytics/dashboard.html.twig', $stats);
     }
 
     /**
@@ -110,7 +110,7 @@ class AnalyticsController extends AbstractController
             $levelDistribution[$level]++;
         }
 
-        return $this->render('BackOffice/analytics/course_participants.html.twig', [
+        return $this->render('BackOffice/admin/analytics/course_participants.html.twig', [
             'course' => $course,
             'subscriptions' => $subscriptions,
             'totalParticipants' => count($subscriptions),
@@ -154,7 +154,7 @@ class AnalyticsController extends AbstractController
         $totalAcceptedCourses = $courseRepository->count(['status' => 'accepted']);
         $avgSubscriptions = $totalAcceptedCourses > 0 ? $totalSubscriptions / $totalAcceptedCourses : 0;
 
-        return $this->render('BackOffice/analytics/performance.html.twig', [
+        return $this->render('BackOffice/admin/analytics/performance.html.twig', [
             'popularCourses' => $popularCourses,
             'unpopularCourses' => $unpopularCourses,
             'avgSubscriptions' => round($avgSubscriptions, 2),

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Front;
+namespace App\Controller;
 
 use App\Entity\EventRegistration;
 use App\Entity\SchoolEvent;

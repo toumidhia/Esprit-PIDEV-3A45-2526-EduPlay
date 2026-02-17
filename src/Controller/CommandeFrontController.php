@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Front;
+namespace App\Controller;
 
 use App\Entity\Commande;
 use App\Form\FrontCommandeType;
@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/shop')]
-class CommandeController extends AbstractController
+class CommandeFrontController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -70,7 +70,7 @@ class CommandeController extends AbstractController
             }
         }
 
-        return $this->render('front/commande/new.html.twig', [
+        return $this->render('FrontOffice/parent/commande/new.html.twig', [
             'product' => $product,
             'form' => $form->createView(),
             'initial_total' => $product->getPrice() * 1,
@@ -86,7 +86,7 @@ class CommandeController extends AbstractController
             throw $this->createNotFoundException('Commande non trouvée.');
         }
 
-        return $this->render('front/commande/confirm.html.twig', [
+        return $this->render('FrontOffice/parent/commande/confirm.html.twig', [
             'commande' => $commande,
             'product' => $commande->getProduct(),
             'user' => $commande->getUser(),

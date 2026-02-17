@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Teacher;
+namespace App\Controller;
 
 use App\Entity\Game;
 use App\Form\GameType;
@@ -42,12 +42,12 @@ final class GameController extends AbstractController
         $levels = $levelRepository->findBy([], ['name' => 'ASC']);
 
         if ($request->isXmlHttpRequest()) {
-    return $this->render('BackOffice/teacher/game/_grid.html.twig', [
+    return $this->render('BackOffice/enseignant/game/_grid.html.twig', [
         'games' => $games,
     ]);
 }
 
-        return $this->render('BackOffice/teacher/game/index.html.twig', [
+        return $this->render('BackOffice/enseignant/game/index.html.twig', [
             'games' => $games,
             'filters' => $filters,
             'sortBy' => $sortBy,
@@ -123,7 +123,7 @@ public function new(Request $request, EntityManagerInterface $em, SluggerInterfa
         return $this->redirectToRoute('teacher_game_index');
     }
 
-    return $this->render('BackOffice/teacher/game/new.html.twig', [
+    return $this->render('BackOffice/enseignant/game/new.html.twig', [
         'game' => $game,
         'form' => $form,
     ]);
@@ -173,7 +173,7 @@ public function edit(Request $request, Game $game, EntityManagerInterface $em, S
         return $this->redirectToRoute('teacher_game_index');
     }
 
-    return $this->render('BackOffice/teacher/game/edit.html.twig', [
+    return $this->render('BackOffice/enseignant/game/edit.html.twig', [
         'game' => $game,
         'form' => $form,
     ]);
@@ -203,7 +203,7 @@ public function edit(Request $request, Game $game, EntityManagerInterface $em, S
     public function indexxx(): Response
     {
        
-        return $this->render('BackOffice/teacher/partials/base_admin.html.twig');
+        return $this->render('BackOffice/enseignant/partials/base_admin.html.twig');
     }
 
 
@@ -227,12 +227,12 @@ public function frontIndex(
     $games = $gameRepository->findWithFrontFilters($filters, $sortBy, $sortOrder);
 
     if ($request->isXmlHttpRequest()) {
-        return $this->render('FrontOffice/teacher/game/_grid.html.twig', [
+        return $this->render('FrontOffice/enseignant/game/_grid.html.twig', [
             'games' => $games,
         ]);
     }
 
-    return $this->render('FrontOffice/teacher/game/index.html.twig', [
+    return $this->render('FrontOffice/enseignant/game/index.html.twig', [
         'titre' => 'Games',
         'description' => 'Choisis un jeu et commence à jouer',
         'games' => $games,
@@ -244,7 +244,7 @@ public function frontIndex(
 #[Route('/game/{id}', name: 'front_game_show_front', methods: ['GET'])]
 public function frontShow(Game $game): Response
 {
-    return $this->render('FrontOffice/teacher/game/show.html.twig', [
+    return $this->render('FrontOffice/enseignant/game/show.html.twig', [
         'game' => $game,
     ]);
 }
@@ -253,7 +253,7 @@ public function frontShow(Game $game): Response
     #[Route('/{id}', name: 'teacher_game_show', methods: ['GET'])]
     public function show(Game $game): Response
     {
-        return $this->render('BackOffice/teacher/game/show.html.twig', [
+        return $this->render('BackOffice/enseignant/game/show.html.twig', [
             'game' => $game,
         ]);
     }

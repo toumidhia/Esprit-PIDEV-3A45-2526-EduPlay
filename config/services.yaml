@@ -45,5 +45,10 @@ services:
             $mailer: '@mailer'  # Changé de '@mailer.mailer' à '@mailer'
             $logger: '@logger'
 
+    # Configuration explicite du service Stripe
+    App\Service\StripePaymentService:
+        arguments:
+            $stripeSecretKey: '%env(STRIPE_SECRET_KEY)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

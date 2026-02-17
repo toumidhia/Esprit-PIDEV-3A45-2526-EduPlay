@@ -1,0 +1,80 @@
+{% extends 'FrontOffice/parent/Partials/base_parent.html.twig' %}
+
+{% block title %}Paiement de la Commande{% endblock %}
+
+{% block content %}
+    <div class="bg-white rounded-xl border border-gray-200 p-8 max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-4">Paiement de la Commande</h1>
+
+        <p class="mb-2">Commande N°: <strong>#{{ commande.id }}</strong></p>
+        <p class="mb-2">Produit: <strong>{{ commande.product.name }}</strong></p>
+        <p class="mb-2">Quantité: <strong>{{ commande.quantity }}</strong></p>
+        <p class="mb-6">Total: <strong class="text-blue-600">{{ commande.totalAmount }} USD</strong></p>
+
+        <form id="payment-form">
+            <div id="card-element" class="mb-4 p-4 border rounded"></div>
+            <button id="submit" class="px-6 py-2 bg-primary text-white rounded">Payer</button>
+            <p id="error-message" class="text-red-600 mt-3"></p>
+        </form>
+    </div>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        const stripe = Stripe("{{ stripe_public_key }}");
+
+        const elements = stripe.elements();
+        const cardElement = elements.create("card");
+        cardElement.mount("#card-element");
+
+        const paymentForm = document.getElementById("payment-form");
+        const errorMessage = document.getElementById("error-message");
+        const submit = document.getElementById("submit");
+
+        paymentForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            submit.disabled = true;
+            errorMessage.textContent = '';
+
+            const response = await fetch("{{ path('app_parent_commande_paiement', {id: commande.id}) }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
+
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                errorMessage.textContent = err.error || response.statusText || 'Erreur lors de la création du paiement.';
+                submit.disabled = false;
+                return;
+            }
+
+            const { clientSecret } = await response.json();
+
+            const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: { card: cardElement },
+            });
+
+            if (error) {
+                errorMessage.textContent = error.message;
+                submit.disabled = false;
+                return;
+            }
+
+            if (paymentIntent.status === "succeeded") {
+                // Notify server to mark commande as paid
+                const res = await fetch("{{ path('app_parent_commande_paiement_complete', {id: commande.id}) }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentIntentId: paymentIntent.id })
+                });
+
+                if (res.ok) {
+                    window.location.href = "{{ path('app_parent_commandes') }}";
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    errorMessage.textContent = err.error || 'Erreur serveur lors de la finalisation du paiement.';
+                    submit.disabled = false;
+                }
+            }
+        });
+    </script>
+{% endblock %}

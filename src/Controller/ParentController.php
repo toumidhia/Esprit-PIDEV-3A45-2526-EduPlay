@@ -14,6 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Service\StripePaymentService;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/parent')]
 #[IsGranted('ROLE_PARENT')]
@@ -183,4 +185,117 @@ class ParentController extends AbstractController
         }
 
         return $this->redirectToRoute('app_parent_commandes');
-    }}
+    }
+
+    #[Route('/commandes/{id}/paiement', name: 'app_parent_commande_paiement', methods: ['POST'])]
+    public function paiement(Commande $commande, StripePaymentService $stripePaymentService): Response
+    {
+        // Ensure the user is the owner of the commande
+        /** @var User $parent */
+        $parent = $this->getUser();
+        if ($commande->getUser() !== $parent) {
+            throw $this->createAccessDeniedException('You do not have access to this commande.');
+        }
+
+        // Create a payment intent
+        $paymentIntent = $stripePaymentService->createPaymentIntent(
+            $commande->getTotalAmount(),
+            'usd',
+            ['commande_id' => $commande->getId()]
+        );
+
+        return $this->json([
+            'clientSecret' => $paymentIntent->client_secret,
+        ]);
+    }
+
+    #[Route('/commandes/{id}/paiement/form', name: 'app_parent_commande_paiement_form', methods: ['GET'])]
+    public function paiementForm(Commande $commande): Response
+    {
+        /** @var User $parent */
+        $parent = $this->getUser();
+        if ($commande->getUser() !== $parent) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas accéder à cette commande.');
+        }
+
+        return $this->render('FrontOffice/parent/paiement.html.twig', [
+            'commande' => $commande,
+            'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'],
+        ]);
+    }
+
+    #[Route('/commandes/{id}/paiement/complete', name: 'app_parent_commande_paiement_complete', methods: ['POST'])]
+    public function paiementComplete(Commande $commande, Request $request, EntityManagerInterface $em): Response
+    {
+        /** @var User $parent */
+        $parent = $this->getUser();
+        if ($commande->getUser() !== $parent) {
+            throw $this->createAccessDeniedException('Vous do not have access to this commande.');
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $paymentIntentId = $data['paymentIntentId'] ?? null;
+
+        if (!$paymentIntentId) {
+            return $this->json(['error' => 'Missing paymentIntentId'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $commande->setStripePaymentId($paymentIntentId);
+        $commande->setIsPaid(true);
+        $em->persist($commande);
+        $em->flush();
+
+        return $this->json(['status' => 'ok']);
+    }
+
+    #[Route('/commandes/{id}/checkout', name: 'app_parent_commande_checkout', methods: ['POST'])]
+    public function checkout(Commande $commande, StripePaymentService $stripePaymentService, UrlGeneratorInterface $urlGenerator): Response
+    {
+        /** @var User $parent */
+        $parent = $this->getUser();
+        if ($commande->getUser() !== $parent) {
+            throw $this->createAccessDeniedException('Vous do not have access to this commande.');
+        }
+
+        $successUrl = $urlGenerator->generate('app_parent_commande_checkout_success', ['id' => $commande->getId()], UrlGeneratorInterface::ABSOLUTE_URL) . '?session_id={CHECKOUT_SESSION_ID}';
+        $cancelUrl = $urlGenerator->generate('app_parent_commande_paiement_form', ['id' => $commande->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $session = $stripePaymentService->createCheckoutSession(
+            $commande->getTotalAmount(),
+            'usd',
+            $successUrl,
+            $cancelUrl,
+            ['commande_id' => $commande->getId(), 'description' => 'Commande #' . $commande->getId()]
+        );
+
+        // Redirect user to Stripe Checkout
+        return $this->redirect($session->url);
+    }
+
+    #[Route('/commandes/{id}/checkout/success', name: 'app_parent_commande_checkout_success', methods: ['GET'])]
+    public function checkoutSuccess(Commande $commande, Request $request, StripePaymentService $stripePaymentService, EntityManagerInterface $em): Response
+    {
+        $sessionId = $request->query->get('session_id');
+        if (!$sessionId) {
+            $this->addFlash('error', 'Session manquante.');
+            return $this->redirectToRoute('app_parent_commandes');
+        }
+
+        $session = $stripePaymentService->retrieveCheckoutSession($sessionId);
+
+        // validate metadata
+        if (!isset($session->metadata->commande_id) || (int) $session->metadata->commande_id !== $commande->getId()) {
+            $this->addFlash('error', 'Session mismatch.');
+            return $this->redirectToRoute('app_parent_commandes');
+        }
+
+        // mark commande as paid (we can also use webhook for production reliability)
+        $commande->setStripePaymentId($session->payment_intent ?? $session->id);
+        $commande->setIsPaid(true);
+        $em->persist($commande);
+        $em->flush();
+
+        $this->addFlash('success', 'Paiement confirmé via Stripe Checkout.');
+        return $this->redirectToRoute('app_parent_commandes');
+    }
+}

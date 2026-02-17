@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Teacher;
+namespace App\Controller;
 use Symfony\Component\Form\FormError;
 
 
@@ -41,13 +41,13 @@ final class LevelController extends AbstractController
 
         // AJAX: renvoyer juste le grid
         if ($request->isXmlHttpRequest()) {
-            return $this->render('BackOffice/teacher/level/_grid.html.twig', [
+            return $this->render('BackOffice/enseignant/level/_grid.html.twig', [
                 'levels' => $levels,
             ]);
         }
 
         // Normal
-        return $this->render('BackOffice/teacher/level/index.html.twig', [
+        return $this->render('BackOffice/enseignant/level/index.html.twig', [
             'levels' => $levels,
             'filters' => $filters,
             'sortBy' => $sortBy,
@@ -87,7 +87,7 @@ public function new(Request $request, EntityManagerInterface $em): Response
         }
     }
 
-    return $this->render('BackOffice/teacher/level/new.html.twig', [
+    return $this->render('BackOffice/enseignant/level/new.html.twig', [
         'level' => $level,
         'form' => $form,
     ]);
@@ -101,7 +101,7 @@ public function new(Request $request, EntityManagerInterface $em): Response
 
     // Nombre de games
     $gamesCount = count($games);
-        return $this->render('BackOffice/teacher/level/show.html.twig', [
+        return $this->render('BackOffice/enseignant/level/show.html.twig', [
             'level' => $level,
             'games' => $games,
         'gamesCount' => $gamesCount,
@@ -137,7 +137,7 @@ public function edit(Request $request, Level $level, EntityManagerInterface $em)
         }
     }
 
-    return $this->render('BackOffice/teacher/level/edit.html.twig', [
+    return $this->render('BackOffice/enseignant/level/edit.html.twig', [
         'level' => $level,
         'form' => $form,
     ]);

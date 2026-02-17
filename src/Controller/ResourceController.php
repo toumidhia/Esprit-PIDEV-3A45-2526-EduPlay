@@ -51,7 +51,7 @@ final class ResourceController extends AbstractController
             $resources = $resourceRepository->findAll();
         }
         
-        return $this->render('FrontOffice/resource/index.html.twig', [
+        return $this->render('FrontOffice/enfant/resource/index.html.twig', [
             'resources' => $resources,
             'searchForm' => $searchForm->createView(),
             'activeFilters' => $activeFilters,

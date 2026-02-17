@@ -251,9 +251,20 @@
                         <i class="bi bi-calendar-event"></i> Séances
                     </a>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link {% if app.request.get('_route') starts with 'app_subscription_list' %}active{% endif %}" href="{{ path('app_subscription_list') }}">
-                        <i class="bi bi-people"></i> Inscriptions
+                        <i class="bi bi-people"></i> Inscriptions Séances
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'admin_event_index' %}active{% endif %}" href="{{ path('admin_event_index') }}">
+                        <i class="bi bi-people"></i> Events
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'app_subscription_list' %}active{% endif %}" href="{{ path('app_subscription_list') }}">
+                        <i class="bi bi-people"></i> Inscriptions Event
                     </a>
                 </li>
 

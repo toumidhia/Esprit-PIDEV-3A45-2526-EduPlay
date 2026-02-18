@@ -107,24 +107,7 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-    const sidebar = document.querySelector('.admin-sidebar');
-
-    if (mobileMenuBtn && sidebar) {
-        mobileMenuBtn.addEventListener('click', function () {
-            sidebar.classList.toggle('active');
-        });
-    }
-
-    document.addEventListener('click', function (event) {
-        if (window.innerWidth <= 768 && sidebar && mobileMenuBtn) {
-            if (!sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
-                sidebar.classList.remove('active');
-            }
-        }
-    });
-});
+// Removed sidebar scripts - no longer needed
 </script>
 
 </body>

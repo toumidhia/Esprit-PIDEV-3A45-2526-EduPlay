@@ -2,14 +2,9 @@
     <div class="flex items-center justify-between">
 
         <div class="flex items-center gap-6">
-            <button class="mobile-menu-btn p-2 rounded-lg hover:bg-gray-100 md:hidden transition-colors">
-                <span class="material-symbols-outlined text-gray-700">menu</span>
-            </button>
-
-            <div class="hidden md:flex items-center gap-3 text-sm">
-                <a href="#" class="text-gray-600 hover:text-blue-600 font-medium">Dashboard</a>
-                <span class="material-symbols-outlined text-gray-300 text-sm">chevron_right</span>
-                <span class="text-gray-900 font-medium">Overview</span>
+            <div class="flex items-center gap-3">
+                <a href="{{ path('app_parent_dashboard') }}" class="text-gray-600 hover:text-blue-600 font-medium">Mon espace</a>
+                <a href="{{ path('app_parent_commandes') }}" class="text-gray-600 hover:text-blue-600 font-medium">Mes commandes</a>
             </div>
         </div>
 

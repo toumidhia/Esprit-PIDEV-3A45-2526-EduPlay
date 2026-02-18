@@ -48,6 +48,11 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    # Configuration explicite du service Stripe
+    App\Service\StripePaymentService:
+        arguments:
+            $stripeSecretKey: '%env(STRIPE_SECRET_KEY)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
       

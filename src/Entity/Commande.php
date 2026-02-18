@@ -23,13 +23,17 @@ class Commande
     )]
     private ?int $quantity = null;
 
-    
-
     #[ORM\Column(name: 'date_commande', type: 'datetime')]
     private ?\DateTimeInterface $dateCommande = null;
 
     #[ORM\Column(name: 'total_amount', type: 'float')]
     private ?float $totalAmount = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $stripePaymentId = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isPaid = false;
 
     // KEEPING User relationship - FIXED naming convention
     #[ORM\ManyToOne(targetEntity: User::class)]
@@ -78,6 +82,30 @@ class Commande
     public function setTotalAmount(float $totalAmount): static
     {
         $this->totalAmount = $totalAmount;
+        return $this;
+    }
+
+    public function getStripePaymentId(): ?string
+    {
+        return $this->stripePaymentId;
+    }
+
+    public function setStripePaymentId(?string $stripePaymentId): static
+    {
+        $this->stripePaymentId = $stripePaymentId;
+
+        return $this;
+    }
+
+    public function getIsPaid(): bool
+    {
+        return $this->isPaid;
+    }
+
+    public function setIsPaid(bool $isPaid): static
+    {
+        $this->isPaid = $isPaid;
+
         return $this;
     }
 

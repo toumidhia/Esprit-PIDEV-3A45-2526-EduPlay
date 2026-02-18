@@ -109,12 +109,15 @@
                                 <td class="px-6 py-4">{{ commande.quantity }}</td>
                                 <td class="px-6 py-4 font-bold text-blue-600">{{ commande.totalAmount|number_format(2, ',', ' ') }} DT</td>
                                 <td class="px-6 py-4 flex gap-3">
-                                    <a href="{{ path('app_parent_commande_edit', {id: commande.id}) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-colors">
-                                        ✏️ Modifier
-                                    </a>
-                                    <button type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors delete-btn" data-commande-id="{{ commande.id }}" data-csrf="{{ csrf_token('delete' ~ commande.id) }}">
-                                        🗑️ Supprimer
-                                    </button>
+                                    <form method="post" action="{{ path('app_parent_commande_checkout', {id: commande.id}) }}" style="display:inline-block;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('checkout' ~ commande.id) }}">
+                                        <button class="btn btn-success">Payer</button>
+                                    </form>
+                                    <a href="{{ path('app_parent_commande_edit', {id: commande.id}) }}" class="btn btn-primary">Modifier</a>
+                                    <form method="post" action="{{ path('app_parent_commande_delete', {id: commande.id}) }}" style="display:inline-block;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commande.id) }}">
+                                        <button class="btn btn-danger">Supprimer</button>
+                                    </form>
                                 </td>
                             </tr>
                         {% endfor %}

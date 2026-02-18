@@ -1,4 +1,4 @@
-{% extends 'BackOffice/teacher/Partials/base_admin.html.twig' %}
+{% extends 'BackOffice/base.html.twig' %}
 {% block body %}
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
@@ -212,7 +212,7 @@
 
     {# Results #}
     <div id="levels-results">
-        {{ include('BackOffice/teacher/level/_grid.html.twig', { levels: levels }) }}
+        {{ include('BackOffice/enseignant/level/_grid.html.twig', { levels: levels }) }}
     </div>
 
 </div>

@@ -32,7 +32,7 @@ class AdminController extends AbstractController
             'total' => count($users)
         ];
 
-        return $this->render('BackOffice/admin/users.html.twig', [
+        return $this->render('BackOffice/admin/gestion_user/users.html.twig', [
             'users' => $users,
             'stats' => $stats
         ]);
@@ -54,7 +54,7 @@ class AdminController extends AbstractController
             
             if (!$plainPassword) {
                 $this->addFlash('error', 'Le mot de passe est obligatoire.');
-                return $this->render('BackOffice/admin/admin_new.html.twig', [
+                return $this->render('BackOffice/admin/gestion_user/admin_new.html.twig', [
                     'form' => $form->createView(),
                 ]);
             }
@@ -70,7 +70,7 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_users');
         }
 
-        return $this->render('BackOffice/admin/admin_new.html.twig', [
+        return $this->render('BackOffice/admin/gestion_user/admin_new.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -91,7 +91,7 @@ class AdminController extends AbstractController
             
             if (!$plainPassword) {
                 $this->addFlash('error', 'Le mot de passe est obligatoire.');
-                return $this->render('BackOffice/admin/enseignant_new.html.twig', [
+                return $this->render('BackOffice/admin/gestion_user/enseignant_new.html.twig', [
                     'form' => $form->createView(),
                 ]);
             }
@@ -107,7 +107,7 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_users');
         }
 
-        return $this->render('BackOffice/admin/enseignant_new.html.twig', [
+        return $this->render('BackOffice/admin/gestion_user/enseignant_new.html.twig', [
             'form' => $form->createView(),
         ]);
     }

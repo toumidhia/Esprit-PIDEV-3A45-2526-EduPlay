@@ -10,10 +10,19 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé')]
-#[UniqueEntity(fields: ['username'], message: 'Cet identifiant est déjà utilisé')]
+#[UniqueEntity(
+    fields: ['email'],
+    message: 'Cet email est déjà utilisé',
+    groups: ['Default']
+)]
+#[UniqueEntity(
+    fields: ['username'],
+    message: 'Cet identifiant est déjà utilisé, veuillez en choisir un autre.',
+    groups: ['Default', 'enfant_creation'] // ✅ actif pour la création d'enfant
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -22,9 +31,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le prénom est obligatoire.', groups: ['Default', 'enfant_creation'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire.', groups: ['Default', 'enfant_creation'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
@@ -34,13 +45,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
     #[ORM\Column(length: 100, unique: true, nullable: true)]
+    #[Assert\NotBlank(message: "L'identifiant est obligatoire.", groups: ['enfant_creation'])]
+    #[Assert\Length(
+        min: 3,
+        max: 100,
+        minMessage: "L'identifiant doit contenir au moins {{ limit }} caractères.",
+        maxMessage: "L'identifiant ne peut pas dépasser {{ limit }} caractères.",
+        groups: ['Default', 'enfant_creation']
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-Z0-9_]+$/',
+        message: "L'identifiant ne peut contenir que des lettres, chiffres et underscores.",
+        groups: ['Default', 'enfant_creation']
+    )]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $type = null; // admin, enseignant, parent, enfant
+    private ?string $type = null;
 
     #[ORM\Column(type: 'json')]
     private array $roles = [];
@@ -63,7 +87,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $niveau = null;
 
-    // Relation parent-enfant
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'enfants')]
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     private ?User $parent = null;
@@ -71,11 +94,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class, cascade: ['persist', 'remove'])]
     private Collection $enfants;
 
-    // Relation avec les cours (enseignant)
     #[ORM\OneToMany(targetEntity: Course::class, mappedBy: 'teacherId', orphanRemoval: true)]
     private Collection $courses;
 
-    // Relation avec les inscriptions événements (parent)
     #[ORM\OneToMany(targetEntity: EventRegistration::class, mappedBy: 'parent')]
     private Collection $eventRegistrations;
 
@@ -170,12 +191,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->type = $type;
 
-        // Assigner automatiquement les rôles selon le type
         $roleMap = [
-            'admin' => 'ROLE_ADMIN',
+            'admin'      => 'ROLE_ADMIN',
             'enseignant' => 'ROLE_ENSEIGNANT',
-            'parent' => 'ROLE_PARENT',
-            'enfant' => 'ROLE_ENFANT',
+            'parent'     => 'ROLE_PARENT',
+            'enfant'     => 'ROLE_ENFANT',
+            'kid'        => 'ROLE_KID', // ✅ ajouté pour cohérence avec le controller
         ];
 
         if (isset($roleMap[$type])) {
@@ -357,14 +378,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        // Les enfants utilisent username, les autres email
         return (string) ($this->username ?? $this->email);
     }
 
-    public function eraseCredentials(): void
-    {
-        // Nettoyer les données sensibles temporaires si nécessaire
-    }
+    public function eraseCredentials(): void {}
 
     // ==================== MÉTHODES UTILITAIRES ====================
 
@@ -378,42 +395,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if (!$this->birthDate) {
             return null;
         }
-
-        $now = new \DateTime();
-        $interval = $this->birthDate->diff($now);
-        return $interval->y;
+        return $this->birthDate->diff(new \DateTime())->y;
     }
 
     // ==================== MÉTHODES DE VÉRIFICATION DE RÔLE ====================
 
-    public function isAdmin(): bool
-    {
-        return $this->type === 'admin';
-    }
-
-    public function isEnseignant(): bool
-    {
-        return $this->type === 'enseignant';
-    }
-
-    public function isParent(): bool
-    {
-        return $this->type === 'parent';
-    }
-
-    public function isEnfant(): bool
-    {
-        return $this->type === 'enfant';
-    }
-
-    // Alias pour compatibilité
-    public function isTeacher(): bool
-    {
-        return $this->isEnseignant();
-    }
-
-    public function isKid(): bool
-    {
-        return $this->isEnfant();
-    }
+    public function isAdmin(): bool      { return $this->type === 'admin'; }
+    public function isEnseignant(): bool { return $this->type === 'enseignant'; }
+    public function isParent(): bool     { return $this->type === 'parent'; }
+    public function isEnfant(): bool     { return $this->type === 'enfant'; }
+    public function isTeacher(): bool    { return $this->isEnseignant(); }
+    public function isKid(): bool        { return $this->isEnfant(); }
 }

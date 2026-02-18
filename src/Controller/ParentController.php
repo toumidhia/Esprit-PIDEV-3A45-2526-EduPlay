@@ -33,7 +33,9 @@ class ParentController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('FrontOffice/parent/dashboard.html.twig', [
+        $enfants = $parent->getEnfants();
+
+        return $this->render('FrontOffice/parent/Partials/base_parent.html.twig', [
             'parent' => $parent,
             'enfants' => $enfants = $userRepository->findBy(['parent' => $parent]),
         ]);

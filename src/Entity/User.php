@@ -7,10 +7,13 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé')]
+#[UniqueEntity(fields: ['username'], message: 'Cet identifiant est déjà utilisé')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -27,44 +30,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $birthDate = null;
 
-    #[ORM\Column(length: 255, unique: true)]
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $email = null;
+
+    #[ORM\Column(length: 100, unique: true, nullable: true)]
+    private ?string $username = null;
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $type = null; // admin, teacher, parent, kid
+    private ?string $type = null; // admin, enseignant, parent, enfant
 
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
     #[ORM\Column]
     private ?bool $active = true;
-
-    /**
-     * @var Collection<int, Course>
-     */
-    #[ORM\OneToMany(targetEntity: Course::class, mappedBy: 'teacherId', orphanRemoval: true)]
-    private Collection $courses;
-
-    /**
-     * @var Collection<int, EventRegistration>
-     */
-    #[ORM\OneToMany(targetEntity: EventRegistration::class, mappedBy: 'parent')]
-    private Collection $eventRegistrations;
-
-    // Parent relationship
-    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'enfants')]
-    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true)]
-    private ?User $parent = null;
-
-    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
-    private Collection $enfants;
-
-    // Additional properties from database
-    #[ORM\Column(length: 100, nullable: true, unique: true)]
-    private ?string $username = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
@@ -81,11 +63,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $niveau = null;
 
-    /**
-     * @var Collection<int, Commande>
-     */
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Commande::class)]
-    private Collection $commandes;
+    // Relation parent-enfant
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'enfants')]
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
+    private ?User $parent = null;
+
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class, cascade: ['persist', 'remove'])]
+    private Collection $enfants;
+
+    // Relation avec les cours (enseignant)
+    #[ORM\OneToMany(targetEntity: Course::class, mappedBy: 'teacherId', orphanRemoval: true)]
+    private Collection $courses;
+
+    // Relation avec les inscriptions événements (parent)
+    #[ORM\OneToMany(targetEntity: EventRegistration::class, mappedBy: 'parent')]
+    private Collection $eventRegistrations;
 
     public function __construct()
     {
@@ -93,45 +85,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->eventRegistrations = new ArrayCollection();
         $this->enfants = new ArrayCollection();
         $this->createdAt = new \DateTime();
+        $this->active = true;
     }
 
-    // Parent methods
-    public function getParent(): ?self
-    {
-        return $this->parent;
-    }
+    // ==================== GETTERS ET SETTERS ====================
 
-    public function setParent(?self $parent): static
-    {
-        $this->parent = $parent;
-        return $this;
-    }
-
-    public function getEnfants(): Collection
-    {
-        return $this->enfants;
-    }
-
-    public function addEnfant(self $enfant): static
-    {
-        if (!$this->enfants->contains($enfant)) {
-            $this->enfants->add($enfant);
-            $enfant->setParent($this);
-        }
-        return $this;
-    }
-
-    public function removeEnfant(self $enfant): static
-    {
-        if ($this->enfants->removeElement($enfant)) {
-            if ($enfant->getParent() === $this) {
-                $enfant->setParent(null);
-            }
-        }
-        return $this;
-    }
-
-    // Basic getters and setters
     public function getId(): ?int
     {
         return $this->id;
@@ -175,9 +133,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function setEmail(string $email): static
+    public function setEmail(?string $email): static
     {
         $this->email = $email;
+        return $this;
+    }
+
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(?string $username): static
+    {
+        $this->username = $username;
         return $this;
     }
 
@@ -201,26 +170,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->type = $type;
 
-        // Automatically assign roles based on type
-        $this->roles = ['ROLE_USER'];
-        switch ($type) {
-            case 'admin':
-                $this->roles[] = 'ROLE_ADMIN';
-                break;
-            case 'teacher':
-                $this->roles[] = 'ROLE_TEACHER';
-                break;
-            case 'parent':
-                $this->roles[] = 'ROLE_PARENT';
-                break;
-            case 'kid':
-                $this->roles[] = 'ROLE_KID';
-                // Generate username for kids if not set
-                if (!$this->username && $this->firstName && $this->lastName) {
-                    $baseUsername = strtolower($this->firstName . '.' . $this->lastName);
-                    $this->username = $baseUsername . rand(100, 999);
-                }
-                break;
+        // Assigner automatiquement les rôles selon le type
+        $roleMap = [
+            'admin' => 'ROLE_ADMIN',
+            'enseignant' => 'ROLE_ENSEIGNANT',
+            'parent' => 'ROLE_PARENT',
+            'enfant' => 'ROLE_ENFANT',
+        ];
+
+        if (isset($roleMap[$type])) {
+            $this->roles = [$roleMap[$type]];
         }
 
         return $this;
@@ -247,18 +206,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setActive(bool $active): static
     {
         $this->active = $active;
-        return $this;
-    }
-
-    // Additional properties getters and setters
-    public function getUsername(): ?string
-    {
-        return $this->username;
-    }
-
-    public function setUsername(?string $username): static
-    {
-        $this->username = $username;
         return $this;
     }
 
@@ -317,10 +264,45 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // Course methods
-    /**
-     * @return Collection<int, Course>
-     */
+    // ==================== RELATION PARENT-ENFANT ====================
+
+    public function getParent(): ?self
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?self $parent): static
+    {
+        $this->parent = $parent;
+        return $this;
+    }
+
+    public function getEnfants(): Collection
+    {
+        return $this->enfants;
+    }
+
+    public function addEnfant(self $enfant): static
+    {
+        if (!$this->enfants->contains($enfant)) {
+            $this->enfants->add($enfant);
+            $enfant->setParent($this);
+        }
+        return $this;
+    }
+
+    public function removeEnfant(self $enfant): static
+    {
+        if ($this->enfants->removeElement($enfant)) {
+            if ($enfant->getParent() === $this) {
+                $enfant->setParent(null);
+            }
+        }
+        return $this;
+    }
+
+    // ==================== RELATION COURS ====================
+
     public function getCourses(): Collection
     {
         return $this->courses;
@@ -345,10 +327,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // EventRegistration methods
-    /**
-     * @return Collection<int, EventRegistration>
-     */
+    // ==================== RELATION EVENT REGISTRATIONS ====================
+
     public function getEventRegistrations(): Collection
     {
         return $this->eventRegistrations;
@@ -373,101 +353,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // Commande methods
-    /**
-     * @return Collection<int, Commande>
-     */
-    public function getCommandes(): Collection
-    {
-        return $this->commandes;
-    }
-
-    public function addCommande(Commande $commande): static
-    {
-        if (!$this->commandes->contains($commande)) {
-            $this->commandes->add($commande);
-            $commande->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCommande(Commande $commande): static
-    {
-        if ($this->commandes->removeElement($commande)) {
-            if ($commande->getUser() === $this) {
-                $commande->setUser(null);
-            }
-        }
-
-        return $this;
-    }
-
-    // UserInterface methods
-    public function eraseCredentials(): void
-    {
-        // If you store any temporary, sensitive data on the user, clear it here
-    }
+    // ==================== USERINTERFACE METHODS ====================
 
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        // Les enfants utilisent username, les autres email
+        return (string) ($this->username ?? $this->email);
     }
 
-    // For Symfony < 5.3 compatibility
-    public function getUsernameCompat(): string
+    public function eraseCredentials(): void
     {
-        return $this->getUserIdentifier();
+        // Nettoyer les données sensibles temporaires si nécessaire
     }
+
+    // ==================== MÉTHODES UTILITAIRES ====================
 
     public function getFullName(): string
     {
         return $this->firstName . ' ' . $this->lastName;
     }
 
-    // Helper methods
-    public function isAdmin(): bool
-    {
-        return in_array('ROLE_ADMIN', $this->getRoles());
-    }
-
-    public function isTeacher(): bool
-    {
-        return in_array('ROLE_TEACHER', $this->getRoles());
-    }
-
-    public function isParent(): bool
-    {
-        return in_array('ROLE_PARENT', $this->getRoles());
-    }
-
-    public function isKid(): bool
-    {
-        return in_array('ROLE_KID', $this->getRoles()) || $this->type === 'kid';
-    }
-
-    // ADD THESE METHODS FOR FRENCH NAMING CONVENTION
-    public function isEnfant(): bool
-    {
-        return $this->isKid();
-    }
-
-    public function getIsEnfant(): bool
-    {
-        return $this->isKid();
-    }
-
-    public function isisEnfant(): bool
-    {
-        return $this->isKid();
-    }
-
-    public function hasisEnfant(): bool
-    {
-        return $this->isKid();
-    }
-
-    // Age calculation
     public function getAge(): ?int
     {
         if (!$this->birthDate) {
@@ -477,5 +382,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $now = new \DateTime();
         $interval = $this->birthDate->diff($now);
         return $interval->y;
+    }
+
+    // ==================== MÉTHODES DE VÉRIFICATION DE RÔLE ====================
+
+    public function isAdmin(): bool
+    {
+        return $this->type === 'admin';
+    }
+
+    public function isEnseignant(): bool
+    {
+        return $this->type === 'enseignant';
+    }
+
+    public function isParent(): bool
+    {
+        return $this->type === 'parent';
+    }
+
+    public function isEnfant(): bool
+    {
+        return $this->type === 'enfant';
+    }
+
+    // Alias pour compatibilité
+    public function isTeacher(): bool
+    {
+        return $this->isEnseignant();
+    }
+
+    public function isKid(): bool
+    {
+        return $this->isEnfant();
     }
 }

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un enseignant - Eduplay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen py-12 px-4">
+        <div class="max-w-2xl mx-auto">
+            <!-- Back button -->
+            <div class="mb-6">
+                <a href="{{ path('app_admin_users') }}" class="text-blue-500 hover:underline">
+                    ← Retour au dashboard
+                </a>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-3xl font-bold text-center mb-8">Nouvel enseignant</h2>
+
+                {{ form_start(form) }}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            {{ form_label(form.lastName, 'Nom', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
+                            {{ form_widget(form.lastName, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500'}}) }}
+                            {{ form_errors(form.lastName) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.firstName, 'Prénom', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
+                            {{ form_widget(form.firstName, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500'}}) }}
+                            {{ form_errors(form.firstName) }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form_label(form.email, 'Email', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
+                        {{ form_widget(form.email, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500'}}) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form_label(form.telephone, 'Téléphone', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
+                        {{ form_widget(form.telephone, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500'}}) }}
+                        {{ form_errors(form.telephone) }}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form_label(form.specialite, 'Spécialité', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
+                        {{ form_widget(form.specialite, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500'}}) }}
+                        {{ form_errors(form.specialite) }}
+                    </div>
+
+                    <hr class="my-6 border-gray-300">
+
+                    <div class="mb-4">
+                        {{ form_label(form.password.first, 'Mot de passe', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
+                        {{ form_widget(form.password.first, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500'}}) }}
+                        {{ form_errors(form.password.first) }}
+                    </div>
+
+                    <div class="mb-6">
+                        {{ form_label(form.password.second, 'Confirmer le mot de passe', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
+                        {{ form_widget(form.password.second, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500'}}) }}
+                        {{ form_errors(form.password.second) }}
+                    </div>
+
+                    <div class="space-y-3">
+                        <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">
+                            Créer l'enseignant
+                        </button>
+                        <a href="{{ path('app_admin_users') }}" class="block w-full text-center bg-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-400">
+                            Annuler
+                        </a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

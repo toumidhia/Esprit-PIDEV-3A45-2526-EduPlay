@@ -1,5 +1,4 @@
 <?php
-// src/Form/AdminType.php
 
 namespace App\Form;
 
@@ -11,8 +10,6 @@ use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 class AdminType extends AbstractType
 {
@@ -21,60 +18,74 @@ class AdminType extends AbstractType
         $builder
             ->add('firstName', TextType::class, [
                 'label' => 'Prénom',
-                'attr' => ['placeholder' => 'Entrez le prénom'],
-                'constraints' => [
-                    new NotBlank(['message' => 'Le prénom est obligatoire']),
-                    new Length(['min' => 2, 'max' => 255])
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Entrez le prénom'
                 ]
             ])
             ->add('lastName', TextType::class, [
                 'label' => 'Nom',
-                'attr' => ['placeholder' => 'Entrez le nom'],
-                'constraints' => [
-                    new NotBlank(['message' => 'Le nom est obligatoire']),
-                    new Length(['min' => 2, 'max' => 255])
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Entrez le nom'
                 ]
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email',
-                'attr' => ['placeholder' => 'exemple@email.com'],
-                'constraints' => [
-                    new NotBlank(['message' => 'L\'email est obligatoire'])
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'exemple@email.com'
                 ]
             ])
             ->add('telephone', TextType::class, [
                 'label' => 'Téléphone',
                 'required' => false,
-                'attr' => ['placeholder' => 'Optionnel']
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Optionnel'
+                ]
             ])
             ->add('adresse', TextType::class, [
                 'label' => 'Adresse',
                 'required' => false,
-                'attr' => ['placeholder' => 'Optionnel']
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Optionnel'
+                ]
             ])
             ->add('password', RepeatedType::class, [
                 'type' => PasswordType::class,
+                'mapped' => false,
+                'required' => true,
                 'first_options' => [
                     'label' => 'Mot de passe',
-                    'attr' => ['placeholder' => 'Entrez le mot de passe'],
-                    'constraints' => [
-                        new NotBlank(['message' => 'Le mot de passe est obligatoire']),
-                        new Length(['min' => 6, 'max' => 255])
+                    'attr' => [
+                        'class' => 'form-control',
+                        'placeholder' => 'Entrez le mot de passe',
+                        'autocomplete' => 'new-password',
+                        'minlength' => 6
                     ]
                 ],
                 'second_options' => [
                     'label' => 'Confirmer le mot de passe',
-                    'attr' => ['placeholder' => 'Confirmez le mot de passe']
+                    'attr' => [
+                        'class' => 'form-control',
+                        'placeholder' => 'Confirmez le mot de passe',
+                        'autocomplete' => 'new-password'
+                    ]
                 ],
                 'invalid_message' => 'Les mots de passe ne correspondent pas.'
-            ])
-        ;
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'validation_groups' => false,
         ]);
     }
 }

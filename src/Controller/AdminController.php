@@ -1,5 +1,4 @@
 <?php
-// src/Controller/AdminController.php
 
 namespace App\Controller;
 
@@ -22,19 +21,18 @@ class AdminController extends AbstractController
     #[Route('/users', name: 'app_admin_users')]
     public function users(UserRepository $userRepository): Response
     {
-        // Récupérer tous les utilisateurs triés par date de création
         $users = $userRepository->findBy([], ['createdAt' => 'DESC']);
 
-        // Compter par type
+        // ✅ CORRIGÉ : Types cohérents
         $stats = [
             'admin' => $userRepository->count(['type' => 'admin']),
-            'enseignant' => $userRepository->count(['type' => 'teacher']),
+            'enseignant' => $userRepository->count(['type' => 'enseignant']),
             'parent' => $userRepository->count(['type' => 'parent']),
-            'enfant' => $userRepository->count(['type' => 'kid']),
+            'enfant' => $userRepository->count(['type' => 'enfant']),
             'total' => count($users)
         ];
 
-        return $this->render('BackOffice/admin/users.html.twig', [
+        return $this->render('BackOffice/admin/gestion_user/users.html.twig', [
             'users' => $users,
             'stats' => $stats
         ]);
@@ -51,15 +49,18 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $admin->setType('admin');
-            $admin->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
-            $admin->setActive(true);
-            $admin->setCreatedAt(new \DateTime());
+            
+            $plainPassword = $form->get('password')->getData();
+            
+            if (!$plainPassword) {
+                $this->addFlash('error', 'Le mot de passe est obligatoire.');
+                return $this->render('BackOffice/admin/gestion_user/admin_new.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
 
-            $hashedPassword = $passwordHasher->hashPassword(
-                $admin,
-                $form->get('password')->getData()
-            );
+            $admin->setType('admin');
+            $hashedPassword = $passwordHasher->hashPassword($admin, $plainPassword);
             $admin->setPassword($hashedPassword);
 
             $entityManager->persist($admin);
@@ -69,7 +70,7 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_users');
         }
 
-        return $this->render('BackOffice/admin/admin_new.html.twig', [
+        return $this->render('BackOffice/admin/gestion_user/admin_new.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -85,25 +86,28 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $enseignant->setType('teacher');
-            $enseignant->setRoles(['ROLE_TEACHER', 'ROLE_USER']);
-            $enseignant->setActive(true);
-            $enseignant->setCreatedAt(new \DateTime());
+            
+            $plainPassword = $form->get('password')->getData();
+            
+            if (!$plainPassword) {
+                $this->addFlash('error', 'Le mot de passe est obligatoire.');
+                return $this->render('BackOffice/admin/gestion_user/enseignant_new.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
 
-            $hashedPassword = $passwordHasher->hashPassword(
-                $enseignant,
-                $form->get('password')->getData()
-            );
+            $enseignant->setType('enseignant');
+            $hashedPassword = $passwordHasher->hashPassword($enseignant, $plainPassword);
             $enseignant->setPassword($hashedPassword);
 
             $entityManager->persist($enseignant);
             $entityManager->flush();
 
-            $this->addFlash('success', 'L\'enseignant a été créé avec succès.');
+            $this->addFlash('success', 'L\'enseignant ' . $enseignant->getFullName() . ' a été créé avec succès.');
             return $this->redirectToRoute('app_admin_users');
         }
 
-        return $this->render('BackOffice/admin/enseignant_new.html.twig', [
+        return $this->render('BackOffice/admin/gestion_user/enseignant_new.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -114,7 +118,6 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        // Empêcher la suppression de soi-même
         if ($admin === $this->getUser()) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
             return $this->redirectToRoute('app_admin_users');
@@ -153,7 +156,7 @@ class AdminController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         if ($this->isCsrfTokenValid('toggle' . $user->getId(), $request->request->get('_token'))) {
-            // Empêcher la désactivation de soi-même
+            
             if ($user === $this->getUser()) {
                 $this->addFlash('error', 'Vous ne pouvez pas désactiver votre propre compte.');
                 return $this->redirectToRoute('app_admin_users');
@@ -176,7 +179,7 @@ class AdminController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
-            // Empêcher la suppression de soi-même
+            
             if ($user === $this->getUser()) {
                 $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
                 return $this->redirectToRoute('app_admin_users');

@@ -234,18 +234,20 @@
 
     <div class="sidebar-sticky">
         <ul class="nav flex-column">
+
+            {# ================= DASHBOARD ================= #}
             <li class="nav-item">
-                <a class="nav-link {% if app.request.get('_route') starts with 'app_admin_dashboard' or app.request.get('_route') starts with 'app_enseignant_dashboard' %}active{% endif %}" href="{{ path('app_dashboard') }}">
+                <a class="nav-link {% if app.request.get('_route') starts with 'app_dashboard' %}active{% endif %}"
+                   href="{{ path('app_dashboard') }}">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
 
-            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_ENSEIGNANT') %}
-                <div class="sidebar-heading">Gestion des Cours</div>
-
-            {% endif %}
-
             {% if is_granted('ROLE_ADMIN') %}
+
+                {# ================= E-COMMERCE ================= #}
+                <div class="sidebar-heading">E-Commerce</div>
+
                 <li class="nav-item">
                     <a class="nav-link {% if app.request.get('_route') starts with 'app_seance' %}active{% endif %}" href="{{ path('app_seance_index') }}">
                         <i class="bi bi-calendar-event"></i> Séances
@@ -265,39 +267,84 @@
                 <li class="nav-item">
                     <a class="nav-link {% if app.request.get('_route') starts with 'app_subscription_list' %}active{% endif %}" href="{{ path('app_subscription_list') }}">
                         <i class="bi bi-people"></i> Inscriptions Event
+                    <a class="nav-link {% if app.request.get('_route') starts with 'app_back_product' %}active{% endif %}"
+                       href="{{ path('app_back_product_index') }}">
+                        <i class="bi bi-box-seam"></i> Produits
                     </a>
                 </li>
 
-                {# Menu Utilisateurs #}
-                <div class="sidebar-heading">Gestion des Utilisateurs</div>
                 <li class="nav-item">
-                    <a class="nav-link {% if app.request.get('_route') == 'app_admin_users' %}active{% endif %}" href="{{ path('app_admin_users') }}">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'app_back_commande' %}active{% endif %}"
+                       href="{{ path('app_back_commande_index') }}">
+                        <i class="bi bi-cart-check"></i> Commandes
+                    </a>
+                </li>
+
+                {# ================= LIBRARY ================= #}
+                <div class="sidebar-heading">Bibliothèque</div>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'admin_library' %}active{% endif %}"
+                       href="{{ path('admin_library_index') }}">
+                        <i class="bi bi-book"></i> Library
+                    </a>
+                </li>
+
+                {# ================= EVENTS ================= #}
+                <div class="sidebar-heading">Événements</div>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'admin_event' %}active{% endif %}"
+                       href="{{ path('admin_event_index') }}">
+                        <i class="bi bi-calendar-event"></i> Events
+                    </a>
+                </li>
+
+                {# ================= RESSOURCES ================= #}
+                <div class="sidebar-heading">Ressources</div>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'admin_resource' %}active{% endif %}"
+                       href="{{ path('admin_resource_index') }}">
+                        <i class="bi bi-folder2-open"></i> Ressources
+                    </a>
+                </li>
+
+                {# ================= USERS ================= #}
+                <div class="sidebar-heading">Utilisateurs</div>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if app.request.get('_route') == 'app_admin_users' %}active{% endif %}"
+                       href="{{ path('app_admin_users') }}">
                         <i class="bi bi-people-fill"></i> Users
                     </a>
                 </li>
 
+                {# ================= STATISTIQUES ================= #}
                 <div class="sidebar-heading">Analytiques</div>
+
                 <li class="nav-item">
-                    <a class="nav-link {% if app.request.get('_route') starts with 'app_analytics' %}active{% endif %}" href="{{ path('app_analytics_dashboard') }}">
+                    <a class="nav-link {% if app.request.get('_route') == 'admin_stats' %}active{% endif %}"
+                       href="{{ path('admin_stats') }}">
                         <i class="bi bi-graph-up"></i> Statistiques
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('app_analytics_performance') }}">
-                        <i class="bi bi-bar-chart-line"></i> Performance
-                    </a>
-                </li>
+
             {% endif %}
 
+            {# ================= ACCOUNT ================= #}
             <div class="sidebar-heading">Compte</div>
+
             <li class="nav-item">
                 <a class="nav-link" href="{{ path('app_logout') }}">
                     <i class="bi bi-box-arrow-right"></i> Déconnexion
                 </a>
             </li>
+
         </ul>
     </div>
 </nav>
+
 
 {# Top Navbar #}
 <nav class="navbar navbar-custom navbar-light">

@@ -12,10 +12,6 @@
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.17",
         "dompdf/dompdf": "^2.0",
-<<<<<<< HEAD
-        "google/cloud-text-to-speech": "^2.6",
-=======
->>>>>>> 2eb88a8c8a92e7968e672e6e41f7147888d8bd50
         "smalot/pdfparser": "^2.12",
         "stripe/stripe-php": "^19.3",
         "symfony/asset": "6.4.*",

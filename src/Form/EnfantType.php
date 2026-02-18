@@ -6,8 +6,8 @@ use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -20,45 +20,60 @@ class EnfantType extends AbstractType
     {
         $builder
             ->add('firstName', TextType::class, [
-                'label' => 'Prénom',
+                'label'    => 'Prénom',
                 'required' => true,
             ])
             ->add('lastName', TextType::class, [
-                'label' => 'Nom',
+                'label'    => 'Nom',
                 'required' => true,
+            ])
+            ->add('username', TextType::class, [
+                'label'    => 'Identifiant de connexion',
+                'required' => true,
+                'help'     => 'Lettres, chiffres et underscores uniquement. Ex: alice2024',
+                'attr'     => ['placeholder' => 'Ex: alice2024'],
             ])
             ->add('birthDate', DateType::class, [
-                'label' => 'Date de naissance',
-                'widget' => 'single_text',
+                'label'    => 'Date de naissance',
+                'widget'   => 'single_text',
                 'required' => true,
-                'html5' => true,
-            ])
-            ->add('email', EmailType::class, [
-                'label' => 'Email',
-                'required' => true,
-            ])
-            ->add('password', PasswordType::class, [
-                'label' => 'Mot de passe',
-                'required' => true,
-                'constraints' => [
-                    new NotBlank(),
-                    new Length(['min' => 6]),
-                ],
+                'html5'    => true,
             ])
             ->add('niveau', ChoiceType::class, [
-                'label' => 'Niveau scolaire',
+                'label'    => 'Niveau scolaire',
                 'required' => true,
-                'choices' => [
+                'choices'  => [
                     'Maternelle' => 'maternelle',
-                    'CP' => 'cp',
-                    'CE1' => 'ce1',
-                    'CE2' => 'ce2',
-                    'CM1' => 'cm1',
-                    'CM2' => 'cm2',
-                    '6ème' => '6eme',
-                    '5ème' => '5eme',
-                    '4ème' => '4eme',
-                    '3ème' => '3eme',
+                    'CP'         => 'cp',
+                    'CE1'        => 'ce1',
+                    'CE2'        => 'ce2',
+                    'CM1'        => 'cm1',
+                    'CM2'        => 'cm2',
+                    '6ème'       => '6eme',
+                    '5ème'       => '5eme',
+                    '4ème'       => '4eme',
+                    '3ème'       => '3eme',
+                ],
+            ])
+            ->add('password', RepeatedType::class, [
+                'type'            => PasswordType::class,
+                'mapped'          => false,
+                'first_options'   => [
+                    'label' => 'Mot de passe',
+                    'help'  => 'Minimum 6 caractères.',
+                    'attr'  => ['autocomplete' => 'new-password'],
+                ],
+                'second_options'  => [
+                    'label' => 'Confirmer le mot de passe',
+                    'attr'  => ['autocomplete' => 'new-password'],
+                ],
+                'invalid_message' => 'Les mots de passe ne correspondent pas.',
+                'constraints'     => [
+                    new NotBlank(['message' => 'Le mot de passe est obligatoire.']),
+                    new Length([
+                        'min'        => 6,
+                        'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
+                    ]),
                 ],
             ]);
     }
@@ -66,7 +81,8 @@ class EnfantType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => User::class,
+            'data_class'        => User::class,
+            'validation_groups' => ['enfant_creation'],
         ]);
     }
 }

@@ -1,29 +1,10 @@
-<header class="bg-white border-b border-gray-200 px-6 py-4">
-    <div class="flex items-center justify-between">
-
-        <div class="flex items-center gap-4">
-            <button class="mobile-menu-btn p-2 rounded-lg hover:bg-gray-100 md:hidden">
-                <span class="material-symbols-outlined text-gray-700">menu</span>
-            </button>
-
-            
-        </div>
-
-        <div class="flex items-center gap-4">
-            <div class="hidden md:block relative">
-                <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
-                <input
-                    type="text"
-                    class="pl-10 pr-4 py-2 w-64 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                    placeholder="Search users, courses..."
-                >
-            </div>
-
-            <button class="p-2 rounded-lg hover:bg-gray-100 relative">
-                <span class="material-symbols-outlined text-gray-700">notifications</span>
-                <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
-            </button>
-        </div>
-
+{# Top Navbar #}
+<nav class="navbar navbar-custom navbar-light">
+    <div class="container-fluid">
+        <span class="navbar-text">
+            <i class="bi bi-person-circle"></i>
+            Bienvenue, <strong>{{ app.user.firstName }} {{ app.user.lastName }}</strong>
+            <span class="badge bg-secondary ms-2">{{ app.user.type|upper }}</span>
+        </span>
     </div>
-</header>
+</nav>

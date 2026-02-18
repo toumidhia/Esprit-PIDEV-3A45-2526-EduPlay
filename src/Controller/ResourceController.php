@@ -23,7 +23,7 @@ final class ResourceController extends AbstractController
     // FRONT OFFICE - Afficher toutes les ressources
     // ===============================
     
-    #[Route('FrontOffice/resource', name: 'app_resource')]
+    #[Route('resource', name: 'app_resource')]
     public function index(Request $request, ResourceRepository $resourceRepository): Response
     {
         $searchForm = $this->createForm(ResourceSearchType::class);
@@ -65,7 +65,7 @@ final class ResourceController extends AbstractController
     // ===============================
     
     // ========================= LIST WITH SEARCH =========================
-    #[Route('BackOffice/admin/resource/', name: 'admin_resource_index', methods: ['GET'])]
+    #[Route('admin/resource/', name: 'admin_resource_index', methods: ['GET'])]
     public function adminIndex(Request $request, ResourceRepository $resourceRepository): Response
     {
         $searchForm = $this->createForm(ResourceSearchType::class);
@@ -103,7 +103,7 @@ final class ResourceController extends AbstractController
     }
     
     // ========================= CREATE =========================
-    #[Route('BackOffice/admin/resource/new', name: 'admin_resource_new', methods: ['GET','POST'])]
+    #[Route('admin/resource/new', name: 'admin_resource_new', methods: ['GET','POST'])]
     public function adminNew(Request $request, EntityManagerInterface $em): Response
     {
         $resource = new Resource();
@@ -161,7 +161,7 @@ final class ResourceController extends AbstractController
     }
     
     // ========================= SHOW =========================
-    #[Route('BackOffice/admin/resource/{id}', name: 'admin_resource_show', methods: ['GET'])]
+    #[Route('admin/resource/{id}', name: 'admin_resource_show', methods: ['GET'])]
     public function adminShow(Resource $resource): Response
     {
         return $this->render('BackOffice/admin/resource/show.html.twig', [
@@ -170,7 +170,7 @@ final class ResourceController extends AbstractController
     }
     
     // ========================= EDIT =========================
-    #[Route('BackOffice/admin/resource/{id}/edit', name: 'admin_resource_edit', methods: ['GET','POST'])]
+    #[Route('admin/resource/{id}/edit', name: 'admin_resource_edit', methods: ['GET','POST'])]
     public function adminEdit(Request $request, Resource $resource, EntityManagerInterface $em): Response
     {
         $oldCoverImage = $resource->getCoverImage();
@@ -244,7 +244,7 @@ final class ResourceController extends AbstractController
     }
     
     // ========================= DELETE =========================
-    #[Route('BackOffice/admin/resource/{id}/delete', name: 'admin_resource_delete', methods: ['POST'])]
+    #[Route('admin/resource/{id}/delete', name: 'admin_resource_delete', methods: ['POST'])]
     public function adminDelete(Request $request, Resource $resource, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('delete'.$resource->getId(), $request->request->get('_token'))) {
@@ -272,7 +272,7 @@ final class ResourceController extends AbstractController
         return $this->redirectToRoute('admin_resource_index');
     }
 
-#[Route('FrontOffice/resource/{id}/read', name: 'app_resource_read', methods: ['GET'])]
+#[Route('resource/{id}/read', name: 'app_resource_read', methods: ['GET'])]
 public function read(Resource $resource): Response
 {
     return $this->render('FrontOffice/resource/read.html.twig', [
@@ -302,8 +302,6 @@ public function readPdf(Resource $resource, PdfExtractorService $pdfExtractor): 
         'hasPdf' => ($pdfContent !== null && !empty($pdfContent))
     ]);
 }
-
-
 
 
 }

@@ -33,6 +33,8 @@ class ParentController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
+        $enfants = $parent->getEnfants();
+
         return $this->render('FrontOffice/parent/Partials/base_parent.html.twig', [
             'parent' => $parent,
             'enfants' => $enfants,

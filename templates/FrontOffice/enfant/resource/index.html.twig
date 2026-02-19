@@ -156,18 +156,30 @@
                                     {% endif %}
                                     
                                     <div class="flex justify-between items-center">
-                                        {% if resource.pdfFile %}
-                                            <a href="{{ asset('pdfs/' ~ resource.pdfFile) }}" target="_blank" 
-                                               class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600 transition-colors">
-                                                <span class="material-symbols-outlined">visibility</span>
-                                                Lire le livre
-                                            </a>
-                                        {% else %}
-                                            <button class="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-600 rounded-lg font-bold cursor-not-allowed">
-                                                <span class="material-symbols-outlined">lock</span>
-                                                Non disponible
-                                            </button>
-                                        {% endif %}
+                                      {% if resource.pdfFile %}
+    <div class="flex gap-2">
+        <a href="{{ asset('pdfs/' ~ resource.pdfFile) }}" target="_blank" 
+           class="inline-flex items-center gap-1 px-3 py-2 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600 transition-colors text-sm">
+            <span class="material-symbols-outlined text-sm">visibility</span>
+            Lire
+        </a>
+        
+        <!-- 🔥 NOUVEAU BOUTON POUR ÉCOUTER -->
+        <a href="{{ path('app_resource_read', {'id': resource.id}) }}" 
+           class="inline-flex items-center gap-1 px-3 py-2 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition-colors text-sm">
+            <span class="material-symbols-outlined text-sm">headphones</span>
+            Écouter
+        </a>
+    </div>
+{% else %}
+    <button class="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-600 rounded-lg font-bold cursor-not-allowed">
+        <span class="material-symbols-outlined">lock</span>
+        Non disponible
+    </button>
+{% endif %}
+
+
+
                                         
                                         <button class="p-2 text-gray-400 hover:text-blue-500 transition-colors" title="Ajouter aux favoris">
                                             <span class="material-symbols-outlined">favorite</span>

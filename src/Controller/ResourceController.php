@@ -12,7 +12,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 use App\Service\PdfExtractorService;
@@ -275,7 +274,7 @@ final class ResourceController extends AbstractController
 #[Route('resource/{id}/read', name: 'app_resource_read', methods: ['GET'])]
 public function read(Resource $resource): Response
 {
-    return $this->render('FrontOffice/resource/read.html.twig', [
+    return $this->render('FrontOffice/enfant/resource/read.html.twig', [
         'resource' => $resource,
     ]);
  
@@ -295,7 +294,7 @@ public function readPdf(Resource $resource, PdfExtractorService $pdfExtractor): 
         $pdfPages = $pdfExtractor->extractTextByPages($resource->getPdfFile());
     }
     
-    return $this->render('FrontOffice/resource/read_pdf.html.twig', [
+    return $this->render('FrontOffice/enfant/resource/read_pdf.html.twig', [
         'resource' => $resource,
         'pdfContent' => $pdfContent,
         'pdfPages' => $pdfPages,

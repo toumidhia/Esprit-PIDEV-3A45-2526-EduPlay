@@ -1,15 +1,9 @@
-{# templates/enfant/dashboard.html.twig #}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Enfant - Eduplay</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen">
+{% extends 'FrontOffice/enfant/Partials/container.html.twig' %}
 
-<div class="flex flex-col min-h-screen">
+{% block title %}Dashboard Enfant - Eduplay{% endblock %}
+
+{% block body %}
+<div class="bg-gray-50 min-h-screen flex flex-col">
 
     <!-- Header -->
     <header class="bg-white shadow">
@@ -17,7 +11,8 @@
             <h1 class="text-3xl font-bold text-gray-900">
                 Bienvenue {{ enfant.firstName }} 👋
             </h1>
-            <a href="{{ path('app_logout') }}" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
+            <a href="{{ path('app_logout') }}"
+               class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
                 Déconnexion
             </a>
         </div>
@@ -36,19 +31,24 @@
         <!-- Profil -->
         <section class="bg-white rounded-lg shadow-lg p-8 mb-10">
             <h2 class="text-2xl font-bold mb-6">Mon Profil</h2>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-lg">
                 <div>
                     <p class="text-gray-600">Nom complet</p>
                     <p class="font-semibold">{{ enfant.fullName }}</p>
                 </div>
+
                 <div>
                     <p class="text-gray-600">Identifiant</p>
                     {% if enfant.username %}
-                        <code class="bg-gray-100 px-3 py-1 rounded">{{ enfant.username }}</code>
+                        <code class="bg-gray-100 px-3 py-1 rounded">
+                            {{ enfant.username }}
+                        </code>
                     {% else %}
                         <p class="text-gray-500">Non défini</p>
                     {% endif %}
                 </div>
+
                 <div>
                     <p class="text-gray-600">Âge</p>
                     {% if enfant.age %}
@@ -57,6 +57,7 @@
                         <p class="text-gray-500">Non défini</p>
                     {% endif %}
                 </div>
+
                 <div>
                     <p class="text-gray-600">Niveau</p>
                     {% if enfant.niveau %}
@@ -71,15 +72,20 @@
         <!-- Actions / Aventures -->
         <section>
             <h2 class="text-2xl font-bold mb-6">Mes Aventures</h2>
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                 <!-- Jeux -->
                 <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col gap-4">
                     <div class="size-20 rounded-3xl bg-yellow-200 flex items-center justify-center text-orange-600">
-                        <span class="material-symbols-outlined text-1xl">sports_esports</span>
+                        <span class="material-symbols-outlined text-1xl">
+                            sports_esports
+                        </span>
                     </div>
                     <h3 class="text-xl font-bold">Mes Jeux</h3>
-                    <p class="text-gray-600 text-sm">Amuse-toi avec des puzzles et des challenges de maths !</p>
+                    <p class="text-gray-600 text-sm">
+                        Amuse-toi avec des puzzles et des challenges de maths !
+                    </p>
                     <button class="w-full py-2 bg-yellow-300 hover:bg-yellow-400 text-orange-700 font-bold rounded-lg transition-colors">
                         Jouer maintenant
                     </button>
@@ -88,10 +94,14 @@
                 <!-- Bibliothèque -->
                 <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col gap-4">
                     <div class="size-20 rounded-3xl bg-blue-200 flex items-center justify-center text-blue-600">
-                        <span class="material-symbols-outlined text-1xl">menu_book</span>
+                        <span class="material-symbols-outlined text-1xl">
+                            menu_book
+                        </span>
                     </div>
                     <h3 class="text-xl font-bold">Ma Bibliothèque</h3>
-                    <p class="text-gray-600 text-sm">Découvre des histoires interactives et des audiobooks !</p>
+                    <p class="text-gray-600 text-sm">
+                        Découvre des histoires interactives et des audiobooks !
+                    </p>
                     <button class="w-full py-2 bg-blue-300 hover:bg-blue-400 text-blue-700 font-bold rounded-lg transition-colors">
                         Ouvrir les livres
                     </button>
@@ -100,10 +110,14 @@
                 <!-- Récompenses -->
                 <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col gap-4">
                     <div class="size-20 rounded-3xl bg-purple-200 flex items-center justify-center text-purple-600">
-                        <span class="material-symbols-outlined text-1xl">card_membership</span>
+                        <span class="material-symbols-outlined text-1xl">
+                            card_membership
+                        </span>
                     </div>
                     <h3 class="text-xl font-bold">Mes Récompenses</h3>
-                    <p class="text-gray-600 text-sm">Échange tes étoiles contre des avatars et stickers !</p>
+                    <p class="text-gray-600 text-sm">
+                        Échange tes étoiles contre des avatars et stickers !
+                    </p>
                     <button class="w-full py-2 bg-purple-300 hover:bg-purple-400 text-purple-700 font-bold rounded-lg transition-colors">
                         Voir les récompenses
                     </button>
@@ -114,5 +128,4 @@
 
     </main>
 </div>
-</body>
-</html>
+{% endblock %}

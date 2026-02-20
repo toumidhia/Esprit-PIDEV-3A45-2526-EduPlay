@@ -76,7 +76,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
         // Check for parent role first
         if (in_array('ROLE_PARENT', $roles)) {
-            return new RedirectResponse($this->urlGenerator->generate('app_course_parent_browse'));
+            return new RedirectResponse($this->urlGenerator->generate('front_event_index'));
         }
 
         // Check for teacher role
@@ -90,8 +90,8 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         }
 
         // Check for kid - REDIRIGER VERS COURSE INDEX
-        if (in_array('ROLE_KID', $roles)) {
-            return new RedirectResponse($this->urlGenerator->generate('app_course_index'));
+        if (in_array('ROLE_ENFANT', $roles)) {
+            return new RedirectResponse($this->urlGenerator->generate('front_games'));
         }
 
         // Default redirect for other roles

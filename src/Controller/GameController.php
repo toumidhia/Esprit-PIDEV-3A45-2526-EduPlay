@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 
 
-#[Route('/enseignant/game')]
+#[Route('/game')]
 final class GameController extends AbstractController
 {
     #[Route(name: 'teacher_game_index', methods: ['GET'])]
@@ -227,12 +227,12 @@ public function frontIndex(
     $games = $gameRepository->findWithFrontFilters($filters, $sortBy, $sortOrder);
 
     if ($request->isXmlHttpRequest()) {
-        return $this->render('FrontOffice/enseignant/game/_grid.html.twig', [
+        return $this->render('FrontOffice/enfant/game/_grid.html.twig', [
             'games' => $games,
         ]);
     }
 
-    return $this->render('FrontOffice/enseignant/game/index.html.twig', [
+    return $this->render('FrontOffice/enfant/game/index.html.twig', [
         'titre' => 'Games',
         'description' => 'Choisis un jeu et commence à jouer',
         'games' => $games,
@@ -244,7 +244,7 @@ public function frontIndex(
 #[Route('/game/{id}', name: 'front_game_show_front', methods: ['GET'])]
 public function frontShow(Game $game): Response
 {
-    return $this->render('FrontOffice/enseignant/game/show.html.twig', [
+    return $this->render('FrontOffice/enfant/game/show.html.twig', [
         'game' => $game,
     ]);
 }

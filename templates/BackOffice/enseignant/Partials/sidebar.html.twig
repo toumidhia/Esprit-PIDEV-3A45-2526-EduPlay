@@ -1,89 +1,5 @@
-<style>
-    /* Sidebar Styles */
-    .sidebar {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 100;
-        padding: 0;
-        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-        background-color: #2c3e50;
-        width: var(--sidebar-width);
-        display: flex;
-        flex-direction: column;
-    }
+{# templates/BackOffice/_sidebar.html.twig #}
 
-    .sidebar-sticky {
-        flex: 1;
-        padding-top: .5rem;
-        padding-bottom: 1rem;
-        overflow-x: hidden;
-        overflow-y: auto;
-    }
-
-    .sidebar .nav-link {
-        color: #e0e0e0;
-        padding: 12px 20px;
-        font-weight: 500;
-        transition: all 0.3s;
-    }
-
-    .sidebar .nav-link:hover {
-        color: #fff;
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .sidebar .nav-link.active {
-        color: #fff;
-        background-color: var(--primary-color);
-    }
-
-    .sidebar .nav-link i {
-        margin-right: 10px;
-    }
-
-    .sidebar-heading {
-        font-size: .75rem;
-        text-transform: uppercase;
-        padding: 20px 20px 10px;
-        color: #a0a0a0;
-        font-weight: 600;
-    }
-
-    .sidebar-brand {
-        padding: 20px;
-        background-color: rgba(0, 0, 0, 0.2);
-        color: #fff;
-        font-size: 1.5rem;
-        font-weight: bold;
-        text-align: center;
-    }
-
-    .sidebar-brand span {
-        color: var(--primary-color);
-    }
-
-    /* Scrollbar personnalisé pour le sidebar */
-    .sidebar-sticky::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .sidebar-sticky::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.1);
-    }
-
-    .sidebar-sticky::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 3px;
-    }
-
-    .sidebar-sticky::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.3);
-    }
-</style>
-
-{# Sidebar #}
 <nav class="sidebar">
     <div class="sidebar-brand">
         <i class="bi bi-mortarboard-fill"></i> Edu<span>Play</span>
@@ -100,25 +16,28 @@
                 </a>
             </li>
 
-            {% if is_granted('ROLE_ENSEIGNANT') %}
+            {% if is_granted('ROLE_ADMIN') %}
 
                 {# ================= E-COMMERCE ================= #}
                 <div class="sidebar-heading">E-Commerce</div>
 
                 <li class="nav-item">
-                    <a class="nav-link {% if app.request.get('_route') starts with 'app_seance' %}active{% endif %}" href="{{ path('app_seance_index') }}">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'app_seance' %}active{% endif %}"
+                       href="{{ path('app_seance_index') }}">
                         <i class="bi bi-calendar-event"></i> Séances
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link {% if app.request.get('_route') starts with 'app_subscription_list' %}active{% endif %}" href="{{ path('app_subscription_list') }}">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'app_subscription_list' %}active{% endif %}"
+                       href="{{ path('app_subscription_list') }}">
                         <i class="bi bi-people"></i> Inscriptions Séances
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link {% if app.request.get('_route') starts with 'admin_event_index' %}active{% endif %}" href="{{ path('admin_event_index') }}">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'admin_event_index' %}active{% endif %}"
+                       href="{{ path('admin_event_index') }}">
                         <i class="bi bi-calendar-event"></i> Events
                     </a>
                 </li>
@@ -137,7 +56,7 @@
                     </a>
                 </li>
 
-                {# ================= LIBRARY ================= #}
+                {# ================= BIBLIOTHÈQUE ================= #}
                 <div class="sidebar-heading">Bibliothèque</div>
 
                 <li class="nav-item">
@@ -157,7 +76,7 @@
                     </a>
                 </li>
 
-                {# ================= USERS ================= #}
+                {# ================= UTILISATEURS ================= #}
                 <div class="sidebar-heading">Utilisateurs</div>
 
                 <li class="nav-item">
@@ -167,7 +86,7 @@
                     </a>
                 </li>
 
-                {# ================= STATISTIQUES ================= #}
+                {# ================= ANALYTIQUES ================= #}
                 <div class="sidebar-heading">Analytiques</div>
 
                 <li class="nav-item">
@@ -179,8 +98,26 @@
 
             {% endif %}
 
-            {# ================= ACCOUNT ================= #}
+            {# ================= COMPTE ================= #}
             <div class="sidebar-heading">Compte</div>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('teacher_game_index') }}">
+                    Game
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('teacher_level_index') }}">
+                    Level
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_course_index') }}">
+                    Cours
+                </a>
+            </li>
 
             <li class="nav-item">
                 <a class="nav-link" href="{{ path('app_logout') }}">

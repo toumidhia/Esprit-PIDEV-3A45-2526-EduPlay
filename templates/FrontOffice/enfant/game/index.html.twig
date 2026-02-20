@@ -1,4 +1,4 @@
-{% extends 'backoffice/enseignant/Partials/container.html.twig' %}
+{% extends 'FrontOffice/enfant/Partials/container.html.twig' %}
 {% block title %}{{ titre }}{% endblock %}
 
 {% block content %}
@@ -54,7 +54,7 @@
 
     {# ✅ RESULTS #}
     <div id="games-results">
-      {{ include('FrontOffice/teacher/game/_grid.html.twig', { games: games }) }}
+      {{ include('FrontOffice/enfant/game/_grid.html.twig', { games: games }) }}
     </div>
 
   </div>

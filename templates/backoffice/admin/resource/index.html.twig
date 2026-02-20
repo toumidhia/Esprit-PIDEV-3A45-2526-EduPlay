@@ -23,6 +23,62 @@
 
     <!-- CARTE DES FILTRES AVEC DESIGN ÉLÉGANT -->
     <div class="p-8">
+
+ {# ========== 🎤 RECHERCHE VOCALE ========== #}
+    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl border border-purple-100 p-5 mb-8">
+        <div class="flex items-center mb-4">
+            <div class="p-2 bg-purple-100 rounded-xl mr-3">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-bold text-purple-800 text-lg">🎤 Recherche Vocale</h3>
+                <p class="text-xs text-purple-500">Parlez pour rechercher un livre instantanément</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button id="voiceBtn" onclick="toggleVoiceSearch()"
+                    class="flex items-center px-5 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all duration-300 shadow-lg">
+                <svg id="micIcon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                </svg>
+                <span id="voiceBtnText">🎤 Parler</span>
+            </button>
+
+            <div id="transcriptBox" class="flex-1 min-h-[44px] px-4 py-3 bg-white rounded-xl border-2 border-purple-200 text-gray-700 hidden">
+                <span id="transcriptText" class="italic text-gray-400">En écoute...</span>
+            </div>
+
+            <button id="resetVoiceBtn" onclick="resetVoiceSearch()" 
+                    class="hidden px-4 py-3 border-2 border-gray-300 text-gray-600 rounded-xl hover:bg-gray-50 transition-all font-semibold">
+                ✕ Effacer
+            </button>
+        </div>
+
+        <div id="voiceStatus" class="mt-3 text-sm text-purple-600 hidden">
+            <span class="inline-flex items-center">
+                <span class="animate-pulse mr-2">🔴</span>
+                <span id="voiceStatusText">Écoute en cours...</span>
+            </span>
+        </div>
+    </div>
+
+    {# Résultats vocaux #}
+    <div id="voiceResults" class="hidden mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="font-bold text-gray-700 text-lg">
+                Résultats pour : <span id="voiceQuery" class="text-purple-600"></span>
+            </h4>
+            <span id="voiceCount" class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full"></span>
+        </div>
+        <div id="voiceResultsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+    {# ========================================= #}
+    
         <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 shadow-xl p-6 mb-8">
             <div class="flex items-center mb-6">
                 <div class="p-3 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-xl mr-4">
@@ -283,11 +339,9 @@
                                     </svg>
                                     {{ resource.language }}
                                 </span>
-                                <span class="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    {{ resource.minAge }} - {{ resource.maxAge }} ans
+                                 <span class="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full" 
+                                    title="Tranche d'âge détectée par IA">
+                                        🤖 {{ resource.minAge }} - {{ resource.maxAge }} ans
                                 </span>
                                 {% if resource.libraryId %}
                                 <span class="inline-flex items-center px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-full">
@@ -453,6 +507,100 @@ function removeFilter(filterName) {
     const url = new URL(window.location.href);
     url.searchParams.delete(filterName);
     window.location.href = url.toString();
+}
+
+
+
+
+
+// ========== RECHERCHE VOCALE ==========
+let recognition = null;
+let isListening = false;
+
+function toggleVoiceSearch() {
+    isListening ? stopListening() : startListening();
+}
+
+function startListening() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Utilisez Chrome pour la recherche vocale.');
+        return;
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SR();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+        isListening = true;
+        document.getElementById('voiceBtn').classList.replace('bg-purple-600','bg-red-500');
+        document.getElementById('voiceBtnText').textContent = '⏹ Arrêter';
+        document.getElementById('transcriptBox').classList.remove('hidden');
+        document.getElementById('voiceStatus').classList.remove('hidden');
+    };
+
+    recognition.onresult = (event) => {
+        let final = '', interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            event.results[i].isFinal ? final += event.results[i][0].transcript : interim += event.results[i][0].transcript;
+        }
+        document.getElementById('transcriptText').textContent = final || interim;
+        document.getElementById('transcriptText').classList.remove('italic','text-gray-400');
+        if (final) performVoiceSearch(final);
+    };
+
+    recognition.onerror = () => stopListening();
+    recognition.onend = () => stopListening();
+    recognition.start();
+}
+
+function stopListening() {
+    isListening = false;
+    if (recognition) recognition.stop();
+    document.getElementById('voiceBtn').classList.replace('bg-red-500','bg-purple-600');
+    document.getElementById('voiceBtnText').textContent = '🎤 Parler';
+    document.getElementById('voiceStatus').classList.add('hidden');
+}
+
+function performVoiceSearch(query) {
+    document.getElementById('resetVoiceBtn').classList.remove('hidden');
+    fetch('{{ path("admin_resource_voice_search") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({query: query})
+    })
+    .then(r => r.json())
+    .then(data => displayVoiceResults(data.results, data.query));
+}
+
+function displayVoiceResults(results, query) {
+    document.getElementById('voiceQuery').textContent = '"' + query + '"';
+    document.getElementById('voiceCount').textContent = results.length + ' résultat(s)';
+    document.getElementById('voiceResultsList').innerHTML = results.length === 0
+        ? `<div class="col-span-3 text-center py-8 text-gray-500">🔍 Aucun livre trouvé pour "${query}"</div>`
+        : results.map(r => `
+            <a href="${r.showUrl}" class="block bg-white rounded-xl border-2 border-purple-100 hover:border-purple-400 p-4 transition-all hover:shadow-lg">
+                <div class="flex items-start gap-3">
+                    ${r.coverImage
+                        ? `<img src="/uploads/${r.coverImage}" class="w-12 h-16 object-cover rounded-lg flex-shrink-0">`
+                        : `<div class="w-12 h-16 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 text-2xl">📚</div>`}
+                    <div>
+                        <h5 class="font-bold text-gray-800">${r.title}</h5>
+                        <p class="text-sm text-gray-500">👤 ${r.author}</p>
+                        <span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full">🤖 ${r.minAge}-${r.maxAge} ans</span>
+                    </div>
+                </div>
+            </a>`).join('');
+    document.getElementById('voiceResults').classList.remove('hidden');
+}
+
+function resetVoiceSearch() {
+    document.getElementById('voiceResults').classList.add('hidden');
+    document.getElementById('transcriptBox').classList.add('hidden');
+    document.getElementById('resetVoiceBtn').classList.add('hidden');
+    document.getElementById('transcriptText').textContent = 'En écoute...';
+    document.getElementById('transcriptText').classList.add('italic','text-gray-400');
 }
 </script>
 {% endblock %}

@@ -1,10 +1,159 @@
-{# Top Navbar #}
-<nav class="navbar navbar-custom navbar-light">
-    <div class="container-fluid">
-        <span class="navbar-text">
-            <i class="bi bi-person-circle"></i>
-            Bienvenue, <strong>{{ app.user.firstName }} {{ app.user.lastName }}</strong>
-            <span class="badge bg-secondary ms-2">{{ app.user.type|upper }}</span>
-        </span>
+{# BackOffice/admin/Partials/navbar.html.twig #}
+
+{# Top Navbar avec design moderne et position fixed #}
+<nav class="navbar navbar-custom fixed-top">
+    <div class="container-fluid px-4">
+        <!-- Bouton toggle pour mobile (optionnel) -->
+        <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Barre de recherche (optionnelle) -->
+        <div class="d-none d-md-block search-wrapper" style="width: 300px;">
+            <i class="bi bi-search"></i>
+            <input type="text" class="form-control rounded-pill" placeholder="Rechercher...">
+        </div>
+
+        <!-- Profil utilisateur avec design moderne -->
+        <div class="d-flex align-items-center gap-3">
+            <!-- Notifications (optionnel) -->
+            <div class="dropdown">
+                <button class="btn btn-light rounded-circle p-2 position-relative" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-bell"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                        3
+                    </span>
+                </button>
+            </div>
+
+            <!-- Profil avec design moderne -->
+            <div class="dropdown">
+                <button class="btn dropdown-toggle d-flex align-items-center gap-2 border-0" type="button" data-bs-toggle="dropdown" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50px; padding: 5px 15px 5px 5px;">
+                    <div class="user-avatar" style="background: rgba(255,255,255,0.2);">
+                        {% if app.user.firstName %}
+                            {{ app.user.firstName|slice(0,1) }}{{ app.user.lastName|slice(0,1) }}
+                        {% else %}
+                            <i class="bi bi-person"></i>
+                        {% endif %}
+                    </div>
+                    <div class="text-start d-none d-md-block">
+                        <div class="small fw-bold">{{ app.user.firstName }} {{ app.user.lastName }}</div>
+                        <div class="small opacity-75">{{ app.user.type }}</div>
+                    </div>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-xl">
+                    <li>
+                        <a class="dropdown-item py-2" href="#">
+                            <i class="bi bi-person-circle me-2"></i>Mon Profil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item py-2" href="#">
+                            <i class="bi bi-gear me-2"></i>Paramètres
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item py-2 text-danger" href="{{ path('app_logout') }}">
+                            <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </nav>
+
+<style>
+.navbar-custom {
+    background: white;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    left: var(--sidebar-width);
+    right: 0;
+    z-index: 99;
+    height: 64px;
+}
+
+.user-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: white;
+}
+
+.search-wrapper input {
+    background-color: #f8f9fa;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    height: 40px;
+}
+
+.search-wrapper input:focus {
+    background-color: white;
+    border-color: #667eea;
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1);
+}
+
+.dropdown-menu {
+    border-radius: 15px;
+    padding: 10px 0;
+    margin-top: 10px;
+}
+
+.dropdown-item {
+    padding: 10px 20px;
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+    color: #667eea;
+}
+
+.dropdown-item.text-danger:hover {
+    background: #fee2e2;
+    color: #dc2626 !important;
+}
+
+/* Animation pour les dropdowns */
+.dropdown-menu {
+    animation: fadeInDown 0.3s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Pour la transition de la navbar au scroll */
+.navbar-custom.scrolled {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+</style>
+
+<script>
+// Ajouter une classe à la navbar quand on scroll
+window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.navbar-custom');
+    if (window.scrollY > 10) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+});
+</script>

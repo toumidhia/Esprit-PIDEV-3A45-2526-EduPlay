@@ -112,3 +112,13 @@
     btn.addEventListener('click', () => menu.classList.toggle('hidden'));
   }
 </script>
+{# Top Navbar #}
+<nav class="navbar navbar-custom navbar-light">
+    <div class="container-fluid">
+        <span class="navbar-text">
+            <i class="bi bi-person-circle"></i>
+            Bienvenue, <strong>{{ app.user.firstName }} {{ app.user.lastName }}</strong>
+            <span class="badge bg-secondary ms-2">{{ app.user.type|upper }}</span>
+        </span>
+    </div>
+</nav>

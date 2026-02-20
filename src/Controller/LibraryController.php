@@ -10,7 +10,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use App\Form\LibrarySearchType;
 use App\Repository\ResourceRepository;
@@ -20,7 +19,7 @@ final class LibraryController extends AbstractController
     // FRONT OFFICE - Afficher toutes les libraries
     // ===============================
     
-    #[Route('FrontOffice/library', name: 'app_library')]
+    #[Route('library', name: 'app_library')]
     public function index(LibraryRepository $libraryRepository): Response
     {
         return $this->render('FrontOffice/enfant/library/index.html.twig', [
@@ -33,7 +32,7 @@ final class LibraryController extends AbstractController
     // ===============================
     
    
-    #[Route('BackOffice/admin', name: 'app_admin')]
+    #[Route('admin', name: 'app_admin')]
     public function adminDashboard(LibraryRepository $libraryRepository): Response
     {
         // VERSION TEMPORAIRE - Attendez d'ajouter la méthode dans le Repository
@@ -147,7 +146,7 @@ final class LibraryController extends AbstractController
     // ===============================
     
    // ========================= LIST =========================
-#[Route('BackOffice/admin/library/', name: 'admin_library_index', methods: ['GET'])]
+#[Route('admin/library/', name: 'admin_library_index', methods: ['GET'])]
 public function adminIndex(Request $request, LibraryRepository $libraryRepository): Response
 {
     $form = $this->createForm(LibrarySearchType::class);
@@ -183,7 +182,7 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
 }
     
     // ========================= CREATE =========================
-    #[Route('BackOffice/admin/library/new', name: 'admin_library_new', methods: ['GET','POST'])]
+    #[Route('admin/library/new', name: 'admin_library_new', methods: ['GET','POST'])]
     public function adminNew(Request $request, EntityManagerInterface $em): Response
     {
         $library = new Library();
@@ -232,7 +231,7 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
     }
     
     // ========================= SHOW =========================
-    #[Route('BackOffice/admin/library/{id}', name: 'admin_library_show', methods: ['GET'])]
+    #[Route('admin/library/{id}', name: 'admin_library_show', methods: ['GET'])]
     public function adminShow(Library $library): Response
     {
         return $this->render('BackOffice/admin/library/show.html.twig', [
@@ -241,7 +240,7 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
     }
     
     // ========================= EDIT =========================
-    #[Route('BackOffice/admin/library/{id}/edit', name: 'admin_library_edit', methods: ['GET','POST'])]
+    #[Route('admin/library/{id}/edit', name: 'admin_library_edit', methods: ['GET','POST'])]
     public function adminEdit(Request $request, Library $library, EntityManagerInterface $em): Response
     {
         $oldImage = $library->getCoverImage();
@@ -299,7 +298,7 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
     }
     
     // ========================= DELETE =========================
-    #[Route('BackOffice/admin/library/{id}/delete', name: 'admin_library_delete', methods: ['POST'])]
+    #[Route('admin/library/{id}/delete', name: 'admin_library_delete', methods: ['POST'])]
     public function adminDelete(Request $request, Library $library, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('delete'.$library->getId(), $request->request->get('_token'))) {
@@ -321,7 +320,7 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
 
 
 
-#[Route('FrontOffice/library/{id}/resources', name: 'library_resources')]
+#[Route('{id}/resources', name: 'library_resources')]
 public function libraryResources(Library $library, ResourceRepository $resourceRepository): Response
 {
     // Récupérer toutes les ressources de cette bibliothèque

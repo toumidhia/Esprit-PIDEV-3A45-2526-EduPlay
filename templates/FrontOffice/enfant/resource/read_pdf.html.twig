@@ -1,0 +1,616 @@
+{# templates/FrontOffice/resource/read_pdf.html.twig #}
+<!DOCTYPE html>
+<html class="light" lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{{ resource.title }} - Lecture Audio PDF - EduPlay</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        .organic-shape {
+            position: fixed;
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.4;
+        }
+
+        /* ── Audio panel (sticky sidebar) ── */
+        .audio-sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 84px;          /* below nav */
+            height: fit-content;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            background: linear-gradient(160deg, #eff6ff 0%, #eef2ff 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+        }
+
+        /* ── PDF viewer ── */
+        .pdf-container {
+            flex: 1;
+            min-width: 0;
+            height: calc(100vh - 220px);
+            overflow-y: auto;
+            background-color: #f9fafb;
+            border-radius: 1rem;
+            padding: 2rem;
+            line-height: 1.85;
+            border: 1px solid #e5e7eb;
+        }
+
+        /* ── Word spans ── */
+        .word {
+            display: inline;
+            border-radius: 3px;
+            transition: background 0.1s, color 0.1s;
+        }
+
+        .word.highlight {
+            background-color: #fde047;
+            color: #000;
+            font-weight: 700;
+            border-radius: 4px;
+            padding: 0 1px;
+            box-shadow: 0 2px 8px rgba(250,204,21,0.45);
+        }
+
+        /* ── Progress bar ── */
+        .audio-progress { transition: width 0.25s linear; }
+
+        /* ── Speaking pulse ── */
+        @keyframes pulse {
+            0%   { box-shadow: 0 0 0 0   rgba(34,197,94,.7); }
+            70%  { box-shadow: 0 0 0 14px rgba(34,197,94,0); }
+            100% { box-shadow: 0 0 0 0   rgba(34,197,94,0); }
+        }
+        .listening { animation: pulse 1.5s infinite; background-color: #22c55e !important; }
+
+        /* ── Page divider ── */
+        .page-marker {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            margin: 1.5rem 0 .75rem;
+        }
+
+        .type-badge { font-size:10px; font-weight:700; text-transform:uppercase; padding:2px 8px; border-radius:9999px; }
+        .type-book      { background:#d1fae5; color:#065f46; }
+        .type-magazine  { background:#fef3c7; color:#92400e; }
+        .type-journal   { background:#fee2e2; color:#991b1b; }
+        .type-manual    { background:#e0e7ff; color:#3730a3; }
+
+        /* Range inputs */
+        input[type=range] { accent-color: #3b82f6; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen relative overflow-x-hidden">
+
+    <div class="organic-shape bg-blue-300 w-[500px] h-[500px] rounded-full -top-40 -left-40"></div>
+    <div class="organic-shape bg-purple-300 w-[600px] h-[600px] rounded-full -bottom-40 -right-40"></div>
+
+    <div class="flex h-full grow flex-col">
+
+        <!-- ── Navigation ── -->
+        <header class="flex items-center justify-between border-b border-[#dbe1e6] bg-white/80 backdrop-blur-md px-6 md:px-16 py-4 sticky top-0 z-50">
+            <a href="{{ path('app_library') }}" class="flex items-center gap-3">
+                <div class="size-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                    <span class="material-symbols-outlined text-2xl">rocket_launch</span>
+                </div>
+                <h2 class="text-2xl font-extrabold tracking-tight">EduPlay</h2>
+            </a>
+            <a href="{{ path('app_resource') }}"
+               class="text-sm font-bold text-gray-600 hover:text-blue-500 transition-colors flex items-center gap-1">
+                <span class="material-symbols-outlined text-lg">arrow_back</span>
+                Retour aux livres
+            </a>
+        </header>
+
+        <main class="max-w-screen-xl mx-auto px-4 lg:px-12 py-6 w-full">
+
+            <!-- ── Fil d'Ariane ── -->
+            <nav class="flex items-center gap-2 text-sm font-bold text-gray-500 mb-5">
+                <a href="{{ path('app_library') }}" class="hover:text-blue-600">Bibliothèques</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <a href="{{ path('app_resource') }}" class="hover:text-blue-600">
+                    {{ resource.libraryId ? resource.libraryId.name : 'Livres' }}
+                </a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="text-blue-600">{{ resource.title }}</span>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="text-green-600">Lecture audio</span>
+            </nav>
+
+            <!-- ── Couverture du livre ── -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-6">
+                <div class="p-5 flex items-center gap-4">
+                    <div class="w-16 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                        {% if resource.coverImage %}
+                            <img class="w-full h-full object-cover" alt="{{ resource.title }}"
+                                 src="{{ asset('uploads/' ~ resource.coverImage) }}">
+                        {% else %}
+                            <div class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-3xl text-blue-300">book</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-extrabold text-gray-900">{{ resource.title }}</h1>
+                        <p class="text-gray-500 text-sm">par {{ resource.author }}</p>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="type-badge type-{{ resource.type|lower }}">{{ resource.type }}</span>
+                            <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                                {{ resource.minAge }}-{{ resource.maxAge }} ans
+                            </span>
+                            <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                                {{ resource.language }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if hasPdf %}
+
+                <!-- ── LAYOUT : texte à gauche, contrôles à droite ── -->
+                <div class="flex gap-6 items-start">
+
+                    <!-- ── Visionneuse PDF ── -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden flex-1 min-w-0">
+                        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                            <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-blue-500">menu_book</span>
+                                Contenu du livre
+                            </h3>
+                            <div class="flex gap-2">
+                                <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full" id="charCount"></span>
+                                <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full" id="pageCount"></span>
+                            </div>
+                        </div>
+
+                        <div class="pdf-container" id="pdfContainer">
+                            {% if pdfPages|length > 0 %}
+                                {% for pageNum, pageText in pdfPages %}
+                                    {# On filtre côté Twig les pages quasi-vides (< 60 caractères de texte réel) #}
+                                    {% if pageText|striptags|trim|length > 60 %}
+                                        <div class="mb-6 pb-6 border-b border-gray-100 last:border-0">
+                                            <span class="page-marker">
+                                                <span class="material-symbols-outlined" style="font-size:13px">description</span>
+                                                Page {{ pageNum }}
+                                            </span>
+                                            <div class="text-gray-700" data-page="{{ pageNum }}">{{ pageText|nl2br }}</div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-gray-700">{{ pdfContent|nl2br }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- ── Panneau audio (sidebar droite) ── -->
+                    <aside class="audio-sidebar">
+                        <h2 class="text-base font-extrabold text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-500">headphones</span>
+                            Contrôles audio
+                        </h2>
+
+                        <!-- Boutons principaux -->
+                        <div class="flex flex-col gap-3 mb-5">
+                            <button id="playPauseBtn"
+                                    class="flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/30 w-full">
+                                <span class="material-symbols-outlined text-xl" id="playIcon">play_arrow</span>
+                                <span id="playPauseText">Lire le livre</span>
+                            </button>
+
+                            <button id="stopBtn"
+                                    class="flex items-center justify-center gap-2 px-4 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all shadow-lg shadow-red-500/30 w-full">
+                                <span class="material-symbols-outlined text-xl">stop</span>
+                                Arrêter
+                            </button>
+                        </div>
+
+                        <!-- Indicateur lecture -->
+                        <div id="speakingIndicator" class="hidden items-center justify-center gap-2 text-green-600 font-bold text-sm mb-4">
+                            <span class="material-symbols-outlined animate-pulse">volume_up</span>
+                            Lecture en cours…
+                        </div>
+
+                        <!-- Barre de progression -->
+                        <div class="mb-5">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>Progression</span>
+                                <span id="progressPercent">0%</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                                <div id="progressBar" class="h-full bg-blue-500 audio-progress" style="width:0%"></div>
+                            </div>
+                        </div>
+
+                        <hr class="border-blue-200 mb-4"/>
+
+                        <!-- Contrôles fins -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">⚡ Vitesse</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="range" id="speedControl" min="0.5" max="1.5" step="0.1" value="0.9" class="flex-1">
+                                    <span id="speedValue" class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">0.9×</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">🎵 Hauteur</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="range" id="pitchControl" min="0.5" max="2" step="0.1" value="1.2" class="flex-1">
+                                    <span id="pitchValue" class="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded">1.2</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">🔊 Volume</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" class="flex-1">
+                                    <span id="volumeValue" class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">100%</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">👤 Voix</label>
+                                <select id="voiceSelect" class="w-full p-2 border border-gray-300 rounded-lg text-xs bg-white">
+                                    <option value="">Voix par défaut</option>
+                                </select>
+                            </div>
+                        </div>
+                    </aside>
+
+                </div><!-- /flex layout -->
+
+            {% else %}
+                <!-- Fallback PDF non lisible -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-8 text-center">
+                    <span class="material-symbols-outlined text-6xl text-yellow-400 mb-4">error</span>
+                    <h3 class="text-xl font-bold text-yellow-800 mb-2">Impossible de lire ce PDF</h3>
+                    <p class="text-yellow-700 mb-6">Le contenu de ce PDF n'a pas pu être extrait automatiquement.</p>
+                    <div class="bg-white rounded-xl p-6 max-w-2xl mx-auto">
+                        <h4 class="font-bold text-gray-800 mb-3">Lire le résumé à la place :</h4>
+                        <p class="text-gray-600 mb-4">{{ resource.summary|default('Aucun résumé disponible.') }}</p>
+                        <a href="{{ path('app_resource_read', {'id': resource.id}) }}"
+                           class="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600">
+                            <span class="material-symbols-outlined">headphones</span>
+                            Écouter le résumé
+                        </a>
+                    </div>
+                    <div class="mt-6">
+                        <a href="{{ asset('pdfs/' ~ resource.pdfFile) }}" target="_blank"
+                           class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800">
+                            <span class="material-symbols-outlined">picture_as_pdf</span>
+                            Ouvrir le PDF original
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+
+        </main>
+
+        <footer class="bg-white border-t border-[#dbe1e6] px-6 md:px-20 py-8 mt-10">
+            <p class="text-xs text-[#617989] text-center">© 2024 EduPlay Médias Éducatifs. Tous droits réservés.</p>
+        </footer>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCRIPT : Synthèse vocale avec surlignage
+         précis basé sur charIndex
+    ════════════════════════════════════════════ -->
+    <script>
+    (function () {
+        'use strict';
+
+        if (!('speechSynthesis' in window)) {
+            alert("Votre navigateur ne supporte pas la synthèse vocale.");
+            return;
+        }
+
+        /* ── Éléments DOM ── */
+        const playPauseBtn    = document.getElementById('playPauseBtn');
+        const stopBtn         = document.getElementById('stopBtn');
+        const playIcon        = document.getElementById('playIcon');
+        const playPauseText   = document.getElementById('playPauseText');
+        const speakingIndicator = document.getElementById('speakingIndicator');
+        const speedControl    = document.getElementById('speedControl');
+        const speedValue      = document.getElementById('speedValue');
+        const pitchControl    = document.getElementById('pitchControl');
+        const pitchValue      = document.getElementById('pitchValue');
+        const volumeControl   = document.getElementById('volumeControl');
+        const volumeValue     = document.getElementById('volumeValue');
+        const voiceSelect     = document.getElementById('voiceSelect');
+        const progressBar     = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        const pdfContainer    = document.getElementById('pdfContainer');
+        const charCountEl     = document.getElementById('charCount');
+        const pageCountEl     = document.getElementById('pageCount');
+
+        /* ── Préparer le texte et les spans ── */
+        let textToSpeak  = '';     // texte brut à passer à la synthèse
+        let wordSpans    = [];     // [{span, start, end}]
+        let currentSpanIndex = 0;
+
+        if (pdfContainer) {
+            prepareContent();
+        }
+
+        /**
+         * 1. Remplace tous les nœuds texte par des <span class="word">
+         * 2. Construit la chaîne textToSpeak en mémorisant l'offset de
+         *    chaque span dans cette chaîne → correspondance exacte.
+         */
+        function prepareContent() {
+            // ── Étape 1 : wrapper chaque mot en <span class="word"> ──
+            wrapWords(pdfContainer);
+
+            // ── Étape 2 : construire textToSpeak depuis les spans ──
+            wordSpans = Array.from(pdfContainer.querySelectorAll('.word'));
+
+            let offset = 0;
+            const parts = [];
+
+            wordSpans.forEach((span, i) => {
+                const word = span.textContent;
+                span._start = offset;
+                span._end   = offset + word.length;
+                parts.push(word);
+                offset += word.length;
+
+                // Ajouter un espace entre les mots (sauf dernier)
+                if (i < wordSpans.length - 1) {
+                    parts.push(' ');
+                    offset += 1;
+                }
+            });
+
+            textToSpeak = parts.join('');
+
+            // Affichage compteurs
+            if (charCountEl) charCountEl.textContent = wordSpans.length + ' mots';
+            const pages = pdfContainer.querySelectorAll('[data-page]');
+            if (pageCountEl && pages.length) pageCountEl.textContent = pages.length + ' pages';
+
+            console.log('[EduPlay] Texte prêt —', wordSpans.length, 'mots,', textToSpeak.length, 'chars');
+        }
+
+        function wrapWords(root) {
+            const walker = document.createTreeWalker(
+                root,
+                NodeFilter.SHOW_TEXT,
+                {
+                    acceptNode(node) {
+                        // Ignorer les textes vides
+                        return node.textContent.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+                    }
+                }
+            );
+
+            const textNodes = [];
+            while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+            textNodes.forEach(node => {
+                const text = node.textContent;
+                // Séparer en tokens : mots ou séquences d'espaces
+                const tokens = text.split(/(\s+)/);
+                if (tokens.length === 0) return;
+
+                const frag = document.createDocumentFragment();
+                tokens.forEach(token => {
+                    if (/^\s+$/.test(token)) {
+                        frag.appendChild(document.createTextNode(token));
+                    } else {
+                        const span = document.createElement('span');
+                        span.className = 'word';
+                        span.textContent = token;
+                        frag.appendChild(span);
+                    }
+                });
+                node.parentNode.replaceChild(frag, node);
+            });
+        }
+
+        /* ── Voix disponibles ── */
+        function populateVoiceList() {
+            const voices    = window.speechSynthesis.getVoices();
+            const frVoices  = voices.filter(v => v.lang.startsWith('fr'));
+
+            voiceSelect.innerHTML = '<option value="">Voix par défaut</option>';
+            frVoices.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.name;
+                opt.textContent = `${v.name} (${v.lang})`;
+                voiceSelect.appendChild(opt);
+            });
+        }
+        populateVoiceList();
+        window.speechSynthesis.onvoiceschanged = populateVoiceList;
+
+        /* ── Contrôles sliders ── */
+        speedControl.addEventListener('input', () => {
+            speedValue.textContent = speedControl.value + '×';
+            if (utterance) utterance.rate = +speedControl.value;
+        });
+        pitchControl.addEventListener('input', () => {
+            pitchValue.textContent = pitchControl.value;
+            if (utterance) utterance.pitch = +pitchControl.value;
+        });
+        volumeControl.addEventListener('input', () => {
+            volumeValue.textContent = Math.round(volumeControl.value * 100) + '%';
+            if (utterance) utterance.volume = +volumeControl.value;
+        });
+
+        /* ── État ── */
+        let utterance = null;
+        let isPaused  = false;
+        let isSpeaking = false;
+
+        /* ── Surlignage précis par charIndex ── */
+        function highlightByCharIndex(charIndex) {
+            // Retirer l'ancien surlignage
+            if (currentSpanIndex > 0 && currentSpanIndex - 1 < wordSpans.length) {
+                wordSpans[currentSpanIndex - 1].classList.remove('highlight');
+            }
+
+            // Recherche binaire du span dont _start <= charIndex < _end
+            let lo = currentSpanIndex, hi = wordSpans.length - 1, found = -1;
+
+            // D'abord chercher en avançant depuis la position courante (cas normal)
+            for (let i = currentSpanIndex; i < Math.min(currentSpanIndex + 10, wordSpans.length); i++) {
+                if (wordSpans[i]._start <= charIndex && charIndex < wordSpans[i]._end) {
+                    found = i;
+                    break;
+                }
+                if (wordSpans[i]._start > charIndex) break;
+            }
+
+            // Fallback : recherche binaire complète
+            if (found === -1) {
+                lo = 0; hi = wordSpans.length - 1;
+                while (lo <= hi) {
+                    const mid = (lo + hi) >> 1;
+                    if (wordSpans[mid]._end <= charIndex)  lo = mid + 1;
+                    else if (wordSpans[mid]._start > charIndex) hi = mid - 1;
+                    else { found = mid; break; }
+                }
+            }
+
+            if (found === -1) return;
+
+            // Retirer tous les anciens highlights
+            wordSpans.forEach(s => s.classList.remove('highlight'));
+
+            wordSpans[found].classList.add('highlight');
+            currentSpanIndex = found + 1;
+
+            // Scroll doux
+            wordSpans[found].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        /* ── Mise à jour progression ── */
+        function updateProgress(charIndex) {
+            if (!textToSpeak.length) return;
+            const pct = Math.min(100, Math.round((charIndex / textToSpeak.length) * 100));
+            progressBar.style.width = pct + '%';
+            progressPercent.textContent = pct + '%';
+        }
+
+        /* ── Reset UI ── */
+        function resetUI() {
+            isSpeaking = false;
+            isPaused   = false;
+            utterance  = null;
+            currentSpanIndex = 0;
+
+            playIcon.textContent        = 'play_arrow';
+            playPauseText.textContent   = 'Lire le livre';
+            speakingIndicator.classList.add('hidden');
+            speakingIndicator.classList.remove('flex');
+            playPauseBtn.classList.remove('listening');
+
+            progressBar.style.width   = '0%';
+            progressPercent.textContent = '0%';
+            wordSpans.forEach(s => s.classList.remove('highlight'));
+        }
+
+        /* ── Démarrer la lecture ── */
+        function speak() {
+            window.speechSynthesis.cancel();
+            resetUI();
+
+            utterance       = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.lang  = 'fr-FR';
+            utterance.rate  = +speedControl.value;
+            utterance.pitch = +pitchControl.value;
+            utterance.volume = +volumeControl.value;
+
+            const selVoiceName = voiceSelect.value;
+            if (selVoiceName) {
+                const v = window.speechSynthesis.getVoices().find(v => v.name === selVoiceName);
+                if (v) utterance.voice = v;
+            }
+
+            /* ── Événement mot-par-mot ── */
+            utterance.onboundary = (event) => {
+                if (event.name === 'word') {
+                    highlightByCharIndex(event.charIndex);
+                    updateProgress(event.charIndex);
+                }
+            };
+
+            utterance.onstart = () => {
+                isSpeaking = true;
+                isPaused   = false;
+                playIcon.textContent      = 'pause';
+                playPauseText.textContent = 'Pause';
+                speakingIndicator.classList.remove('hidden');
+                speakingIndicator.classList.add('flex');
+                playPauseBtn.classList.add('listening');
+            };
+
+            utterance.onpause = () => {
+                isPaused = true;
+                playIcon.textContent      = 'play_arrow';
+                playPauseText.textContent = 'Reprendre';
+            };
+
+            utterance.onresume = () => {
+                isPaused = false;
+                playIcon.textContent      = 'pause';
+                playPauseText.textContent = 'Pause';
+            };
+
+            utterance.onend   = resetUI;
+            utterance.onerror = (e) => {
+                if (e.error !== 'interrupted') {
+                    console.error('TTS error', e);
+                    alert('Erreur de lecture. Veuillez réessayer.');
+                }
+                resetUI();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        /* ── Pause / Reprise ── */
+        function togglePause() {
+            if (!utterance) return;
+            isPaused ? window.speechSynthesis.resume() : window.speechSynthesis.pause();
+        }
+
+        /* ── Stop ── */
+        function stopSpeaking() {
+            window.speechSynthesis.cancel();
+            resetUI();
+        }
+
+        /* ── Listeners boutons ── */
+        playPauseBtn.addEventListener('click', () => isSpeaking ? togglePause() : speak());
+        stopBtn.addEventListener('click', stopSpeaking);
+        voiceSelect.addEventListener('change', () => { if (isSpeaking) stopSpeaking(); });
+        window.addEventListener('beforeunload', () => window.speechSynthesis.cancel());
+
+    })();
+    </script>
+</body>
+</html>

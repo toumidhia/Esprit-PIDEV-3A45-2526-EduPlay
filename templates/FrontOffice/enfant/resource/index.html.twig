@@ -167,49 +167,53 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
     <!-- Formulaire demande -->
-    <div class="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl border border-orange-100 p-5">
-        <div class="flex items-center mb-4">
-            <div class="p-2 bg-orange-100 rounded-xl mr-3">
-                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                </svg>
-            </div>
-            <div>
-                <h3 class="font-bold text-orange-800 text-lg">📖 Livre introuvable ?</h3>
-                {% if app.user and 'ROLE_ENFANT' in app.user.roles %}
-                    <p class="text-xs text-orange-500">Bonjour {{ app.user.firstName }} ! Demande ton livre ici 👇</p>
-                {% else %}
-                    <p class="text-xs text-orange-500">Connecte-toi pour faire une demande</p>
-                {% endif %}
-            </div>
+<div class="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl border border-orange-100 p-5">
+    <div class="flex items-center mb-4">
+        <div class="p-2 bg-orange-100 rounded-xl mr-3">
+            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
         </div>
-
-        {% if app.user and 'ROLE_ENFANT' in app.user.roles %}
-            <div class="space-y-3">
-                <div class="px-4 py-3 bg-orange-100 rounded-xl text-sm font-semibold text-orange-800">
-                    👤 {{ app.user.firstName }} {{ app.user.lastName }}
-                </div>
-                <input type="text" id="requestBookTitle" 
-                       placeholder="Titre du livre recherché..."
-                       class="w-full px-4 py-3 bg-white rounded-xl border-2 border-orange-200 focus:border-orange-400 focus:outline-none text-sm">
-                <button onclick="submitBookRequest()"
-                        class="w-full py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-all shadow-lg">
-                    🔔 Me notifier quand disponible
-                </button>
-            </div>
-        {% else %}
-            <div class="text-center py-6">
-                <p class="text-gray-500 mb-3 text-sm">Tu dois être connecté pour faire une demande</p>
-                <a href="{{ path('app_login') }}" 
-                   class="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-all">
-                    Se connecter
-                </a>
-            </div>
-        {% endif %}
-
-        <div id="requestMessage" class="hidden mt-3 p-3 rounded-xl text-sm font-medium"></div>
+        <div>
+            <h3 class="font-bold text-orange-800 text-lg">📖 Livre introuvable ?</h3>
+            {% if app.user %}
+                <p class="text-xs text-orange-500">Bonjour {{ app.user.firstName }} ! Demande ton livre ici 👇</p>
+            {% else %}
+                <p class="text-xs text-orange-500">Demande un livre et sois notifié quand il arrive !</p>
+            {% endif %}
+        </div>
     </div>
+
+    {% if app.user %}
+        {# ✅ Enfant connecté — formulaire direct sans ressaisir son nom #}
+        <div class="space-y-3">
+            <div class="px-4 py-3 bg-orange-100 rounded-xl text-sm font-semibold text-orange-800">
+                👤 {{ app.user.firstName }} {{ app.user.lastName }}
+            </div>
+            <input type="text" id="requestBookTitle" 
+                   placeholder="Titre du livre recherché..."
+                   class="w-full px-4 py-3 bg-white rounded-xl border-2 border-orange-200 focus:border-orange-400 focus:outline-none text-sm">
+            <button onclick="submitBookRequest()"
+                    class="w-full py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-all shadow-lg">
+                🔔 Me notifier quand disponible
+            </button>
+        </div>
+    {% else %}
+        {# ❌ Non connecté — message simple #}
+        <div class="text-center py-6 bg-orange-50 rounded-xl border border-orange-100">
+            <p class="text-4xl mb-3">🔐</p>
+            <p class="text-gray-600 font-semibold mb-1">Tu n'es pas connecté</p>
+            <p class="text-gray-400 text-sm mb-4">Connecte-toi avec ton compte enfant pour demander un livre</p>
+            <a href="{{ path('app_login') }}" 
+               class="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-all inline-block">
+                Se connecter
+            </a>
+        </div>
+    {% endif %}
+
+    <div id="requestMessage" class="hidden mt-3 p-3 rounded-xl text-sm font-medium"></div>
+</div>
 
     <!-- Mes notifications -->
     <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-100 p-5">

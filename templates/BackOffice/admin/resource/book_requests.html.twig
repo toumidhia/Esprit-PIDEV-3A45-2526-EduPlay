@@ -2,6 +2,8 @@
 {% block title %}Demandes de Livres{% endblock %}
 {% block content %}
 <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+    <!-- HEADER -->
     <div class="px-8 py-10 bg-gradient-to-r from-orange-500 to-yellow-500 text-white">
         <div class="flex justify-between items-center">
             <div>
@@ -10,7 +12,10 @@
             </div>
             <a href="{{ path('admin_resource_index') }}" 
                class="inline-flex items-center px-6 py-3 bg-white text-orange-600 font-bold rounded-xl hover:bg-orange-50 transition-all shadow-xl">
-                ← Retour aux ressources
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Retour aux ressources
             </a>
         </div>
     </div>
@@ -24,6 +29,7 @@
                     {{ pendingRequests|length }}
                 </span>
                 <h2 class="text-xl font-bold text-gray-800">⏳ En attente</h2>
+                <span class="text-sm text-gray-400">— cliquez sur "+ Ajouter" pour créer le livre directement</span>
             </div>
 
             {% if pendingRequests|length > 0 %}
@@ -41,7 +47,9 @@
                     <tbody class="divide-y divide-gray-100">
                         {% for req in pendingRequests %}
                         <tr class="hover:bg-orange-50 transition-colors">
-                            <td class="px-4 py-4 font-bold text-gray-800">📚 {{ req.bookTitle }}</td>
+                            <td class="px-4 py-4">
+                                <span class="font-bold text-gray-800">📚 {{ req.bookTitle }}</span>
+                            </td>
                             <td class="px-4 py-4 text-gray-600">
                                 👤 {{ req.enfant.firstName }} {{ req.enfant.lastName }}
                             </td>
@@ -54,8 +62,12 @@
                                 {{ req.requestedAt|date('d/m/Y H:i') }}
                             </td>
                             <td class="px-4 py-4">
-                                <a href="{{ path('admin_resource_new') }}" 
-                                   class="px-3 py-1 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-colors">
+                                {# ✅ Bouton qui redirige vers new avec le titre pré-rempli #}
+                                <a href="{{ path('admin_resource_new', {'prefill': req.bookTitle}) }}" 
+                                   class="inline-flex items-center px-3 py-2 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-colors shadow-md hover:shadow-lg">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/>
+                                    </svg>
                                     + Ajouter ce livre
                                 </a>
                             </td>
@@ -73,7 +85,7 @@
             {% endif %}
         </div>
 
-        <!-- 📋 TOUTES LES DEMANDES -->
+        <!-- 📋 HISTORIQUE COMPLET -->
         <div>
             <div class="flex items-center gap-3 mb-4">
                 <span class="inline-flex items-center justify-center w-8 h-8 bg-gray-600 text-white text-sm font-bold rounded-full">
@@ -106,9 +118,13 @@
                             </td>
                             <td class="px-4 py-4">
                                 {% if req.isNotified %}
-                                    <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">✅ Notifié</span>
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                        ✅ Notifié
+                                    </span>
                                 {% else %}
-                                    <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-bold">⏳ En attente</span>
+                                    <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-bold">
+                                        ⏳ En attente
+                                    </span>
                                 {% endif %}
                             </td>
                             <td class="px-4 py-4 text-gray-500 text-sm">
@@ -126,6 +142,7 @@
                 </div>
             {% endif %}
         </div>
+
     </div>
 </div>
 {% endblock %}

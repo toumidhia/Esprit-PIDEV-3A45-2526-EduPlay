@@ -3,120 +3,209 @@
 {% block title %}Liste des Cours - EduPlay{% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3"><i class="bi bi-book"></i> Gestion des Cours</h1>
+{# Charger Tailwind comme dans le template Game #}
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                "primary": "#63b7f2",
+                "accent-yellow": "#F7C56E",
+                "accent-pink": "#F29BAE",
+                "background-light": "#f6f7f8",
+                "background-dark": "#101b22",
+            },
+            fontFamily: {
+                "display": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+        },
+    },
+}
+</script>
+
+<div class="container mx-auto px-6 py-8">
+    <!-- Flash Messages -->
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="mb-4 p-4 rounded-lg
+                {% if type == 'success' %}bg-green-100 text-green-800
+                {% elseif type == 'error' %}bg-red-100 text-red-800
+                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- Header -->
+    <div class="flex justify-between items-start mb-8">
+        <div>
+            <h1 class="text-4xl font-extrabold text-[#111518] dark:text-white">
+                <i class="bi bi-book mr-2"></i>Gestion des Cours
+            </h1>
+            <p class="text-[#617989] dark:text-gray-400 mt-2">
+                Gérez vos cours et leur contenu pédagogique
+            </p>
+        </div>
+
         {% if is_granted('ROLE_TEACHER') %}
-            <a href="{{ path('app_course_new') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Nouveau Cours
+            <a href="{{ path('app_course_new') }}" class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform shadow-lg">
+                <span class="material-symbols-outlined">add_circle</span>
+                Nouveau Cours
             </a>
         {% endif %}
     </div>
 
-    {# Search Bar #}
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" action="{{ path('app_course_index') }}">
-                <div class="search-wrapper">
-                    <i class="bi bi-search"></i>
-                    <input type="text" name="search" class="form-control" placeholder="Rechercher un cours..."
-                           value="{{ filters.search|default('') }}">
+    <!-- Search Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <form method="get" action="{{ path('app_course_index') }}" class="space-y-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-[#111518] dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined">search</span>
+                    Rechercher un cours
+                </h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-2">
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
+                        <input type="text" name="search" class="w-full pl-10 pr-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary" 
+                               placeholder="Rechercher par titre..." value="{{ filters.search|default('') }}">
+                    </div>
                 </div>
-            </form>
-        </div>
+                <div>
+                    <select name="status" class="w-full px-4 py-2 rounded-lg border border-[#dbe1e6] dark:border-gray-700 focus:ring-2 focus:ring-primary">
+                        <option value="">Tous les statuts</option>
+                        <option value="pending" {% if filters.status|default('') == 'pending' %}selected{% endif %}>En attente</option>
+                        <option value="accepted" {% if filters.status|default('') == 'accepted' %}selected{% endif %}>Accepté</option>
+                        <option value="rejected" {% if filters.status|default('') == 'rejected' %}selected{% endif %}>Rejeté</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit" class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform">
+                    <span class="material-symbols-outlined">search</span>
+                    Filtrer
+                </button>
+                <a href="{{ path('app_course_index') }}" class="flex items-center gap-2 px-6 py-3 border-2 border-primary/20 rounded-full font-bold hover:bg-gray-50 transition">
+                    <span class="material-symbols-outlined">clear</span>
+                    Effacer
+                </a>
+            </div>
+        </form>
     </div>
 
-    {# Courses Table #}
-    <div class="card">
-        <div class="card-header">
-            <i class="bi bi-list-ul"></i> Liste des Cours ({{ courses|length }})
+    <!-- Courses Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-[#dbe1e6] dark:border-gray-700">
+            <h3 class="text-lg font-bold text-[#111518] dark:text-white flex items-center gap-2">
+                <span class="material-symbols-outlined">menu_book</span>
+                Liste des Cours ({{ courses|length }})
+            </h3>
         </div>
-        <div class="card-body">
+
+        <div class="p-6">
             {% if courses|length > 0 %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
                         <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Titre</th>
-                            <th>Niveau</th>
-                            <th>Durée</th>
-                            <th>Enseignant</th>
-                            <th>Statut</th>
-                            <th>Créé le</th>
-                            <th>Actions</th>
-                        </tr>
+                            <tr class="border-b border-[#dbe1e6] dark:border-gray-700">
+                                <th class="text-left py-3 px-4 text-sm font-bold text-[#617989] uppercase">ID</th>
+                                <th class="text-left py-3 px-4 text-sm font-bold text-[#617989] uppercase">Titre</th>
+                                <th class="text-left py-3 px-4 text-sm font-bold text-[#617989] uppercase">Niveau</th>
+                                <th class="text-left py-3 px-4 text-sm font-bold text-[#617989] uppercase">Durée</th>
+                                <th class="text-left py-3 px-4 text-sm font-bold text-[#617989] uppercase">Enseignant</th>
+                                <th class="text-left py-3 px-4 text-sm font-bold text-[#617989] uppercase">Statut</th>
+                                <th class="text-left py-3 px-4 text-sm font-bold text-[#617989] uppercase">Créé le</th>
+                                <th class="text-left py-3 px-4 text-sm font-bold text-[#617989] uppercase">Actions</th>
+                            </tr>
                         </thead>
                         <tbody>
                         {% for course in courses %}
-                            <tr>
-                                <td>#{{ course.id }}</td>
-                                <td>
-                                    <strong>{{ course.title }}</strong>
-                                    {% if course.pdfFile %}
-                                        <i class="bi bi-file-pdf text-danger" title="PDF disponible"></i>
-                                    {% endif %}
+                            <tr class="border-b border-[#dbe1e6] dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                <td class="py-3 px-4 font-mono">#{{ course.id }}</td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center gap-2">
+                                        <strong>{{ course.title }}</strong>
+                                        {% if course.pdfFile %}
+                                            <span class="material-symbols-outlined text-red-500">description</span>
+                                        {% endif %}
+                                    </div>
                                 </td>
-                                <td>
+                                <td class="py-3 px-4">
                                     {% if course.level == 'Beginner' %}
-                                        <span class="badge bg-success">Débutant</span>
+                                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-bold">Débutant</span>
                                     {% elseif course.level == 'Intermediate' %}
-                                        <span class="badge bg-warning">Intermédiaire</span>
+                                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">Intermédiaire</span>
                                     {% else %}
-                                        <span class="badge bg-danger">Avancé</span>
+                                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-bold">Avancé</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ course.durationTraining }}</td>
-                                <td>
+                                <td class="py-3 px-4">{{ course.durationTraining }}</td>
+                                <td class="py-3 px-4">
                                     {% if course.teacherId %}
                                         {{ course.teacherId.firstName }} {{ course.teacherId.lastName }}
                                     {% else %}
-                                        <span class="text-muted">Non assigné</span>
+                                        <span class="text-gray-400">Non assigné</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="py-3 px-4">
                                     {% if course.status == 'pending' %}
-                                        <span class="badge bg-warning">En attente</span>
+                                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">En attente</span>
                                     {% elseif course.status == 'accepted' %}
-                                        <span class="badge bg-success">Accepté</span>
+                                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-bold">Accepté</span>
                                     {% else %}
-                                        <span class="badge bg-danger">Rejeté</span>
+                                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-bold">Rejeté</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ course.createdAt|date('d/m/Y') }}</td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ path('app_course_show', {'id': course.id}) }}" class="btn btn-sm btn-info" title="Voir">
-                                            <i class="bi bi-eye"></i>
+                                <td class="py-3 px-4">{{ course.createdAt|date('d/m/Y') }}</td>
+                                <td class="py-3 px-4">
+                                    <div class="flex gap-2">
+                                        <a href="{{ path('app_course_show', {'id': course.id}) }}" 
+                                           class="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition" 
+                                           title="Voir">
+                                            <span class="material-symbols-outlined">visibility</span>
                                         </a>
 
                                         {% if is_granted('ROLE_ADMIN') %}
                                             {% if course.status == 'pending' %}
-                                                <form method="post" action="{{ path('app_course_accept', {'id': course.id}) }}" style="display:inline;">
+                                                <form method="post" action="{{ path('app_course_accept', {'id': course.id}) }}" class="inline">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ course.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-success" title="Approuver" onclick="return confirm('Approuver ce cours?')">
-                                                        <i class="bi bi-check-circle"></i>
+                                                    <button type="submit" class="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition" 
+                                                            title="Approuver" onclick="return confirm('Approuver ce cours?')">
+                                                        <span class="material-symbols-outlined">check_circle</span>
                                                     </button>
                                                 </form>
-                                                <form method="post" action="{{ path('app_course_reject', {'id': course.id}) }}" style="display:inline;">
+                                                <form method="post" action="{{ path('app_course_reject', {'id': course.id}) }}" class="inline">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ course.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-warning" title="Rejeter" onclick="return confirm('Rejeter ce cours?')">
-                                                        <i class="bi bi-x-circle"></i>
+                                                    <button type="submit" class="p-2 bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition" 
+                                                            title="Rejeter" onclick="return confirm('Rejeter ce cours?')">
+                                                        <span class="material-symbols-outlined">cancel</span>
                                                     </button>
                                                 </form>
                                             {% endif %}
                                         {% endif %}
 
                                         {% if is_granted('ROLE_TEACHER') and course.teacherId and course.teacherId.id == app.user.id and course.status == 'pending' %}
-                                            <a href="{{ path('app_course_edit', {'id': course.id}) }}" class="btn btn-sm btn-primary" title="Modifier">
-                                                <i class="bi bi-pencil"></i>
+                                            <a href="{{ path('app_course_edit', {'id': course.id}) }}" 
+                                               class="p-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition" 
+                                               title="Modifier">
+                                                <span class="material-symbols-outlined">edit</span>
                                             </a>
                                         {% endif %}
 
                                         {% if is_granted('ROLE_ADMIN') or (is_granted('ROLE_TEACHER') and course.teacherId and course.teacherId.id == app.user.id and course.status == 'pending') %}
-                                            <form method="post" action="{{ path('app_course_delete', {'id': course.id}) }}" style="display:inline;">
+                                            <form method="post" action="{{ path('app_course_delete', {'id': course.id}) }}" class="inline">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ course.id) }}">
-                                                <button type="submit" class="btn btn-sm btn-danger" title="Supprimer" onclick="return confirm('Supprimer ce cours?')">
-                                                    <i class="bi bi-trash"></i>
+                                                <button type="submit" class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition" 
+                                                        title="Supprimer" onclick="return confirm('Supprimer ce cours?')">
+                                                    <span class="material-symbols-outlined">delete</span>
                                                 </button>
                                             </form>
                                         {% endif %}
@@ -128,11 +217,12 @@
                     </table>
                 </div>
             {% else %}
-                <p class="text-center text-muted my-5">
-                    <i class="bi bi-inbox" style="font-size: 3rem;"></i><br>
-                    Aucun cours trouvé.
-                </p>
+                <div class="text-center py-12">
+                    <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">inbox</span>
+                    <p class="text-gray-500">Aucun cours trouvé.</p>
+                </div>
             {% endif %}
         </div>
     </div>
+</div>
 {% endblock %}

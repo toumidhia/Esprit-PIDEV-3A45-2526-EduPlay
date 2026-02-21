@@ -152,4 +152,24 @@ class GameRepository extends ServiceEntityRepository
 
     return $qb->getQuery()->getResult();
 }
+
+public function findChildEmails(): array
+{
+    $conn = $this->getEntityManager()->getConnection();
+
+    $sql = '
+        SELECT email
+        FROM `user`
+        WHERE email IS NOT NULL
+          AND JSON_CONTAINS(roles, :role) = 1
+    ';
+
+    return $conn->fetchFirstColumn($sql, [
+        'role' => '"ROLE_PARENT"',
+    ]);
+}
+
+
+
+
 }

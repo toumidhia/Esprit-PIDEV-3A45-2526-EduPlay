@@ -196,7 +196,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             'enseignant' => 'ROLE_ENSEIGNANT',
             'parent'     => 'ROLE_PARENT',
             'enfant'     => 'ROLE_ENFANT',
-            'kid'        => 'ROLE_KID', // ✅ ajouté pour cohérence avec le controller
         ];
 
         if (isset($roleMap[$type])) {

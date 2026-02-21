@@ -3,6 +3,8 @@
 namespace App\Form;
 
 use App\Entity\User;
+use Karser\Recaptcha3Bundle\Form\Recaptcha3Type;
+use Karser\Recaptcha3Bundle\Validator\Constraints\Recaptcha3;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -71,6 +73,12 @@ class ParentRegistrationType extends AbstractType
                     'attr' => ['class' => 'form-control', 'placeholder' => 'Confirmez votre mot de passe', 'autocomplete' => 'new-password'],
                 ],
                 'invalid_message' => 'Les mots de passe doivent correspondre',
+            ])
+            // ✅ CAPTCHA AJOUTÉ
+            ->add('captcha', Recaptcha3Type::class, [
+                'constraints' => new Recaptcha3(),
+                'action_name' => 'register',
+                'locale' => 'fr',
             ]);
     }
 

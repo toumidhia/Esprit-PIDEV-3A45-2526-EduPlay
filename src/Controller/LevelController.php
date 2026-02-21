@@ -16,10 +16,10 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 
-#[Route('/enseignant/level')]
+#[Route('/teacher/level')]
 final class LevelController extends AbstractController
 {
-    #[Route(name: 'teacher_level_index', methods: ['GET'])]
+    #[Route(name: 'teacher_level_index', methods: ['GET', 'POST'])]
     public function index(Request $request, LevelRepository $levelRepository): Response
     {
         // Filters
@@ -68,16 +68,10 @@ public function new(Request $request, EntityManagerInterface $em): Response
         $minAge = $form->get('minAge')->getData();
         $maxAge = $form->get('maxAge')->getData();
 
-        // ✅ Vérifier que maxAge > minAge
-        if ($minAge !== null && $maxAge !== null && $maxAge <= $minAge) {
-            // erreur globale (va apparaître avec form_errors(form))
-            $form->addError(new FormError("L’âge maximum doit être supérieur à l’âge minimum."));
-        }
+       
 
         if ($form->isValid()) {
-            $now = new \DateTimeImmutable();
-            $level->setCreatedAt($now);
-            $level->setUpdatedAt($now);
+            
 
             $em->persist($level);
             $em->flush();
@@ -120,15 +114,10 @@ public function edit(Request $request, Level $level, EntityManagerInterface $em)
         $minAge = $form->get('minAge')->getData();
         $maxAge = $form->get('maxAge')->getData();
 
-        // ✅ Vérifier que maxAge > minAge
-        if ($minAge !== null && $maxAge !== null && $maxAge <= $minAge) {
-            // erreur globale (affichée avec form_errors(form))
-            $form->addError(new FormError("L’âge maximum doit être supérieur à l’âge minimum."));
-        }
+      
 
         if ($form->isValid()) {
-            $now = new \DateTimeImmutable();
-            $level->setUpdatedAt($now);
+            
 
             $em->flush();
 

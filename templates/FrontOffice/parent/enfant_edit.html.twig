@@ -1,0 +1,26 @@
+{% extends 'FrontOffice/parent/Partials/container.html.twig' %}
+
+{% block title %}Modifier enfant{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-10">
+    <h2 class="text-2xl font-bold mb-6">
+        Modifier {{ enfant.fullName }}
+    </h2>
+
+    {{ form_start(form) }}
+        <div class="space-y-4">
+            {{ form_row(form.firstName) }}
+            {{ form_row(form.lastName) }}
+            {{ form_row(form.username) }}
+            {{ form_row(form.birthDate) }}
+            {{ form_row(form.niveau) }}
+            {{ form_row(form.password) }}
+        </div>
+
+        <button class="mt-6 bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+            Enregistrer
+        </button>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

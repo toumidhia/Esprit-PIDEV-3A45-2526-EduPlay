@@ -108,6 +108,10 @@
                                     class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600">
                                 Supprimer
                             </button>
+                            <a href="{{ path('app_parent_enfant_edit', {id: enfant.id}) }}"
+                                    class="w-full mb-2 inline-block text-center bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600">
+                                Modifier
+                            </a>
                         </form>
                     </div>
                 {% endfor %}

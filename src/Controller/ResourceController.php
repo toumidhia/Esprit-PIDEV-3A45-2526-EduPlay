@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use App\Service\PdfExtractorService;
 use App\Service\AgeDetectionService;  // ← AJOUTÉ
 
+
 final class ResourceController extends AbstractController
 {
     // ===============================
@@ -94,93 +95,89 @@ final class ResourceController extends AbstractController
         ]);
     }
 
-    // ========================= CREATE =========================
     #[Route('admin/resource/new', name: 'admin_resource_new', methods: ['GET', 'POST'])]
-    public function adminNew(
-        Request $request,
-        EntityManagerInterface $em,
-        PdfExtractorService $pdfExtractor,
-        AgeDetectionService $ageDetection   // ← AJOUTÉ
-    ): Response {
-        $resource = new Resource();
-        $form = $this->createForm(ResourceType::class, $resource, [
-            'attr'    => ['novalidate' => 'novalidate', 'class' => 'space-y-6'],
-            'is_edit' => false,
-        ]);
-        $form->handleRequest($request);
+public function adminNew(
+    Request $request,
+    EntityManagerInterface $em,
+    PdfExtractorService $pdfExtractor,
+    AgeDetectionService $ageDetection,
+    \App\Repository\BookRequestRepository $bookRequestRepository
+): Response {
+    $resource = new Resource();
+    $form = $this->createForm(ResourceType::class, $resource, [
+        'attr'    => ['novalidate' => 'novalidate', 'class' => 'space-y-6'],
+        'is_edit' => false,
+    ]);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+    if ($form->isSubmitted() && $form->isValid()) {
 
-            // ── Upload image ──────────────────────────────────────────
-            $coverImageFile = $form->get('coverImageFile')->getData();
-            if ($coverImageFile) {
-                $newFilename = uniqid() . '.' . $coverImageFile->guessExtension();
-                try {
-                    $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/uploads';
-                    $coverImageFile->move($uploadsDir, $newFilename);
-                    $resource->setCoverImage($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur upload image : ' . $e->getMessage());
-                    return $this->redirectToRoute('admin_resource_new');
-                }
+        $coverImageFile = $form->get('coverImageFile')->getData();
+        if ($coverImageFile) {
+            $newFilename = uniqid() . '.' . $coverImageFile->guessExtension();
+            try {
+                $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/uploads';
+                $coverImageFile->move($uploadsDir, $newFilename);
+                $resource->setCoverImage($newFilename);
+            } catch (FileException $e) {
+                $this->addFlash('error', 'Erreur upload image : ' . $e->getMessage());
+                return $this->redirectToRoute('admin_resource_new');
             }
-
-            // ── Upload PDF ────────────────────────────────────────────
-            $pdfFileFile = $form->get('pdfFileFile')->getData();
-            if ($pdfFileFile) {
-                $newFilename = uniqid() . '.' . $pdfFileFile->guessExtension();
-                try {
-                    $pdfsDir = $this->getParameter('kernel.project_dir') . '/public/pdfs';
-                    $pdfFileFile->move($pdfsDir, $newFilename);
-                    $resource->setPdfFile($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur upload PDF : ' . $e->getMessage());
-                    return $this->redirectToRoute('admin_resource_new');
-                }
-            }
-
-            // ── 🤖 Détection IA de la tranche d'âge ──────────────────
-            $pdfContent = '';
-            if ($resource->getPdfFile()) {
-                $pdfContent = $pdfExtractor->extractTextFromPdf($resource->getPdfFile()) ?? '';
-            }
-
-            $ageResult = $ageDetection->detectAgeRange(
-                title:      $resource->getTitle() ?? '',
-                author:     $resource->getAuthor() ?? '',
-                summary:    $resource->getSummary() ?? '',
-                pdfContent: $pdfContent
-            );
-
-            // Appliquer les âges détectés par l'IA
-            $resource->setMinAge($ageResult['age_min']);
-            $resource->setMaxAge($ageResult['age_max']);
-
-            // Flash info selon le succès de la détection
-            if ($ageResult['success']) {
-                $this->addFlash('info', sprintf(
-                    '🤖 IA : Tranche d\'âge détectée → %d - %d ans. (%s)',
-                    $ageResult['age_min'],
-                    $ageResult['age_max'],
-                    $ageResult['reason']
-                ));
-            } else {
-                $this->addFlash('warning', '⚠️ Détection IA indisponible — âges par défaut appliqués (6-9 ans).');
-            }
-            // ──────────────────────────────────────────────────────────
-
-            $em->persist($resource);
-            $em->flush();
-
-            $this->addFlash('success', 'Ressource ajoutée avec succès.');
-            return $this->redirectToRoute('admin_resource_index');
         }
 
-        return $this->render('BackOffice/admin/resource/new.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        $pdfFileFile = $form->get('pdfFileFile')->getData();
+        if ($pdfFileFile) {
+            $newFilename = uniqid() . '.' . $pdfFileFile->guessExtension();
+            try {
+                $pdfsDir = $this->getParameter('kernel.project_dir') . '/public/pdfs';
+                $pdfFileFile->move($pdfsDir, $newFilename);
+                $resource->setPdfFile($newFilename);
+            } catch (FileException $e) {
+                $this->addFlash('error', 'Erreur upload PDF : ' . $e->getMessage());
+                return $this->redirectToRoute('admin_resource_new');
+            }
+        }
+
+        $pdfContent = '';
+        if ($resource->getPdfFile()) {
+            $pdfContent = $pdfExtractor->extractTextFromPdf($resource->getPdfFile()) ?? '';
+        }
+
+        $ageResult = $ageDetection->detectAgeRange(
+            title:      $resource->getTitle() ?? '',
+            author:     $resource->getAuthor() ?? '',
+            summary:    $resource->getSummary() ?? '',
+            pdfContent: $pdfContent
+        );
+
+        $resource->setMinAge($ageResult['age_min']);
+        $resource->setMaxAge($ageResult['age_max']);
+
+        if ($ageResult['success']) {
+            $this->addFlash('info', sprintf(
+                '🤖 IA : Tranche d\'âge détectée → %d - %d ans. (%s)',
+                $ageResult['age_min'],
+                $ageResult['age_max'],
+                $ageResult['reason']
+            ));
+        } else {
+            $this->addFlash('warning', '⚠️ Détection IA indisponible — âges par défaut appliqués (6-9 ans).');
+        }
+
+        $em->persist($resource);
+        $em->flush();
+
+        // 🔔 Notifier les enfants qui attendaient ce livre
+        $this->notifyWaitingChildren($resource, $em, $bookRequestRepository);
+
+        $this->addFlash('success', 'Ressource ajoutée avec succès.');
+        return $this->redirectToRoute('admin_resource_index');
     }
 
+    return $this->render('BackOffice/admin/resource/new.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
 
 
 
@@ -431,5 +428,114 @@ public function voiceSearchFront(Request $request, ResourceRepository $resourceR
 }
 
 
-    
+// ========================= DEMANDE DE LIVRE =========================
+#[Route('resource/request-book', name: 'app_resource_request_book', methods: ['POST'])]
+public function requestBook(
+    Request $request,
+    EntityManagerInterface $em,
+    ResourceRepository $resourceRepository
+): Response {
+    // Vérifier que l'enfant est connecté
+    $enfant = $this->getUser();
+    if (!$enfant || !in_array('ROLE_ENFANT', $enfant->getRoles())) {
+        return $this->json(['success' => false, 'message' => 'Connecte-toi pour faire une demande.'], 403);
+    }
+
+    $data = json_decode($request->getContent(), true);
+    $bookTitle = trim($data['bookTitle'] ?? '');
+
+    if (empty($bookTitle)) {
+        return $this->json(['success' => false, 'message' => 'Titre requis']);
+    }
+
+    // Vérifier si le livre existe déjà
+    $existing = $resourceRepository->searchByVoice($bookTitle);
+    if (!empty($existing)) {
+        return $this->json([
+            'success'       => false,
+            'alreadyExists' => true,
+            'message'       => 'Ce livre est déjà disponible !',
+            'books'         => array_map(fn($r) => [
+                'title'   => $r->getTitle(),
+                'readUrl' => $this->generateUrl('app_resource_read', ['id' => $r->getId()])
+            ], $existing)
+        ]);
+    }
+
+    // Créer la demande liée à l'enfant connecté
+    $bookRequest = new \App\Entity\BookRequest();
+    $bookRequest->setBookTitle($bookTitle);
+    $bookRequest->setEnfant($enfant);
+
+    $em->persist($bookRequest);
+    $em->flush();
+
+    return $this->json([
+        'success'   => true,
+        'message'   => 'Demande enregistrée ! Tu seras notifié quand "' . $bookTitle . '" sera disponible 📚',
+        'enfant'    => $enfant->getFirstName() . ' ' . $enfant->getLastName(),
+    ]);
+}
+
+// ========================= VÉRIFIER MES NOTIFICATIONS =========================
+#[Route('resource/my-notifications', name: 'app_resource_my_notifications', methods: ['GET'])]
+public function myNotifications(
+    \App\Repository\BookRequestRepository $bookRequestRepository
+): Response {
+    $enfant = $this->getUser();
+    if (!$enfant || !in_array('ROLE_ENFANT', $enfant->getRoles())) {
+        return $this->json(['notifications' => []]);
+    }
+
+    $notifications = $bookRequestRepository->findNotificationsForEnfant($enfant);
+
+    return $this->json([
+        'enfantName'    => $enfant->getFirstName(),
+        'notifications' => array_map(fn($n) => [
+            'bookTitle'  => $n->getBookTitle(),
+            'notifiedAt' => $n->getNotifiedAt()?->format('d/m/Y'),
+            'readUrl'    => $n->getResource()
+                ? $this->generateUrl('app_resource_read', ['id' => $n->getResource()->getId()])
+                : null,
+        ], $notifications)
+    ]);
+}
+
+// ========================= ADMIN — VOIR LES DEMANDES =========================
+#[Route('admin/resource/book-requests', name: 'admin_book_requests', methods: ['GET'])]
+public function adminBookRequests(\App\Repository\BookRequestRepository $repo): Response
+{
+    return $this->render('BackOffice/admin/resource/book_requests.html.twig', [
+        'pendingRequests' => $repo->findAllPending(),
+        'allRequests'     => $repo->findBy([], ['requestedAt' => 'DESC']),
+    ]);
+}
+
+  // ========================= NOTIFICATION ENFANTS =========================
+    private function notifyWaitingChildren(
+        \App\Entity\Resource $resource,
+        EntityManagerInterface $em,
+        \App\Repository\BookRequestRepository $bookRequestRepository
+    ): void {
+        $pendingRequests = $bookRequestRepository->findPendingByTitle($resource->getTitle());
+
+        foreach ($pendingRequests as $bookRequest) {
+            $bookRequest->setIsAvailable(true);
+            $bookRequest->setIsNotified(true);
+            $bookRequest->setNotifiedAt(new \DateTime());
+            $bookRequest->setResource($resource);
+            $em->persist($bookRequest);
+        }
+
+        if (!empty($pendingRequests)) {
+            $em->flush();
+            $this->addFlash('info', sprintf(
+                '🔔 %d enfant(s) notifié(s) que "%s" est maintenant disponible !',
+                count($pendingRequests),
+                $resource->getTitle()
+            ));
+        }
+    }
+
+
 }

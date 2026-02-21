@@ -36,14 +36,25 @@
               <p class="text-sm text-[#617989] dark:text-gray-400 line-clamp-2">
                 <p>description : </p>{{ game.description }}
               </p>
-                
-              <div class="mt-5">
               {#
+              <p class="text-sm text-[#617989] dark:text-gray-400 line-clamp-2">
+                <p>minage : </p>{{ game.idLevel.minage }}
+              </p>
+              <p class="text-sm text-[#617989] dark:text-gray-400 line-clamp-2">
+                <p>minage : </p>{{ game.idLevel.maxage }}
+              </p>
+              
+              <p class="text-sm text-[#617989] dark:text-gray-400 line-clamp-2">
+                <p>date birth user : </p>{{ app.user.birthDate|date('d/m/Y') }}
+              </p>
+                #}
+              <div class="mt-5">
+              
                 <a href="{{ path('front_game_show_front', { id: game.id }) }}"
                    class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-white font-bold hover:scale-105 transition">
                   <span class="material-symbols-outlined text-sm">play_arrow</span>
                   Play / View
-                </a>#}
+                </a>
               </div>
             </div>
 

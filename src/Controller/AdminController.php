@@ -7,6 +7,7 @@ use App\Form\AdminType;
 use App\Form\EnseignantType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,22 +20,66 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class AdminController extends AbstractController
 {
     #[Route('/users', name: 'app_admin_users')]
-    public function users(UserRepository $userRepository): Response
-    {
-        $users = $userRepository->findBy([], ['createdAt' => 'DESC']);
+    public function users(
+        Request $request,
+        UserRepository $userRepository,
+        PaginatorInterface $paginator
+    ): Response {
+        // Récupérer les paramètres de filtre
+        $typeFilter = $request->query->get('type', 'all');
+        $statusFilter = $request->query->get('status', 'all');
+        $searchTerm = $request->query->get('search', '');
 
-        // ✅ CORRIGÉ : Types cohérents
+        // Créer la requête de base
+        $queryBuilder = $userRepository->createQueryBuilder('u');
+
+        // Filtre par type
+        if ($typeFilter !== 'all') {
+            $queryBuilder->andWhere('u.type = :type')
+                ->setParameter('type', $typeFilter);
+        }
+
+        // Filtre par statut
+        if ($statusFilter !== 'all') {
+            $queryBuilder->andWhere('u.active = :status')
+                ->setParameter('status', $statusFilter === 'active' ? 1 : 0);
+        }
+
+        // Recherche par nom ou email
+        if (!empty($searchTerm)) {
+            $queryBuilder->andWhere('u.firstName LIKE :search OR u.lastName LIKE :search OR u.email LIKE :search')
+                ->setParameter('search', '%' . $searchTerm . '%');
+        }
+
+        // Tri par défaut
+        if (!$request->query->get('sort')) {
+    $queryBuilder->orderBy('u.createdAt', 'DESC');
+}
+
+        // Pagination
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1), // Numéro de page
+            $request->query->getInt('limit', 10) // Limite par page (10, 20, 50)
+        );
+        
+
+        // Statistiques (sans filtres)
         $stats = [
             'admin' => $userRepository->count(['type' => 'admin']),
             'enseignant' => $userRepository->count(['type' => 'enseignant']),
             'parent' => $userRepository->count(['type' => 'parent']),
             'enfant' => $userRepository->count(['type' => 'enfant']),
-            'total' => count($users)
+            'total' => $userRepository->count([])
         ];
 
         return $this->render('BackOffice/admin/gestion_user/users.html.twig', [
-            'users' => $users,
-            'stats' => $stats
+            'pagination' => $pagination,
+            'stats' => $stats,
+            'currentType' => $typeFilter,
+            'currentStatus' => $statusFilter,
+            'currentSearch' => $searchTerm,
+            'currentLimit' => $request->query->getInt('limit', 10),
         ]);
     }
 

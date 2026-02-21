@@ -108,6 +108,156 @@
                 </div>
             </div>
             
+
+
+
+            <!-- 🎤 RECHERCHE VOCALE FRONT -->
+<div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl border border-purple-100 p-5 mb-8">
+    <div class="flex items-center mb-4">
+        <div class="p-2 bg-purple-100 rounded-xl mr-3">
+            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+            </svg>
+        </div>
+        <div>
+            <h3 class="font-bold text-purple-800 text-lg">🎤 Recherche Vocale</h3>
+            <p class="text-xs text-purple-500">Dis le nom d'un livre pour le trouver !</p>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+        <button id="voiceBtn" onclick="toggleVoiceSearch()"
+                class="flex items-center px-5 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all duration-300 shadow-lg">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+            </svg>
+            <span id="voiceBtnText">🎤 Parler</span>
+        </button>
+
+        <div id="transcriptBox" class="flex-1 min-h-[44px] px-4 py-3 bg-white rounded-xl border-2 border-purple-200 hidden">
+            <span id="transcriptText" class="italic text-gray-400">En écoute...</span>
+        </div>
+
+        <button id="resetVoiceBtn" onclick="resetVoiceSearch()" 
+                class="hidden px-4 py-3 border-2 border-gray-300 text-gray-600 rounded-xl hover:bg-gray-50 transition-all font-semibold">
+            ✕ Effacer
+        </button>
+    </div>
+
+    <div id="voiceStatus" class="mt-3 text-sm text-purple-600 hidden">
+        <span class="animate-pulse mr-1">🔴</span>
+        <span id="voiceStatusText">Écoute en cours...</span>
+    </div>
+</div>
+
+<div id="voiceResults" class="hidden mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h4 class="font-bold text-gray-700 text-lg">
+            Résultats pour : <span id="voiceQuery" class="text-purple-600"></span>
+        </h4>
+        <span id="voiceCount" class="text-sm text-gray-500"></span>
+    </div>
+    <div id="voiceResultsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</div>
+
+
+<!-- 🔔 DEMANDE DE LIVRE + NOTIFICATIONS -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+    <!-- Formulaire demande -->
+<div class="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl border border-orange-100 p-5">
+    <div class="flex items-center mb-4">
+        <div class="p-2 bg-orange-100 rounded-xl mr-3">
+            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+        </div>
+        <div>
+            <h3 class="font-bold text-orange-800 text-lg">📖 Livre introuvable ?</h3>
+            {% if app.user %}
+                <p class="text-xs text-orange-500">Bonjour {{ app.user.firstName }} ! Demande ton livre ici 👇</p>
+            {% else %}
+                <p class="text-xs text-orange-500">Demande un livre et sois notifié quand il arrive !</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if app.user %}
+        {# ✅ Enfant connecté — formulaire direct sans ressaisir son nom #}
+        <div class="space-y-3">
+            <div class="px-4 py-3 bg-orange-100 rounded-xl text-sm font-semibold text-orange-800">
+                👤 {{ app.user.firstName }} {{ app.user.lastName }}
+            </div>
+            <input type="text" id="requestBookTitle" 
+                   placeholder="Titre du livre recherché..."
+                   class="w-full px-4 py-3 bg-white rounded-xl border-2 border-orange-200 focus:border-orange-400 focus:outline-none text-sm">
+            <button onclick="submitBookRequest()"
+                    class="w-full py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-all shadow-lg">
+                🔔 Me notifier quand disponible
+            </button>
+        </div>
+    {% else %}
+        {# ❌ Non connecté — message simple #}
+        <div class="text-center py-6 bg-orange-50 rounded-xl border border-orange-100">
+            <p class="text-4xl mb-3">🔐</p>
+            <p class="text-gray-600 font-semibold mb-1">Tu n'es pas connecté</p>
+            <p class="text-gray-400 text-sm mb-4">Connecte-toi avec ton compte enfant pour demander un livre</p>
+            <a href="{{ path('app_login') }}" 
+               class="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-all inline-block">
+                Se connecter
+            </a>
+        </div>
+    {% endif %}
+
+    <div id="requestMessage" class="hidden mt-3 p-3 rounded-xl text-sm font-medium"></div>
+</div>
+
+    <!-- Mes notifications -->
+    <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-100 p-5">
+        <div class="flex items-center mb-4">
+            <div class="p-2 bg-green-100 rounded-xl mr-3">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-bold text-green-800 text-lg">🔔 Mes notifications</h3>
+                <p class="text-xs text-green-500">Tes livres demandés disponibles !</p>
+            </div>
+        </div>
+
+        {% if app.user and 'ROLE_ENFANT' in app.user.roles %}
+            <div id="notificationsList">
+                <div class="text-center py-4 text-gray-400 text-sm animate-pulse">
+                    Chargement...
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-6 text-gray-400 text-sm">
+                Connecte-toi pour voir tes notifications
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toastNotif" class="hidden fixed top-6 right-6 z-50 max-w-sm bg-white rounded-2xl shadow-2xl border-l-4 border-green-500 p-4">
+    <div class="flex items-start gap-3">
+        <span class="text-2xl">🎉</span>
+        <div class="flex-1">
+            <p class="font-bold text-gray-800">Livre disponible !</p>
+            <p class="text-sm text-gray-600" id="toastMessage"></p>
+        </div>
+        <button onclick="document.getElementById('toastNotif').classList.add('hidden')" 
+                class="text-gray-400 hover:text-gray-600 text-lg font-bold">✕</button>
+    </div>
+</div>
+
+
             <!-- Liste des livres -->
             <div>
                 <div class="flex justify-between items-center mb-8">
@@ -324,22 +474,224 @@
             </div>
         </footer>
     </div>
-    
     <script>
-        // Animation des cartes
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.group');
-            cards.forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                
-                setTimeout(() => {
-                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 100);
-            });
+    // Animation des cartes
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.group');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
         });
-    </script>
+    });
+
+    // ===== RECHERCHE VOCALE =====
+    let recognition = null;
+    let isListening = false;
+
+    function toggleVoiceSearch() {
+        isListening ? stopListening() : startListening();
+    }
+
+    function startListening() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            alert('Utilisez Chrome pour la recherche vocale.');
+            return;
+        }
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SR();
+        recognition.lang = 'fr-FR';
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        recognition.onstart = () => {
+            isListening = true;
+            document.getElementById('voiceBtn').style.backgroundColor = '#ef4444';
+            document.getElementById('voiceBtnText').textContent = '⏹ Arrêter';
+            document.getElementById('transcriptBox').classList.remove('hidden');
+            document.getElementById('voiceStatus').classList.remove('hidden');
+        };
+
+        recognition.onresult = (event) => {
+            let final = '', interim = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                event.results[i].isFinal
+                    ? final += event.results[i][0].transcript
+                    : interim += event.results[i][0].transcript;
+            }
+            const box = document.getElementById('transcriptText');
+            box.textContent = final || interim;
+            box.classList.remove('italic', 'text-gray-400');
+            if (final) performVoiceSearch(final);
+        };
+
+        recognition.onerror = (e) => {
+            console.error('Erreur reconnaissance vocale:', e.error);
+            stopListening();
+        };
+        recognition.onend = () => stopListening();
+        recognition.start();
+    }
+
+    function stopListening() {
+        isListening = false;
+        if (recognition) recognition.stop();
+        document.getElementById('voiceBtn').style.backgroundColor = '#9333ea';
+        document.getElementById('voiceBtnText').textContent = '🎤 Parler';
+        document.getElementById('voiceStatus').classList.add('hidden');
+    }
+
+    function performVoiceSearch(query) {
+        document.getElementById('resetVoiceBtn').classList.remove('hidden');
+        document.getElementById('voiceStatusText').textContent = 'Recherche en cours...';
+        document.getElementById('voiceStatus').classList.remove('hidden');
+
+        fetch('/resource/voice-search', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({query: query})
+        })
+        .then(r => r.json())
+        .then(data => {
+            displayVoiceResults(data.results, data.query);
+            document.getElementById('voiceStatus').classList.add('hidden');
+        })
+        .catch(err => {
+            console.error('Erreur fetch:', err);
+            document.getElementById('voiceStatusText').textContent = 'Erreur de connexion';
+        });
+    }
+
+    function displayVoiceResults(results, query) {
+        document.getElementById('voiceQuery').textContent = '"' + query + '"';
+        document.getElementById('voiceCount').textContent = results.length + ' résultat(s)';
+
+        const list = document.getElementById('voiceResultsList');
+        list.innerHTML = results.length === 0
+            ? `<div class="col-span-3 text-center py-10 text-gray-500">
+                <p class="text-4xl mb-3">🔍</p>
+                <p>Aucun livre trouvé pour "${query}"</p>
+               </div>`
+            : results.map(r => `
+                <a href="${r.readUrl}" class="block bg-white rounded-xl border-2 border-purple-100 hover:border-purple-400 p-4 transition-all hover:shadow-lg">
+                    <div class="flex items-start gap-3">
+                        ${r.coverImage
+                            ? `<img src="/uploads/${r.coverImage}" class="w-12 h-16 object-cover rounded-lg flex-shrink-0">`
+                            : `<div class="w-12 h-16 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 text-2xl">📚</div>`
+                        }
+                        <div>
+                            <h5 class="font-bold text-gray-800">${r.title}</h5>
+                            <p class="text-sm text-gray-500">👤 ${r.author}</p>
+                            <span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full">🤖 ${r.minAge}-${r.maxAge} ans</span>
+                        </div>
+                    </div>
+                </a>`).join('');
+
+        document.getElementById('voiceResults').classList.remove('hidden');
+    }
+
+    function resetVoiceSearch() {
+        document.getElementById('voiceResults').classList.add('hidden');
+        document.getElementById('transcriptBox').classList.add('hidden');
+        document.getElementById('resetVoiceBtn').classList.add('hidden');
+        const box = document.getElementById('transcriptText');
+        box.textContent = 'En écoute...';
+        box.classList.add('italic', 'text-gray-400');
+    }
+
+
+
+    // ===== DEMANDE DE LIVRE =====
+function submitBookRequest() {
+    const title = document.getElementById('requestBookTitle')?.value.trim();
+    if (!title) {
+        showRequestMessage('⚠️ Entre le titre du livre !', 'warning');
+        return;
+    }
+
+    fetch('/resource/request-book', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({bookTitle: title})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.alreadyExists) {
+            showRequestMessage(
+                '🎉 Ce livre existe déjà ! <a href="' + data.books[0].readUrl + '" class="underline font-bold">Clique ici pour le lire</a>',
+                'success'
+            );
+        } else if (data.success) {
+            showRequestMessage('✅ ' + data.message, 'success');
+            document.getElementById('requestBookTitle').value = '';
+        } else {
+            showRequestMessage('❌ ' + data.message, 'error');
+        }
+    })
+    .catch(() => showRequestMessage('❌ Erreur de connexion', 'error'));
+}
+
+function showRequestMessage(msg, type) {
+    const box = document.getElementById('requestMessage');
+    box.innerHTML = msg;
+    box.className = 'mt-3 p-3 rounded-xl text-sm font-medium ' + (
+        type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
+        type === 'warning' ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' :
+        'bg-red-50 text-red-800 border border-red-200'
+    );
+    box.classList.remove('hidden');
+}
+
+// ===== CHARGER NOTIFICATIONS AUTO =====
+function loadMyNotifications() {
+    fetch('/resource/my-notifications')
+    .then(r => r.json())
+    .then(data => {
+        const list = document.getElementById('notificationsList');
+        if (!list) return;
+
+        if (data.notifications.length === 0) {
+            list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">Aucune notification pour l\'instant 😊</p>';
+        } else {
+            list.innerHTML = data.notifications.map(n => `
+                <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-green-200 mb-2">
+                    <span class="text-2xl">📚</span>
+                    <div class="flex-1">
+                        <p class="font-bold text-gray-800 text-sm">${n.bookTitle}</p>
+                        <p class="text-xs text-green-600">Disponible depuis le ${n.notifiedAt} 🎉</p>
+                    </div>
+                    ${n.readUrl 
+                        ? `<a href="${n.readUrl}" class="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-lg hover:bg-green-600">Lire</a>` 
+                        : ''}
+                </div>
+            `).join('');
+
+            // Toast pour la première notification
+            showToast(data.notifications[0].bookTitle + ' est maintenant disponible !');
+        }
+    })
+    .catch(() => {
+        const list = document.getElementById('notificationsList');
+        if (list) list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">Erreur de chargement</p>';
+    });
+}
+
+function showToast(message) {
+    document.getElementById('toastMessage').textContent = message;
+    document.getElementById('toastNotif').classList.remove('hidden');
+    setTimeout(() => document.getElementById('toastNotif').classList.add('hidden'), 5000);
+}
+
+// Charger automatiquement au démarrage si enfant connecté
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('notificationsList')) {
+        loadMyNotifications();
+    }
+});
+</script>
 </body>
 </html>

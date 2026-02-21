@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator;
@@ -30,26 +29,31 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     public function __construct(
         private UrlGeneratorInterface $urlGenerator,
         private EntityManagerInterface $entityManager
-    ) {
-    }
+    ) {}
 
     public function authenticate(Request $request): Passport
     {
-        $email = $request->request->get('email', '');
+        $login = $request->request->get('login', '');
         $password = $request->request->get('password', '');
 
-        $request->getSession()->set(Security::LAST_USERNAME, $email);
+        $request->getSession()->set(Security::LAST_USERNAME, $login);
 
         return new Passport(
-            new UserBadge($email, function($userIdentifier) {
+            new UserBadge($login, function ($userIdentifier) {
+                // Cherche par email
                 $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userIdentifier]);
 
+                // Si pas trouvé, cherche par username (pour les enfants)
                 if (!$user) {
-                    throw new CustomUserMessageAuthenticationException('Email could not be found.');
+                    $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => $userIdentifier]);
+                }
+
+                if (!$user) {
+                    throw new CustomUserMessageAuthenticationException('Identifiants incorrects.');
                 }
 
                 if (!$user->isActive()) {
-                    throw new CustomUserMessageAuthenticationException('Your account is not active.');
+                    throw new CustomUserMessageAuthenticationException('Votre compte n\'est pas actif.');
                 }
 
                 return $user;
@@ -66,35 +70,29 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     {
         $user = $token->getUser();
 
-        // Check if target path is stored in session for redirect
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             return new RedirectResponse($targetPath);
         }
 
-        // Redirect based on user role
         $roles = $user->getRoles();
 
-        // Check for parent role first
-        if (in_array('ROLE_PARENT', $roles)) {
-            return new RedirectResponse($this->urlGenerator->generate('app_course_parent_browse'));
-        }
-
-        // Check for teacher role
-        if (in_array('ROLE_TEACHER', $roles)) {
-            return new RedirectResponse($this->urlGenerator->generate('app_enseignant_dashboard'));
-        }
-
-        // Check for admin
         if (in_array('ROLE_ADMIN', $roles)) {
             return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));
         }
 
-        // Check for kid - REDIRIGER VERS COURSE INDEX
-        if (in_array('ROLE_KID', $roles)) {
-            return new RedirectResponse($this->urlGenerator->generate('app_course_index'));
+        if (in_array('ROLE_PARENT', $roles)) {
+            return new RedirectResponse($this->urlGenerator->generate('app_parent_dashboard'));
         }
 
-        // Default redirect for other roles
+        if (in_array('ROLE_ENSEIGNANT', $roles)) {
+            return new RedirectResponse($this->urlGenerator->generate('teacher_game_index'));
+        }
+
+        if (in_array('ROLE_ENFANT', $roles)) {
+            return new RedirectResponse($this->urlGenerator->generate('front_games'));
+        }
+
+        // Default redirect
         return new RedirectResponse($this->urlGenerator->generate('app_course_index'));
     }
 

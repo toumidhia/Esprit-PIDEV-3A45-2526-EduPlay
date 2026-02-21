@@ -152,4 +152,67 @@ class GameRepository extends ServiceEntityRepository
 
     return $qb->getQuery()->getResult();
 }
+
+public function findChildEmails(): array
+{
+    $conn = $this->getEntityManager()->getConnection();
+
+    $sql = '
+        SELECT email
+        FROM `user`
+        WHERE email IS NOT NULL
+          AND JSON_CONTAINS(roles, :role) = 1
+    ';
+
+    return $conn->fetchFirstColumn($sql, [
+        'role' => '"ROLE_PARENT"',
+    ]);
+}
+
+
+
+
+
+
+public function findPlayableForAge(?int $age, array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC'): array
+{
+    $qb = $this->createQueryBuilder('g')
+        ->leftJoin('g.idLevel', 'l')
+        ->addSelect('l');
+
+    // Filtre âge
+    if ($age !== null) {
+        $qb->andWhere(':age BETWEEN l.minAge AND l.maxAge')
+           ->setParameter('age', $age);
+    }
+
+    // Filtres existants (search/type/difficulty)
+    if (!empty($filters['search'])) {
+        $qb->andWhere('g.name LIKE :q OR g.description LIKE :q')
+           ->setParameter('q', '%'.$filters['search'].'%');
+    }
+
+    if (!empty($filters['type'])) {
+        $qb->andWhere('g.type LIKE :type')
+           ->setParameter('type', '%'.$filters['type'].'%');
+    }
+
+    if (!empty($filters['difficulty'])) {
+        $qb->andWhere('l.difficulty = :diff')
+           ->setParameter('diff', (int) $filters['difficulty']);
+    }
+
+    // Tri
+    $allowedSort = ['id', 'name', 'type'];
+    $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+
+    if (in_array($sortBy, $allowedSort, true)) {
+        $qb->orderBy('g.' . $sortBy, $sortOrder);
+    } else {
+        $qb->orderBy('g.id', 'DESC');
+    }
+
+    return $qb->getQuery()->getResult();
+}
+
 }

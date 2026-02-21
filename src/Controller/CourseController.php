@@ -74,7 +74,7 @@ final class CourseController extends AbstractController
         if (in_array('ROLE_TEACHER', $userRoles)) {
             // Teacher sees only their own courses
             $courses = $courseRepository->findByTeacher($user, $filters);
-            $template = 'BackOffice/course/index.html.twig';
+            $template = 'BackOffice/enseignant/course/index.html.twig';
             $recommendations = [];
         } elseif (in_array('ROLE_PARENT', $userRoles)) {
             // Parents see only accepted courses
@@ -110,7 +110,7 @@ final class CourseController extends AbstractController
         } else {
             // Admin sees all courses with filters
             $courses = $courseRepository->findAll();
-            $template = 'BackOffice/course/index.html.twig';
+            $template = 'BackOffice/enseignant/course/index.html.twig';
             $recommendations = [];
             $kids = [];
         }

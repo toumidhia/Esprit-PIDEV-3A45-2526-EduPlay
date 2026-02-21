@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\GameRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: GameRepository::class)]
 class Game
@@ -14,20 +15,41 @@ class Game
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Game name is required.')]
+    #[Assert\Length(min: 3, minMessage: 'Minimum 3 characters required.')]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\s]+$/u',
+        message: 'The name must contain letters only.'
+    )]
     private ?string $name = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: 'Please select a level.')]
     private ?Level $idLevel = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Game type is required.')]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\s]+$/u',
+        message: 'The type must contain letters only.'
+    )]
     private ?string $type = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Description is required.')]
+    #[Assert\Length(min: 5, minMessage: 'Minimum 5 characters required.')]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\s]+$/u',
+        message: 'Description must contain letters and spaces only.'
+    )]
     private ?string $description = null;
 
-    #[ORM\Column(length: 255)]
+   #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
+
+
+
 
     public function getId(): ?int
     {

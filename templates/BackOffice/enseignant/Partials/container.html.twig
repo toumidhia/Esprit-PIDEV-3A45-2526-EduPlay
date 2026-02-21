@@ -227,10 +227,10 @@
 <body>
 
 {# Include Sidebar #}
-{% include 'BackOffice/admin/Partials/sidebar.html.twig' %}
+{% include 'BackOffice/enseignant/Partials/sidebar.html.twig' %}
 
 {# Include Navbar #}
-{% include 'BackOffice/admin/Partials/navbar.html.twig' %}
+{% include 'BackOffice/enseignant/Partials/navbar.html.twig' %}
 
 {# Main Content #}
 <main>
@@ -245,7 +245,7 @@
         {% endfor %}
     {% endfor %}
 
-    {% block body %}{% endblock %}
+    {% block content %}{% endblock %}
 </main>
 
 {# Bootstrap 5 JS Bundle #}

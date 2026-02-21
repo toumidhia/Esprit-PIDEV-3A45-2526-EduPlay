@@ -35,7 +35,7 @@ class ParentController extends AbstractController
 
         $enfants = $parent->getEnfants();
 
-        return $this->render('FrontOffice/parent/Partials/base_parent.html.twig', [
+        return $this->render('FrontOffice/parent/base_parent.html.twig', [
             'parent' => $parent,
             'enfants' => $enfants = $userRepository->findBy(['parent' => $parent]),
         ]);
@@ -56,7 +56,7 @@ class ParentController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Définir le type enfant
-            $enfant->setType('kid');
+            $enfant->setType('enfant');
 
             // Hasher le mot de passe
             $hashedPassword = $passwordHasher->hashPassword(
@@ -67,9 +67,6 @@ class ParentController extends AbstractController
 
             // Associer l'enfant au parent
             $enfant->setParent($parent);
-
-            // Set default role
-            $enfant->setRoles(['ROLE_KID']);
 
             // Sauvegarder
             $entityManager->persist($enfant);
@@ -85,19 +82,51 @@ class ParentController extends AbstractController
         ]);
     }
 
+    #[Route('/enfant/{id}/edit', name: 'app_parent_enfant_edit')]
+    public function editEnfant(
+        User $enfant,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher
+    ): Response {
+
+        $this->denyAccessUnlessGranted('EDIT_ENFANT', $enfant);
+
+        $form = $this->createForm(EnfantType::class, $enfant, [
+            'is_edit' => true,
+        ]);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $plainPassword = $form->get('password')->getData();
+
+            if (!empty($plainPassword)) {
+                $hashedPassword = $passwordHasher->hashPassword($enfant, $plainPassword);
+                $enfant->setPassword($hashedPassword);
+            }
+
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Enfant modifié avec succès.');
+
+            return $this->redirectToRoute('app_parent_dashboard');
+        }
+
+        return $this->render('FrontOffice/parent/enfant_edit.html.twig', [
+            'form' => $form->createView(),
+            'enfant' => $enfant,
+        ]);
+    }
+
     #[Route('/enfant/{id}/delete', name: 'app_parent_enfant_delete', methods: ['POST'])]
     public function deleteEnfant(
         User $enfant,
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        /** @var User $parent */
-        $parent = $this->getUser();
-
-        // Vérifier que l'enfant appartient bien au parent connecté
-        if ($enfant->getParent() !== $parent) {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cet enfant.');
-        }
+        $this->denyAccessUnlessGranted('DELETE_ENFANT', $enfant);
 
         if ($this->isCsrfTokenValid('delete'.$enfant->getId(), $request->request->get('_token'))) {
             $entityManager->remove($enfant);

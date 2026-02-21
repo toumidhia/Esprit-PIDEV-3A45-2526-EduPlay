@@ -42,52 +42,28 @@ class GameType extends AbstractType
         }
 
         $builder
+            
+
             ->add('name', TextType::class, [
-                'empty_data' => '',
-                'constraints' => [
-                    new Assert\Regex([
-                        'pattern' => '/^[\p{L}\s]+$/u',
-                        'message' => 'The name must contain letters only.',
-                    ]),
-                    new Assert\NotBlank([
-                        'message' => 'Game name is required.',
-                    ]),
-                    new Assert\Length([
-                        'min' => 3,
-                        'minMessage' => 'Minimum 3 characters required.',
-                    ])
-                ]
-            ])
+    'empty_data' => '',
+])
 
-            ->add('type', TextType::class, [
-                'empty_data' => '',
-                'constraints' => [
-                    new Assert\Regex([
-                        'pattern' => '/^[\p{L}\s]+$/u',
-                        'message' => 'The type must contain letters only.',
-                    ]),
-                    new Assert\NotBlank([
-                        'message' => 'Game type is required.',
-                    ])
-                ]
-            ])
+->add('type', TextType::class, [
+    'empty_data' => '',
+])
 
-            ->add('description', TextareaType::class, [
-                'empty_data' => '',
-                'constraints' => [
-                    new Assert\Regex([
-                        'pattern' => '/^[\p{L}\s]+$/u',
-                        'message' => 'Description must contain letters and spaces only.',
-                    ]),
-                    new Assert\NotBlank([
-                        'message' => 'Description is required.',
-                    ]),
-                    new Assert\Length([
-                        'min' => 5,
-                        'minMessage' => 'Minimum 5 characters required.',
-                    ])
-                ]
-            ])
+->add('description', TextareaType::class, [
+    'empty_data' => '',
+])
+
+->add('idLevel', EntityType::class, [
+    'class' => Level::class,
+    'choice_label' => 'name',
+    'placeholder' => 'Select a level',
+])
+
+
+            
 
             ->add('imageTemp', HiddenType::class, [
                 'mapped' => false,
@@ -99,18 +75,9 @@ class GameType extends AbstractType
                 'mapped' => false,
                 'required' => (!$isEdit && !$hasTemp),
                 'constraints' => $imageConstraints,
-            ])
-
-            ->add('idLevel', EntityType::class, [
-                'class' => Level::class,
-                'choice_label' => 'name',
-                'placeholder' => 'Select a level',
-                'constraints' => [
-                    new Assert\NotNull([
-                        'message' => 'Please select a level.',
-                    ])
-                ]
             ]);
+
+            
     }
 
     public function configureOptions(OptionsResolver $resolver): void

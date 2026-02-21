@@ -11,7 +11,7 @@ parameters:
     # Paramètres pour les emails
     app.admin_email: 'noreply@eduplay.com'
     app.admin_name: 'EduPlay'
-
+    event_resources_dir: '%kernel.project_dir%/public/uploads/event-resources'
     upload_directory: '%kernel.project_dir%/public/uploads/games'
     upload_tmp_directory_games: '%kernel.project_dir%/public/uploads/tmp'
     event_images_dir: '%kernel.project_dir%/public/uploads/events'
@@ -55,4 +55,9 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+      # config/services.yaml
       
+    # detection d'age
+    App\Service\AgeDetectionService:
+        arguments:
+            $cohereApiKey: '%env(COHERE_API_KEY)%'

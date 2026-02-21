@@ -1,3 +1,5 @@
+{% extends 'BackOffice/enseignant/Partials/container.html.twig' %}
+{% block content %}
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -34,18 +36,7 @@
       }
     </style>
 
-
-
-
-
-
-
-
-
-
-
-{% block body %}
-<div class="container mx-auto px-6 py-8 max-w-4xl">
+<div class="container mx-auto px-6 py-8 max-full">
 
     <!-- Back Button -->
     <div class="mb-6">
@@ -127,7 +118,7 @@
                 </a>
                 <div>
 
-                {{ include('BackOffice/teacher/level/_delete_form.html.twig') }}</div>
+                {{ include('BackOffice/enseignant/level/_delete_form.html.twig') }}</div>
 
                 <a href="{{ path('teacher_level_index') }}"
                    class="flex items-center gap-2 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-[#111518] dark:text-white rounded-full font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">

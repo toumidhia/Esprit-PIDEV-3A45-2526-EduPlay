@@ -1,0 +1,148 @@
+{% extends 'backoffice/admin/Partials/container.html.twig' %}
+{% block title %}Demandes de Livres{% endblock %}
+{% block content %}
+<div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+    <!-- HEADER -->
+    <div class="px-8 py-10 bg-gradient-to-r from-orange-500 to-yellow-500 text-white">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold mb-2">🔔 Demandes de Livres</h1>
+                <p class="text-orange-100">Livres demandés par les enfants non encore disponibles</p>
+            </div>
+            <a href="{{ path('admin_resource_index') }}" 
+               class="inline-flex items-center px-6 py-3 bg-white text-orange-600 font-bold rounded-xl hover:bg-orange-50 transition-all shadow-xl">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Retour aux ressources
+            </a>
+        </div>
+    </div>
+
+    <div class="p-8">
+
+        <!-- ⏳ EN ATTENTE -->
+        <div class="mb-10">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="inline-flex items-center justify-center w-8 h-8 bg-orange-500 text-white text-sm font-bold rounded-full">
+                    {{ pendingRequests|length }}
+                </span>
+                <h2 class="text-xl font-bold text-gray-800">⏳ En attente</h2>
+                <span class="text-sm text-gray-400">— cliquez sur "+ Ajouter" pour créer le livre directement</span>
+            </div>
+
+            {% if pendingRequests|length > 0 %}
+            <div class="overflow-x-auto rounded-2xl border border-orange-100">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-orange-50">
+                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Titre demandé</th>
+                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Enfant</th>
+                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Rôle</th>
+                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Date demande</th>
+                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for req in pendingRequests %}
+                        <tr class="hover:bg-orange-50 transition-colors">
+                            <td class="px-4 py-4">
+                                <span class="font-bold text-gray-800">📚 {{ req.bookTitle }}</span>
+                            </td>
+                            <td class="px-4 py-4 text-gray-600">
+                                👤 {{ req.enfant.firstName }} {{ req.enfant.lastName }}
+                            </td>
+                            <td class="px-4 py-4">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">
+                                    {{ req.enfant.type }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 text-gray-500 text-sm">
+                                {{ req.requestedAt|date('d/m/Y H:i') }}
+                            </td>
+                            <td class="px-4 py-4">
+                                {# ✅ Bouton qui redirige vers new avec le titre pré-rempli #}
+                                <a href="{{ path('admin_resource_new', {'prefill': req.bookTitle}) }}" 
+                                   class="inline-flex items-center px-3 py-2 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-colors shadow-md hover:shadow-lg">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    + Ajouter ce livre
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <div class="text-center py-10 bg-green-50 rounded-2xl border border-green-100">
+                    <p class="text-4xl mb-2">✅</p>
+                    <p class="font-bold text-green-700">Aucune demande en attente !</p>
+                    <p class="text-sm text-green-500">Tous les livres demandés sont disponibles.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 📋 HISTORIQUE COMPLET -->
+        <div>
+            <div class="flex items-center gap-3 mb-4">
+                <span class="inline-flex items-center justify-center w-8 h-8 bg-gray-600 text-white text-sm font-bold rounded-full">
+                    {{ allRequests|length }}
+                </span>
+                <h2 class="text-xl font-bold text-gray-800">📋 Historique complet</h2>
+            </div>
+
+            {% if allRequests|length > 0 %}
+            <div class="overflow-x-auto rounded-2xl border border-gray-100">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Titre</th>
+                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Enfant</th>
+                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Date demande</th>
+                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Statut</th>
+                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Date notification</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for req in allRequests %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-4 font-bold text-gray-800">📚 {{ req.bookTitle }}</td>
+                            <td class="px-4 py-4 text-gray-600">
+                                {{ req.enfant.firstName }} {{ req.enfant.lastName }}
+                            </td>
+                            <td class="px-4 py-4 text-gray-500 text-sm">
+                                {{ req.requestedAt|date('d/m/Y') }}
+                            </td>
+                            <td class="px-4 py-4">
+                                {% if req.isNotified %}
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                        ✅ Notifié
+                                    </span>
+                                {% else %}
+                                    <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-bold">
+                                        ⏳ En attente
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-4 text-gray-500 text-sm">
+                                {{ req.notifiedAt ? req.notifiedAt|date('d/m/Y') : '—' }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <div class="text-center py-10 text-gray-400">
+                    <p class="text-5xl mb-4">📭</p>
+                    <p class="text-xl font-bold">Aucune demande pour l'instant</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -11,10 +11,20 @@
     <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <h2 class="text-3xl font-bold text-center mb-8">Connexion</h2>
 
+        {#  AJOUT : Afficher les messages flash #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="{% if label == 'success' %}bg-green-100 border-green-400 text-green-700{% else %}bg-red-100 border-red-400 text-red-700{% endif %} border px-4 py-3 rounded mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {# Message d'erreur d'authentification #}
         {% if error %}
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                 {% if error.messageKey == 'Your account is not active.' %}
-                    Votre compte n'est pas actif
+                    Votre compte n'est pas actif. Veuillez vérifier votre email pour activer votre compte.
                 {% else %}
                     Identifiants incorrects
                 {% endif %}

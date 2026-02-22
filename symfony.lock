@@ -328,6 +328,9 @@
             "./config/routes/web_profiler.yaml"
         ]
     },
+    "symfonycasts/verify-email-bundle": {
+        "version": "v1.18.0"
+    },
     "symfony/webpack-encore-bundle": {
         "version": "2.4",
         "recipe": {

@@ -61,6 +61,18 @@ class SchoolEvent
     #[ORM\OneToMany(targetEntity: EventRegistration::class, mappedBy: 'event', orphanRemoval: true)]
     private Collection $registrations;
 
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $latitude = null;
+
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $longitude = null;
+
+    public function getLatitude(): ?string { return $this->latitude; }
+    public function setLatitude(?string $latitude): static { $this->latitude = $latitude; return $this; }
+
+    public function getLongitude(): ?string { return $this->longitude; }
+    public function setLongitude(?string $longitude): static { $this->longitude = $longitude; return $this; }
+
     public function __construct()
     {
         $this->resources = new ArrayCollection();

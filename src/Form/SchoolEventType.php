@@ -11,6 +11,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 
 class SchoolEventType extends AbstractType
 {
@@ -51,6 +53,17 @@ class SchoolEventType extends AbstractType
                         'mimeTypesMessage' => 'Veuillez uploader une image valide (JPG/PNG/WEBP).',
                     ])
                 ],
+            ])
+            ->add('location', TextType::class, [
+                'label' => 'Lieu',
+                'required' => false,
+                'attr' => ['id' => 'location-input', 'autocomplete' => 'off'],
+            ])
+            ->add('latitude', HiddenType::class, [
+                'required' => false,
+            ])
+            ->add('longitude', HiddenType::class, [
+                'required' => false,
             ])
         ;
     }

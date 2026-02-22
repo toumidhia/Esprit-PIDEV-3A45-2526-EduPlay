@@ -61,3 +61,20 @@ services:
     App\Service\AgeDetectionService:
         arguments:
             $cohereApiKey: '%env(COHERE_API_KEY)%'
+
+
+    App\Calendar\EventProvider:
+        tags:
+            - { name: kernel.event_subscriber }
+
+    App\Service\AI\GeminiClient:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
+    
+    App\Service\AI\ChecklistGenerator:
+        arguments:
+            $geminiClient: '@App\Service\AI\GeminiClient'
+    
+    App\Service\AI\PlanningGenerator:
+        arguments:
+            $geminiClient: '@App\Service\AI\GeminiClient'

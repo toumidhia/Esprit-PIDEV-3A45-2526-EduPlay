@@ -1,10 +1,12 @@
 <?php
+// src/Controller/EventAdminController.php
 
 namespace App\Controller;
 
 use App\Entity\SchoolEvent;
 use App\Form\SchoolEventType;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface; // 👈 AJOUTÉ
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,7 +19,7 @@ class EventAdminController extends AbstractController
     #[Route('/admin/events', name: 'admin_event_index', methods: ['GET'])]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
-        // ✅ auto-suppression des événements passés (endDate < now)
+        // ✅ auto-suppression des événements passés
         $now = new \DateTimeImmutable();
         $pastEvents = $em->createQueryBuilder()
             ->select('e')
@@ -36,26 +38,45 @@ class EventAdminController extends AbstractController
 
         // ✅ Recherche + tri
         $q = trim((string) $request->query->get('q', ''));
-        $sort = (string) $request->query->get('sort', 'createdAt'); // createdAt|startDate|endDate|title
+        $sort = (string) $request->query->get('sort', 'createdAt');
         $order = strtolower((string) $request->query->get('order', 'desc')) === 'asc' ? 'ASC' : 'DESC';
+        $page = $request->query->getInt('page', 1);
+        $limit = 5;
 
         $allowedSort = ['createdAt', 'startDate', 'endDate', 'title'];
         if (!in_array($sort, $allowedSort, true)) {
             $sort = 'createdAt';
         }
 
+        // ✅ Compter le total d'abord
+        $countQb = $em->getRepository(SchoolEvent::class)->createQueryBuilder('e')
+            ->select('COUNT(e.id)');
+
+        if ($q !== '') {
+            $countQb->andWhere('LOWER(e.title) LIKE :q OR LOWER(e.location) LIKE :q OR LOWER(e.description) LIKE :q')
+                    ->setParameter('q', '%'.mb_strtolower($q).'%');
+        }
+
+        $total = $countQb->getQuery()->getSingleScalarResult();
+
+        // ✅ Récupérer les événements avec pagination manuelle
         $qb = $em->getRepository(SchoolEvent::class)->createQueryBuilder('e');
 
         if ($q !== '') {
             $qb->andWhere('LOWER(e.title) LIKE :q OR LOWER(e.location) LIKE :q OR LOWER(e.description) LIKE :q')
-               ->setParameter('q', '%'.mb_strtolower($q).'%');
+            ->setParameter('q', '%'.mb_strtolower($q).'%');
         }
 
-        $qb->orderBy('e.'.$sort, $order);
+        $qb->orderBy('e.'.$sort, $order)
+        ->setFirstResult(($page - 1) * $limit)
+        ->setMaxResults($limit);
 
         $events = $qb->getQuery()->getResult();
 
-        // ✅ si requête AJAX => on renvoie seulement les lignes du tableau (tbody)
+        // ✅ Calculer les infos de pagination
+        $totalPages = ceil($total / $limit);
+
+        // ✅ si requête AJAX
         $isAjax = $request->headers->get('X-Requested-With') === 'XMLHttpRequest';
         if ($isAjax) {
             return $this->render('BackOffice/admin/event/_rows.html.twig', [
@@ -68,6 +89,10 @@ class EventAdminController extends AbstractController
             'q' => $q,
             'sort' => $sort,
             'order' => strtolower($order),
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'total' => $total,
+            'limit' => $limit,
         ]);
     }
 
@@ -115,12 +140,56 @@ class EventAdminController extends AbstractController
         ]);
     }
 
+    #[Route('/admin/events/calendar', name: 'admin_event_calendar', methods: ['GET'])]
+    public function calendar(): Response
+    {
+        return $this->render('BackOffice/admin/event/calendar.html.twig');
+    }
+
     #[Route('/admin/events/{id}', name: 'admin_event_show', methods: ['GET'])]
     public function show(SchoolEvent $event): Response
     {
         return $this->render('BackOffice/admin/event/show.html.twig', [
             'event' => $event,
         ]);
+    }
+
+    #[Route('/admin/events/calendar/load', name: 'admin_event_calendar_load', methods: ['GET'])]
+    public function calendarLoad(Request $request, EntityManagerInterface $em): Response
+    {
+        // Récupérer les paramètres de début et fin envoyés par FullCalendar
+        $start = new \DateTime($request->query->get('start'));
+        $end = new \DateTime($request->query->get('end'));
+
+        $events = $em->getRepository(SchoolEvent::class)->createQueryBuilder('e')
+            ->where('e.startDate BETWEEN :start AND :end')
+            ->orWhere('e.endDate BETWEEN :start AND :end')
+            ->orWhere('e.startDate <= :start AND e.endDate >= :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('e.startDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $calendarEvents = [];
+        $now = new \DateTime();
+
+        foreach ($events as $event) {
+            $calendarEvents[] = [
+                'id' => $event->getId(),
+                'title' => $event->getTitle(),
+                'start' => $event->getStartDate()->format('Y-m-d\TH:i:s'),
+                'end' => $event->getEndDate()->format('Y-m-d\TH:i:s'),
+                'url' => $this->generateUrl('admin_event_show', ['id' => $event->getId()]),
+                'backgroundColor' => $event->getStartDate() > $now ? '#4f46e5' : '#6b7280',
+                'borderColor' => $event->getStartDate() > $now ? '#4f46e5' : '#6b7280',
+                'textColor' => '#ffffff',
+                'description' => $event->getDescription(),
+                'location' => $event->getLocation()
+            ];
+        }
+
+        return $this->json($calendarEvents);
     }
 
     #[Route('/admin/events/{id}/edit', name: 'admin_event_edit', methods: ['GET', 'POST'])]

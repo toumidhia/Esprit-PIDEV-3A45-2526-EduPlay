@@ -1,5 +1,6 @@
 {# templates/BackOffice/admin/event/show.html.twig #}
 {% extends 'BackOffice/admin/Partials/container.html.twig' %}
+
 {% block title %}Voir événement{% endblock %}
 
 {% block content %}
@@ -76,6 +77,33 @@
       </div>
     </div>
 
+    {% if event.latitude and event.longitude %}
+      <div class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-600">map</span>
+            <h2 class="text-xl font-extrabold text-gray-900">Localisation</h2>
+          </div>
+        </div>
+        <div class="p-4">
+          <div id="event-map" style="height: 350px; border-radius: 12px;"></div>
+        </div>
+      </div>
+
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+      <script>
+        const map = L.map('event-map').setView([{{ event.latitude }}, {{ event.longitude }}], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap'
+        }).addTo(map);
+        L.marker([{{ event.latitude }}, {{ event.longitude }}])
+          .addTo(map)
+          .bindPopup('<strong>{{ event.title|e('js') }}</strong><br>{{ event.location|e('js') }}')
+          .openPopup();
+      </script>
+    {% endif %}
+
     <div class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
       <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
         <div class="flex items-center gap-2">
@@ -89,6 +117,107 @@
         </p>
       </div>
     </div>
+
+    {# ===== SECTION IA GÉNÉRATION ===== #}
+    <div class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-gray-200">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-purple-600">auto_awesome</span>
+          <h2 class="text-xl font-extrabold text-gray-900">Génération IA</h2>
+        </div>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {# Bouton Checklist #}
+          <form method="post" action="{{ path('admin_event_ai_checklist', {'id': event.id}) }}" 
+                onsubmit="return confirm('Générer une checklist avec IA ? Cette action va créer une nouvelle ressource.');">
+            <input type="hidden" name="_token" value="{{ csrf_token('generate_ai_' ~ event.id) }}">
+            <button type="submit" class="w-full flex items-center justify-center px-6 py-4 bg-green-600 hover:bg-green-700 text-white font-extrabold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+              <span class="material-symbols-outlined mr-3 text-2xl">checklist</span>
+              <span class="text-lg">Générer une checklist</span>
+            </button>
+            <p class="text-xs text-gray-500 mt-2 text-center">Liste du matériel, fournitures et ressources humaines</p>
+          </form>
+          
+          {# Bouton Planning #}
+          <form method="post" action="{{ path('admin_event_ai_planning', {'id': event.id}) }}"
+                onsubmit="return confirm('Générer un planning avec IA ? Cette action va créer une nouvelle ressource.');">
+            <input type="hidden" name="_token" value="{{ csrf_token('generate_ai_' ~ event.id) }}">
+            <button type="submit" class="w-full flex items-center justify-center px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+              <span class="material-symbols-outlined mr-3 text-2xl">schedule</span>
+              <span class="text-lg">Générer un planning</span>
+            </button>
+            <p class="text-xs text-gray-500 mt-2 text-center">Programme détaillé heure par heure avec activités</p>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    {# ===== RESSOURCES EXISTANTES ===== #}
+    {% if event.resources|length > 0 %}
+    <div class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-indigo-600">folder</span>
+          <h2 class="text-xl font-extrabold text-gray-900">Ressources générées ({{ event.resources|length }})</h2>
+        </div>
+      </div>
+      <div class="p-6">
+        <div class="space-y-4">
+          {% for resource in event.resources %}
+            <div class="border rounded-xl p-5 {% if resource.type == 'CHECKLIST' %}bg-green-50 border-green-200{% elseif resource.type == 'PLANNING' %}bg-indigo-50 border-indigo-200{% else %}bg-gray-50 border-gray-200{% endif %}">
+              
+              {# En-tête de la ressource #}
+              <div class="flex items-start justify-between cursor-pointer" onclick="toggleResource({{ resource.id }})">
+                <div class="flex items-center gap-3">
+                  {% if resource.type == 'CHECKLIST' %}
+                    <span class="material-symbols-outlined text-green-600 text-3xl">checklist</span>
+                  {% elseif resource.type == 'PLANNING' %}
+                    <span class="material-symbols-outlined text-indigo-600 text-3xl">schedule</span>
+                  {% else %}
+                    <span class="material-symbols-outlined text-gray-600 text-3xl">description</span>
+                  {% endif %}
+                  <div>
+                    <h3 class="font-extrabold text-gray-900 text-lg">{{ resource.title }}</h3>
+                    <p class="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                      <span class="material-symbols-outlined text-base">calendar_today</span>
+                      Créé le {{ resource.createdAt|date('d/m/Y à H:i') }}
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-gray-500 transition-transform" id="icon-{{ resource.id }}">expand_more</span>
+                </div>
+              </div>
+              
+              {# Contenu de la ressource (caché par défaut) #}
+              <div id="resource-{{ resource.id }}" class="mt-4 hidden">
+                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-inner">
+                  <pre class="whitespace-pre-wrap font-sans text-gray-700 text-sm leading-relaxed">{{ resource.context }}</pre>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <script>
+    function toggleResource(id) {
+      const content = document.getElementById('resource-' + id);
+      const icon = document.getElementById('icon-' + id);
+      
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.textContent = 'expand_less';
+      } else {
+        content.classList.add('hidden');
+        icon.textContent = 'expand_more';
+      }
+    }
+    </script>
+    {% endif %}
 
   </div>
 </div>

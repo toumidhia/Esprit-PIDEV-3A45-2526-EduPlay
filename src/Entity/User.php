@@ -87,6 +87,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $niveau = null;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $facialEmbedding = null;
+
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'enfants')]
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     private ?User $parent = null;
@@ -285,6 +288,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setNiveau(?string $niveau): static
     {
         $this->niveau = $niveau;
+        return $this;
+    }
+
+    public function getFacialEmbedding(): ?string
+    {
+        return $this->facialEmbedding;
+    }
+
+    public function setFacialEmbedding(?string $facialEmbedding): static
+    {
+        $this->facialEmbedding = $facialEmbedding;
         return $this;
     }
 

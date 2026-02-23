@@ -7,6 +7,8 @@ use App\Entity\Level;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+use Doctrine\ORM\QueryBuilder;
+
 /**
  * @extends ServiceEntityRepository<Game>
  */
@@ -215,4 +217,52 @@ public function findPlayableForAge(?int $age, array $filters = [], string $sortB
     return $qb->getQuery()->getResult();
 }
 
+
+
+
+
+
+
+
+
+public function findPlayableForAgeQB(?int $age, array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC'): QueryBuilder
+{
+    $qb = $this->createQueryBuilder('g')
+        ->leftJoin('g.idLevel', 'l')
+        ->addSelect('l');
+
+    // Filtre âge
+    if ($age !== null) {
+        $qb->andWhere(':age BETWEEN l.minAge AND l.maxAge')
+           ->setParameter('age', $age);
+    }
+
+    // Filtres existants
+    if (!empty($filters['search'])) {
+        $qb->andWhere('g.name LIKE :q OR g.description LIKE :q')
+           ->setParameter('q', '%'.$filters['search'].'%');
+    }
+
+    if (!empty($filters['type'])) {
+        $qb->andWhere('g.type LIKE :type')
+           ->setParameter('type', '%'.$filters['type'].'%');
+    }
+
+    if (!empty($filters['difficulty'])) {
+        $qb->andWhere('l.difficulty = :diff')
+           ->setParameter('diff', (int) $filters['difficulty']);
+    }
+
+    // Tri
+    $allowedSort = ['id', 'name', 'type'];
+    $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+
+    if (in_array($sortBy, $allowedSort, true)) {
+        $qb->orderBy('g.' . $sortBy, $sortOrder);
+    } else {
+        $qb->orderBy('g.id', 'DESC');
+    }
+
+    return $qb; // ✅ IMPORTANT (pas de getResult ici)
+}
 }

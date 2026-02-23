@@ -48,7 +48,7 @@
 
       <div class="flex gap-3">
         <button class="px-6 py-3 rounded-full bg-primary text-white font-bold">Apply</button>
-        <a href="#" id="frontClearBtn" class="px-6 py-3 rounded-full bg-gray-200 font-bold">Clear</a>
+        <a href="{{ path('front_games') }}" id="frontClearBtn" class="px-6 py-3 rounded-full bg-gray-200 font-bold">Clear</a>
       </div>
     </form>
 
@@ -86,4 +86,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+<script>
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('.pagination a');
+  if (!a) return;
+
+  e.preventDefault();
+  const results = document.getElementById('games-results');
+
+  fetch(a.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => r.text())
+    .then(html => {
+      results.innerHTML = html;
+      window.history.replaceState({}, '', a.href);
+    });
+});
+</script>
+
 {% endblock %}

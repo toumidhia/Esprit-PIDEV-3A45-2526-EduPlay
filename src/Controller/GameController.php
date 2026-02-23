@@ -6,6 +6,7 @@ use App\Entity\Game;
 use App\Form\GameType;
 use App\Repository\GameRepository;
 use App\Service\GameNotificationMailer;
+use App\Service\AiGameSummaryService;
 use App\Repository\LevelRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,6 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Knp\Component\Pager\PaginatorInterface;
+
 
 
 
@@ -217,9 +220,9 @@ public function edit(Request $request, Game $game, EntityManagerInterface $em, S
 public function frontIndex(
     Request $request,
     GameRepository $gameRepository,
-    LevelRepository $levelRepository
-): Response
-{
+    LevelRepository $levelRepository,
+    PaginatorInterface $paginator
+): Response {
     $filters = [
         'search' => $request->query->get('search', ''),
         'type' => $request->query->get('type', ''),
@@ -230,9 +233,17 @@ public function frontIndex(
     $sortOrder = $request->query->get('order', 'DESC');
 
     $birthDate = $this->getUser()->getBirthDate();
-$age = $birthDate ? $birthDate->diff(new \DateTimeImmutable())->y : null;
+    $age = $birthDate ? $birthDate->diff(new \DateTimeImmutable())->y : null;
 
-$games = $gameRepository->findPlayableForAge($age, $filters, $sortBy, $sortOrder);
+    // ✅ on récupère QueryBuilder
+    $qb = $gameRepository->findPlayableForAgeQB($age, $filters, $sortBy, $sortOrder);
+
+    // ✅ pagination
+    $games = $paginator->paginate(
+        $qb,
+        $request->query->getInt('page', 1),
+        6 // nombre de jeux par page
+    );
 
     if ($request->isXmlHttpRequest()) {
         return $this->render('FrontOffice/enfant/game/_grid.html.twig', [
@@ -249,11 +260,25 @@ $games = $gameRepository->findPlayableForAge($age, $filters, $sortBy, $sortOrder
         'sortOrder' => $sortOrder,
     ]);
 }
+
+
 #[Route('/game/{id}', name: 'front_game_show_front', methods: ['GET'])]
-public function frontShow(Game $game): Response
+public function frontShow(Game $game, AiGameSummaryService $ai): Response
 {
+    $birthDate = $this->getUser()->getBirthDate();
+    $age = $birthDate ? $birthDate->diff(new \DateTimeImmutable())->y : null;
+
+    // garde-fou: si age inconnu, on affiche la description normale
+    $aiSummary = null;
+
+    if ($age !== null) {
+        $aiSummary = $ai->summarizeForAge((string) $game->getDescription(), $age);
+    }
+
     return $this->render('FrontOffice/enfant/game/show.html.twig', [
         'game' => $game,
+        'aiSummary' => $aiSummary,
+        'age' => $age,
     ]);
 }
 
@@ -266,6 +291,13 @@ public function frontShow(Game $game): Response
         ]);
     }
 
+
+
+
+
+
+
+    
 
 
 

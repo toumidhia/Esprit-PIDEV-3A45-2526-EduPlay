@@ -14,7 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use App\Service\StripePaymentService;
+use App\PaymentBundle\Service\StripePaymentService;
+use App\Service\EmailService;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/parent')]
@@ -225,7 +226,7 @@ class ParentController extends AbstractController
     }
 
     #[Route('/commandes/{id}/paiement/complete', name: 'app_parent_commande_paiement_complete', methods: ['POST'])]
-    public function paiementComplete(Commande $commande, Request $request, EntityManagerInterface $em): Response
+    public function paiementComplete(Commande $commande, Request $request, EntityManagerInterface $em, EmailService $emailService): Response
     {
         /** @var User $parent */
         $parent = $this->getUser();
@@ -244,6 +245,14 @@ class ParentController extends AbstractController
         $commande->setIsPaid(true);
         $em->persist($commande);
         $em->flush();
+
+        // Send payment confirmation email
+        try {
+            $emailService->sendPaymentConfirmationEmail($commande);
+        } catch (\Exception $e) {
+            // Log error but don't fail the payment completion
+            error_log('Failed to send payment confirmation email: ' . $e->getMessage());
+        }
 
         return $this->json(['status' => 'ok']);
     }
@@ -273,7 +282,7 @@ class ParentController extends AbstractController
     }
 
     #[Route('/commandes/{id}/checkout/success', name: 'app_parent_commande_checkout_success', methods: ['GET'])]
-    public function checkoutSuccess(Commande $commande, Request $request, StripePaymentService $stripePaymentService, EntityManagerInterface $em): Response
+    public function checkoutSuccess(Commande $commande, Request $request, StripePaymentService $stripePaymentService, EntityManagerInterface $em, EmailService $emailService): Response
     {
         $sessionId = $request->query->get('session_id');
         if (!$sessionId) {
@@ -294,6 +303,14 @@ class ParentController extends AbstractController
         $commande->setIsPaid(true);
         $em->persist($commande);
         $em->flush();
+
+        // Send payment confirmation email
+        try {
+            $emailService->sendPaymentConfirmationEmail($commande);
+        } catch (\Exception $e) {
+            // Log error but don't fail the payment completion
+            error_log('Failed to send payment confirmation email: ' . $e->getMessage());
+        }
 
         $this->addFlash('success', 'Paiement confirmé via Stripe Checkout.');
         return $this->redirectToRoute('app_parent_commandes');

@@ -8,4 +8,7 @@ return [
     Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
     Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],
     Vich\UploaderBundle\VichUploaderBundle::class => ['all' => true],
+    \App\PaymentBundle\PaymentBundle::class => ['all' => true],
+    \App\RecommendationBundle\RecommendationBundle::class => ['all' => true],
+    \App\AnomalyBundle\AnomalyBundle::class => ['all' => true],
 ];

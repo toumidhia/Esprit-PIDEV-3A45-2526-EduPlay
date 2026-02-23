@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\PaymentBundle\Service;
 
 use Stripe\Stripe;
 use Stripe\PaymentIntent;

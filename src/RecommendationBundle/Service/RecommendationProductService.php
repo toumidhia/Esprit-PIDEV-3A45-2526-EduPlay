@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\RecommendationBundle\Service;
 
 use App\Entity\Product;
 use App\Entity\User;

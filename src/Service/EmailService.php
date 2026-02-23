@@ -5,6 +5,7 @@ namespace App\Service;
 
 use App\Entity\Course;
 use App\Entity\User;
+use App\Entity\Commande;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
@@ -110,6 +111,42 @@ class EmailService
 
         } catch (\Exception $e) {
             $this->logger->error('Erreur envoi email individuel: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Envoie une confirmation de paiement au client
+     */
+    public function sendPaymentConfirmationEmail(Commande $commande): void
+    {
+        try {
+            $user = $commande->getUser();
+            if (!$user || !$user->getEmail()) {
+                throw new \Exception('L\'utilisateur n\'a pas d\'adresse email');
+            }
+
+            $product = $commande->getProduct();
+            $commandeUrl = $this->router->generate('app_parent_commandes', [], UrlGeneratorInterface::ABSOLUTE_URL);
+
+            $email = (new TemplatedEmail())
+                ->from(new Address($this->adminEmail, $this->adminName))
+                ->to(new Address($user->getEmail(), $user->getFirstName() . ' ' . $user->getLastName()))
+                ->subject('💳 Confirmation de paiement - Commande #' . $commande->getId())
+                ->htmlTemplate('emails/payment_confirmation.html.twig')
+                ->context([
+                    'commande' => $commande,
+                    'user' => $user,
+                    'product' => $product,
+                    'commande_url' => $commandeUrl,
+                    'year' => date('Y')
+                ]);
+
+            $this->mailer->send($email);
+            $this->logger->info('Email de confirmation de paiement envoyé à: ' . $user->getEmail());
+
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur envoi email de paiement: ' . $e->getMessage());
             throw $e;
         }
     }

@@ -1,8 +1,8 @@
-{% extends 'front/base.html.twig' %}
+{% extends 'FrontOffice/parent/Partials/base_parent.html.twig' %}
 
-{% block title %}Shop{% endblock %}
+{% block title %}Shop - EduPlay{% endblock %}
 
-{% block body %}
+{% block content %}
     <h1 class="text-4xl font-extrabold mb-2">Boutique EduPlay</h1>
     <p class="text-[#617989] mb-10">Kits et produits éducatifs pour les enfants.</p>
 
@@ -65,24 +65,26 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {% for product in products %}
-                <article class="bg-white rounded-xl border border-[#dbe1e6] overflow-hidden hover:shadow-xl transition-shadow card">
-                {% if product.picture %}
-                    <div class="w-full h-48 bg-gray-100 overflow-hidden">
-                        <img src="/uploads/products/{{ product.picture }}" alt="{{ product.name }}" class="w-full h-full object-cover" />
+            <a href="{{ path('app_front_shop_show', { id: product.id }) }}" class="no-underline">
+                <article class="bg-white rounded-xl border border-[#dbe1e6] overflow-hidden hover:shadow-xl transition-shadow card cursor-pointer h-full flex flex-col">
+                    {% if product.picture %}
+                        <div class="w-full h-48 bg-gray-100 overflow-hidden">
+                            <img src="/uploads/products/{{ product.picture }}" alt="{{ product.name }}" class="w-full h-full object-cover" />
+                        </div>
+                    {% else %}
+                        <div class="w-full h-48 bg-gray-50 flex items-center justify-center text-sm text-gray-400">Aucune image</div>
+                    {% endif %}
+                    <div class="p-6 flex flex-col flex-1">
+                        <h2 class="text-xl font-extrabold mb-2">{{ product.name }}</h2>
+                        <p class="text-primary font-bold text-lg mb-2">{{ product.price|number_format(2, ',', ' ') }} DT</p>
+                        <p class="text-[#617989] text-sm mb-4 line-clamp-2 flex-1">{{ product.description }}</p>
+                        <button type="button" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold rounded-full text-sm hover:opacity-90 transition-opacity">
+                            Voir le produit
+                            <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                        </button>
                     </div>
-                {% else %}
-                    <div class="w-full h-48 bg-gray-50 flex items-center justify-center text-sm text-gray-400">Aucune image</div>
-                {% endif %}
-                <div class="p-6">
-                    <h2 class="text-xl font-extrabold mb-2">{{ product.name }}</h2>
-                    <p class="text-primary font-bold text-lg mb-2">{{ product.price|number_format(2, ',', ' ') }} DT</p>
-                    <p class="text-[#617989] text-sm mb-4 line-clamp-2">{{ product.description }}</p>
-                    <a href="{{ path('app_front_shop_show', { id: product.id }) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold rounded-full text-sm hover:opacity-90 transition-opacity">
-                        Voir le produit
-                        <span class="material-symbols-outlined text-lg">arrow_forward</span>
-                    </a>
-                </div>
-            </article>
+                </article>
+            </a>
         {% else %}
             <p class="col-span-full text-center text-[#617989] py-12">Aucun produit disponible pour le moment.</p>
         {% endfor %}
@@ -97,21 +99,22 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {% for product in recommendations %}
-                    <article class="bg-gradient-to-br from-primary/5 to-accent-pink/5 rounded-xl border-2 border-primary/20 overflow-hidden hover:shadow-xl transition-all hover:scale-105">
-                        <article class="bg-gradient-to-br from-primary/5 to-accent-pink/5 rounded-xl border-2 border-primary/20 overflow-hidden hover:shadow-xl transition-all hover:scale-105 card">
-                        <div class="p-6">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="material-symbols-outlined text-primary text-sm">recommend</span>
-                                <span class="text-xs font-bold text-primary">Recommandé</span>
+                    <a href="{{ path('app_front_shop_show', { id: product.id }) }}" class="no-underline">
+                        <article class="bg-gradient-to-br from-primary/5 to-accent-pink/5 rounded-xl border-2 border-primary/20 overflow-hidden hover:shadow-xl transition-all hover:scale-105 card cursor-pointer h-full">
+                            <div class="p-6 flex flex-col h-full">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="material-symbols-outlined text-primary text-sm">recommend</span>
+                                    <span class="text-xs font-bold text-primary">Recommandé</span>
+                                </div>
+                                <h3 class="text-lg font-extrabold mb-2">{{ product.name }}</h3>
+                                <p class="text-primary font-bold mb-4">{{ product.price|number_format(2, ',', ' ') }} DT</p>
+                                <button type="button" class="inline-flex items-center gap-1 px-4 py-2 bg-primary text-white font-bold rounded-full text-xs hover:opacity-90 transition-opacity">
+                                    Voir
+                                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                </button>
                             </div>
-                            <h3 class="text-lg font-extrabold mb-2">{{ product.name }}</h3>
-                            <p class="text-primary font-bold mb-2">{{ product.price|number_format(2, ',', ' ') }} DT</p>
-                            <a href="{{ path('app_front_shop_show', { id: product.id }) }}" class="inline-flex items-center gap-1 px-4 py-2 bg-primary text-white font-bold rounded-full text-xs hover:opacity-90 transition-opacity">
-                                Voir
-                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                            </a>
-                        </div>
-                    </article>
+                        </article>
+                    </a>
                 {% endfor %}
             </div>
         </div>

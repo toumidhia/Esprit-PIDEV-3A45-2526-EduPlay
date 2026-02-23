@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\ProductRepository;
-use App\Service\RecommendationProductService;
+use App\RecommendationBundle\Service\RecommendationProductService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

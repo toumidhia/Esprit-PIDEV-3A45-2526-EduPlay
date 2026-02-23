@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\PaymentBundle\Controller;
 
 use App\Entity\Commande;
 use App\PaymentBundle\Service\StripePaymentService;

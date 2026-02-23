@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\AnomalyBundle\Controller;
 
 use App\AnomalyBundle\Service\AnomalyDetectionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

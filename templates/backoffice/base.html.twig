@@ -268,6 +268,19 @@
                     </a>
                 </li>
 
+                {# Menu Boutique #}
+                <div class="sidebar-heading">Gestion de Boutique</div>
+                <li class="nav-item">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'app_back_product' %}active{% endif %}" href="{{ path('app_back_product_index') }}">
+                        <i class="bi bi-box-seam"></i> Produits
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'app_back_commande' %}active{% endif %}" href="{{ path('app_back_commande_index') }}">
+                        <i class="bi bi-cart3"></i> Commandes
+                    </a>
+                </li>
+
                 {# Menu Utilisateurs #}
                 <div class="sidebar-heading">Gestion des Utilisateurs</div>
                 <li class="nav-item">

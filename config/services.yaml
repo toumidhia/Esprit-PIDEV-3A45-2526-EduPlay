@@ -46,7 +46,7 @@ services:
             $logger: '@logger'
 
     # Configuration explicite du service Stripe
-    App\Service\StripePaymentService:
+    App\PaymentBundle\Service\StripePaymentService:
         arguments:
             $stripeSecretKey: '%env(STRIPE_SECRET_KEY)%'
 

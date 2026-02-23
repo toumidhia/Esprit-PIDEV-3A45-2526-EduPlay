@@ -49,7 +49,12 @@
       <div class="flex gap-3">
         <button class="px-6 py-3 rounded-full bg-primary text-white font-bold">Apply</button>
         <a href="{{ path('front_games') }}" id="frontClearBtn" class="px-6 py-3 rounded-full bg-gray-200 font-bold">Clear</a>
+      <select name="order" class="px-10 py-3 rounded-full border-2 border-primary/20 bg-white dark:bg-gray-800 font-bold">
+    <option value="DESC" {% if sortOrder == 'DESC' %}selected{% endif %}>DESC</option>
+    <option value="ASC" {% if sortOrder == 'ASC' %}selected{% endif %}>ASC</option>
+  </select>
       </div>
+      
     </form>
 
     {# ✅ RESULTS #}

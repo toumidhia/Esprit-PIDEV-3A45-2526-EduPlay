@@ -78,3 +78,7 @@ services:
     App\Service\AI\PlanningGenerator:
         arguments:
             $geminiClient: '@App\Service\AI\GeminiClient'
+
+    App\Service\QrCodeService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

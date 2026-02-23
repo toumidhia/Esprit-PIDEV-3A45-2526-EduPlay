@@ -6,7 +6,7 @@ namespace App\Controller;
 use App\Entity\EventRegistration;
 use App\Entity\SchoolEvent;
 use Doctrine\ORM\EntityManagerInterface;
-use Knp\Component\Pager\PaginatorInterface; // 👈 AJOUTER
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,7 +46,7 @@ class AdminEventRegistrationController extends AbstractController
 
         if ($q !== '') {
             $qb->andWhere('LOWER(e.title) LIKE :q OR LOWER(e.location) LIKE :q')
-            ->setParameter('q', '%' . mb_strtolower($q) . '%');
+               ->setParameter('q', '%' . mb_strtolower($q) . '%');
         }
 
         // ✅ Tri avec les vrais noms de champs
@@ -60,7 +60,7 @@ class AdminEventRegistrationController extends AbstractController
 
         // ✅ Pagination manuelle
         $qb->setFirstResult(($page - 1) * $limit)
-        ->setMaxResults($limit);
+           ->setMaxResults($limit);
 
         $rows = $qb->getQuery()->getResult();
         $totalPages = ceil($total / $limit);
@@ -74,10 +74,10 @@ class AdminEventRegistrationController extends AbstractController
         }
 
         return $this->render('BackOffice/admin/event/registration.html.twig', [
-            'rows'       => $rows,
-            'q'          => $q,
-            'sort'       => $sort,
-            'order'      => strtolower($order),
+            'rows'        => $rows,
+            'q'           => $q,
+            'sort'        => $sort,
+            'order'       => strtolower($order),
             'currentPage' => $page,
             'totalPages'  => $totalPages,
             'total'       => $total,
@@ -100,7 +100,7 @@ class AdminEventRegistrationController extends AbstractController
 
         if ($q !== '') {
             $countQb->andWhere('LOWER(r.childFullName) LIKE :q OR LOWER(COALESCE(r.parentPhone, \'\')) LIKE :q OR LOWER(COALESCE(r.emergencyContactName, \'\')) LIKE :q')
-                ->setParameter('q', '%' . mb_strtolower($q) . '%');
+                    ->setParameter('q', '%' . mb_strtolower($q) . '%');
         }
 
         $total = $countQb->getQuery()->getSingleScalarResult();
@@ -113,11 +113,11 @@ class AdminEventRegistrationController extends AbstractController
 
         if ($q !== '') {
             $qb->andWhere('LOWER(r.childFullName) LIKE :q OR LOWER(COALESCE(r.parentPhone, \'\')) LIKE :q OR LOWER(COALESCE(r.emergencyContactName, \'\')) LIKE :q')
-            ->setParameter('q', '%' . mb_strtolower($q) . '%');
+               ->setParameter('q', '%' . mb_strtolower($q) . '%');
         }
 
         $qb->setFirstResult(($page - 1) * $limit)
-        ->setMaxResults($limit);
+           ->setMaxResults($limit);
 
         $registrations = $qb->getQuery()->getResult();
         $totalPages = ceil($total / $limit);
@@ -138,6 +138,60 @@ class AdminEventRegistrationController extends AbstractController
             'totalPages'    => $totalPages,
             'total'         => $total,
             'limit'         => $limit,
+        ]);
+    }
+
+    // ✅ NOUVELLES ROUTES POUR GÉRER LES STATUTS
+
+    #[Route('/admin/registration/{id}/approve', name: 'admin_registration_approve', methods: ['POST'])]
+    public function approve(EventRegistration $registration, Request $request, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        if ($this->isCsrfTokenValid('approve' . $registration->getId(), $request->request->get('_token'))) {
+            $registration->setStatus('APPROVED');
+            $em->flush();
+            $this->addFlash('success', '✅ Inscription approuvée avec succès');
+        }
+        
+        return $this->redirectToRoute('admin_event_registrations_show', ['id' => $registration->getEvent()->getId()]);
+    }
+
+    #[Route('/admin/registration/{id}/reject', name: 'admin_registration_reject', methods: ['POST'])]
+    public function reject(EventRegistration $registration, Request $request, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        if ($this->isCsrfTokenValid('reject' . $registration->getId(), $request->request->get('_token'))) {
+            $registration->setStatus('REJECTED');
+            $em->flush();
+            $this->addFlash('success', '❌ Inscription refusée');
+        }
+        
+        return $this->redirectToRoute('admin_event_registrations_show', ['id' => $registration->getEvent()->getId()]);
+    }
+
+    #[Route('/admin/registration/{id}/reset', name: 'admin_registration_reset', methods: ['POST'])]
+    public function resetStatus(EventRegistration $registration, Request $request, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        if ($this->isCsrfTokenValid('reset' . $registration->getId(), $request->request->get('_token'))) {
+            $registration->setStatus('PENDING');
+            $em->flush();
+            $this->addFlash('success', '↩️ Statut réinitialisé (en attente)');
+        }
+        
+        return $this->redirectToRoute('admin_event_registrations_show', ['id' => $registration->getEvent()->getId()]);
+    }
+
+    #[Route('/admin/registration/{id}/ticket', name: 'admin_registration_ticket', methods: ['GET'])]
+    public function viewTicket(EventRegistration $registration): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        return $this->render('BackOffice/admin/event/ticket.html.twig', [
+            'registration' => $registration,
         ]);
     }
 }

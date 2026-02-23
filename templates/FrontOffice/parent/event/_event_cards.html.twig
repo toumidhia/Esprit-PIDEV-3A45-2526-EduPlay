@@ -1,0 +1,69 @@
+{% if events is empty %}
+  <div class="bg-white/80 backdrop-blur-sm p-12 rounded-2xl border-2 border-dashed border-gray-200 text-center">
+    <span class="material-symbols-outlined text-6xl text-gray-400">event_busy</span>
+    <p class="text-xl font-bold text-gray-600 mt-4">Aucun événement trouvé</p>
+    <p class="text-gray-500">Essayez de modifier vos filtres de recherche.</p>
+  </div>
+{% else %}
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% for e in events %}
+      <a href="{{ path('front_event_show', {id: e.id}) }}" 
+         class="event-card group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:-translate-y-1">
+
+        {# IMAGE #}
+        {% if e.imagePath %}
+          <div class="h-48 overflow-hidden">
+            <img src="{{ asset(e.imagePath) }}" 
+                 alt="{{ e.title }}"
+                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+          </div>
+        {% else %}
+          <div class="h-48 bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
+            <span class="material-symbols-outlined text-6xl text-white/80">event</span>
+          </div>
+        {% endif %}
+
+        {# CONTENU #}
+        <div class="p-6">
+          <div class="flex items-start justify-between">
+            <h3 class="font-extrabold text-xl text-gray-900 group-hover:text-blue-600 transition-colors">
+              {{ e.title }}
+            </h3>
+            {% if e.startDate|date('U') > date().timestamp %}
+              <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">À venir</span>
+            {% endif %}
+          </div>
+
+          <p class="text-gray-600 mt-2 line-clamp-2">
+            {{ e.description|striptags|slice(0, 120) ~ '...' }}
+          </p>
+
+          {# INFOS #}
+          <div class="mt-4 space-y-2 text-sm">
+            <div class="flex items-center gap-2 text-gray-700">
+              <span class="material-symbols-outlined text-base text-blue-500">event</span>
+              <span>{{ e.startDate|date('d/m/Y H:i') }} → {{ e.endDate|date('d/m/Y H:i') }}</span>
+            </div>
+
+            {% if e.location %}
+              <div class="flex items-center gap-2 text-gray-700">
+                <span class="material-symbols-outlined text-base text-blue-500">location_on</span>
+                <span class="font-medium">{{ e.location }}</span>
+              </div>
+            {% endif %}
+          </div>
+
+          {# BOUTON #}
+          <div class="mt-6 flex justify-end">
+            <span class="inline-flex items-center gap-2 text-blue-600 font-bold group-hover:underline">
+              Voir détails
+              <span class="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">
+                arrow_forward
+              </span>
+            </span>
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}

@@ -6,52 +6,228 @@
 <section class="px-6 md:px-20 lg:px-40 py-12">
   <div class="max-w-[1280px] mx-auto">
 
+    {# HEADER #}
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
       <div>
-        <h1 class="text-4xl md:text-5xl font-extrabold">Événements</h1>
+        <h1 class="text-4xl md:text-5xl font-extrabold">🎉 Événements</h1>
         <p class="text-gray-500 font-medium mt-2">
-          Découvrez les prochains événements et inscrivez-vous.
+          Découvrez les prochains événements et inscrivez vos enfants !
         </p>
       </div>
 
-      <form method="get" class="flex gap-3">
-        <input name="q" value="{{ q }}" class="h-11 px-5 rounded-full border" placeholder="Rechercher…">
+      {# FILTRES - À REMETTRE #}
+      <div class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-gray-100">
+        <form id="filterForm" method="get" class="flex flex-wrap items-center gap-3">
+          
+          {# Recherche #}
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+            <input id="searchInput" 
+                   name="q" 
+                   value="{{ q }}" 
+                   class="w-64 h-11 pl-10 pr-4 rounded-full border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                   placeholder="Rechercher..."
+                   autocomplete="off">
+          </div>
 
-        <select name="sort" class="h-11 px-4 rounded-full border">
-          <option value="start" {{ sort == 'start' ? 'selected' : '' }}>Date début</option>
-          <option value="created" {{ sort == 'created' ? 'selected' : '' }}>Date création</option>
-        </select>
+          {# Tri #}
+          <select id="sortSelect" name="sort" class="h-11 px-4 rounded-full border border-gray-200 focus:ring-2 focus:ring-blue-500 bg-white">
+            <option value="start" {{ sort == 'start' ? 'selected' : '' }}>📅 Date début</option>
+            <option value="created" {{ sort == 'created' ? 'selected' : '' }}>🆕 Date création</option>
+            <option value="title" {{ sort == 'title' ? 'selected' : '' }}>🔤 Titre</option>
+          </select>
 
-        <select name="order" class="h-11 px-4 rounded-full border">
-          <option value="asc" {{ order == 'asc' ? 'selected' : '' }}>Asc</option>
-          <option value="desc" {{ order == 'desc' ? 'selected' : '' }}>Desc</option>
-        </select>
+          {# Ordre #}
+          <select id="orderSelect" name="order" class="h-11 px-4 rounded-full border border-gray-200 focus:ring-2 focus:ring-blue-500 bg-white">
+            <option value="asc" {{ order == 'asc' ? 'selected' : '' }}>⬆️ Ascendant</option>
+            <option value="desc" {{ order == 'desc' ? 'selected' : '' }}>⬇️ Descendant</option>
+          </select>
 
-        <button class="px-6 rounded-full bg-blue-500 text-white font-bold">
-          Filtrer
-        </button>
-      </form>
+          {# Bouton de réinitialisation #}
+          <button type="button" id="resetFilters" 
+                  class="h-11 px-4 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            Réinitialiser
+          </button>
+
+          {# Compteur de résultats #}
+          <span id="resultCount" class="text-sm text-gray-500 ml-2">
+            {{ total }} résultat(s)
+          </span>
+        </form>
+      </div>
     </div>
 
-    {% if events is empty %}
-      <div class="bg-white p-8 rounded-xl font-bold">
-        Aucun événement pour le moment.
+    {# ===== SECTION RECOMMANDATIONS ===== #}
+    {% if recommendations is defined and recommendations is not empty %}
+    <div class="mb-12">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-extrabold flex items-center gap-2">
+          <span class="material-symbols-outlined text-3xl text-primary">auto_awesome</span>
+          Recommandé pour vous
+          <span class="text-sm font-normal text-gray-400 ml-2">Basé sur vos inscriptions</span>
+        </h2>
+        <a href="{{ path('parent_recommendations') }}" class="text-sm text-primary hover:underline">
+          Voir toutes les recommandations →
+        </a>
       </div>
-    {% else %}
-      <div class="grid md:grid-cols-3 gap-6">
-        {% for e in events %}
-          <a href="{{ path('front_event_show', {id: e.id}) }}"
-             class="bg-white rounded-xl p-6 shadow hover:shadow-xl transition">
-            <h3 class="font-extrabold text-lg">{{ e.title }}</h3>
-            <p class="text-sm text-gray-500 mt-2">{{ e.description|slice(0,120) }}…</p>
-            <div class="mt-4 font-bold text-sm">
-              📅 {{ e.startDate|date('d/m/Y H:i') }}
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for item in recommendations %}
+          {% set event = item.event %}
+          <a href="{{ path('front_event_show', {id: event.id}) }}" 
+             class="event-card group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-primary/20 relative">
+
+            {# Badge recommandé #}
+            <div class="absolute top-2 right-2 z-10">
+              <span class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">auto_awesome</span>
+                Recommandé
+              </span>
+            </div>
+
+            {# IMAGE #}
+            {% if event.imagePath %}
+              <div class="h-40 overflow-hidden">
+                <img src="{{ asset(event.imagePath) }}" alt="{{ event.title }}" class="w-full h-full object-cover group-hover:scale-110 transition">
+              </div>
+            {% else %}
+              <div class="h-40 bg-gradient-to-br from-primary to-indigo-500 flex items-center justify-center">
+                <span class="material-symbols-outlined text-5xl text-white/80">event</span>
+              </div>
+            {% endif %}
+
+            <div class="p-4">
+              <h3 class="font-extrabold text-lg text-gray-900 group-hover:text-primary transition">
+                {{ event.title }}
+              </h3>
+
+              <div class="mt-2 text-sm text-gray-600 line-clamp-2">
+                {{ event.description|striptags|slice(0, 80) ~ '...' }}
+              </div>
+
+              <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                <span class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-primary text-sm">event</span>
+                  {{ event.startDate|date('d/m') }}
+                </span>
+                {% if event.location %}
+                  <span class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-primary text-sm">location_on</span>
+                    {{ event.location|split(' ')|first }}
+                  </span>
+                {% endif %}
+              </div>
+
+              <div class="mt-3">
+                <div class="flex flex-wrap gap-1">
+                  {% for reason in item.reasons %}
+                    <span class="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      {{ reason }}
+                    </span>
+                  {% endfor %}
+                </div>
+              </div>
             </div>
           </a>
         {% endfor %}
       </div>
+    </div>
+    {% endif %}
+
+    {# ===== TOUS LES ÉVÉNEMENTS ===== #}
+    <div class="mb-6">
+      <h2 class="text-2xl font-extrabold">📋 Tous les événements</h2>
+    </div>
+
+    {# LISTE DES ÉVÉNEMENTS #}
+    <div id="eventsContainer">
+      {% include 'FrontOffice/Parent/event/_event_cards.html.twig' %}
+    </div>
+
+    {# PAGINATION MAISON #}
+    {% if totalPages > 1 %}
+    <div class="mt-10 flex justify-center items-center gap-2">
+      {# Bouton Précédent #}
+      {% if currentPage > 1 %}
+        <a href="{{ path('front_event_index', { page: currentPage - 1, q: q, sort: sort, order: order }) }}" 
+           class="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50">
+          <span class="material-symbols-outlined text-sm">chevron_left</span>
+        </a>
+      {% endif %}
+      
+      {# Numéros de page #}
+      {% for i in 1..totalPages %}
+        {% if i >= currentPage - 2 and i <= currentPage + 2 %}
+          <a href="{{ path('front_event_index', { page: i, q: q, sort: sort, order: order }) }}" 
+             class="px-4 py-2 rounded-xl {{ i == currentPage ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50' }}">
+            {{ i }}
+          </a>
+        {% endif %}
+      {% endfor %}
+      
+      {# Bouton Suivant #}
+      {% if currentPage < totalPages %}
+        <a href="{{ path('front_event_index', { page: currentPage + 1, q: q, sort: sort, order: order }) }}" 
+           class="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50">
+          <span class="material-symbols-outlined text-sm">chevron_right</span>
+        </a>
+      {% endif %}
+    </div>
+    <div class="text-center text-sm text-gray-500 mt-2">
+      Page {{ currentPage }} sur {{ totalPages }} ({{ total }} événements)
+    </div>
     {% endif %}
 
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('searchInput');
+  const sortSelect = document.getElementById('sortSelect');
+  const orderSelect = document.getElementById('orderSelect');
+  const resetBtn = document.getElementById('resetFilters');
+  const eventsContainer = document.getElementById('eventsContainer');
+  const resultCount = document.getElementById('resultCount');
+
+  let debounceTimer;
+
+  function updateEvents() {
+    const params = new URLSearchParams();
+    if (searchInput.value) params.set('q', searchInput.value);
+    params.set('sort', sortSelect.value);
+    params.set('order', orderSelect.value);
+    params.set('page', 1);
+
+    const url = "{{ path('front_event_index') }}?" + params.toString();
+
+    fetch(url, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.text())
+    .then(html => {
+      eventsContainer.innerHTML = html;
+      window.location.href = url; // Rechargement complet pour la pagination
+    })
+    .catch(error => console.error('Erreur:', error));
+  }
+
+  function debouncedUpdate() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(updateEvents, 300);
+  }
+
+  searchInput.addEventListener('input', debouncedUpdate);
+  sortSelect.addEventListener('change', updateEvents);
+  orderSelect.addEventListener('change', updateEvents);
+
+  resetBtn.addEventListener('click', function() {
+    searchInput.value = '';
+    sortSelect.value = 'start';
+    orderSelect.value = 'asc';
+    updateEvents();
+  });
+});
+</script>
 {% endblock %}

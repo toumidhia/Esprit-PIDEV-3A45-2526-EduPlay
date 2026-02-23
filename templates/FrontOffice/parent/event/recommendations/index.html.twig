@@ -1,0 +1,146 @@
+{% extends 'FrontOffice/parent/Partials/container.html.twig' %}
+
+{% block title %}Recommandations - EduPlay{% endblock %}
+
+{% block content %}
+<section class="px-6 md:px-20 lg:px-40 py-12">
+  <div class="max-w-[1280px] mx-auto">
+
+    {# HEADER #}
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-4xl text-primary">auto_awesome</span>
+          <h1 class="text-3xl md:text-4xl font-extrabold">Recommandations</h1>
+        </div>
+        <p class="text-gray-500 mt-2">
+          Des événements choisis spécialement pour vous et vos enfants
+        </p>
+      </div>
+
+      <div class="flex gap-3">
+        <a href="{{ path('front_event_index') }}" 
+           class="px-5 py-3 rounded-full bg-black/5 hover:bg-black/10 transition font-bold inline-flex items-center gap-2">
+          <span class="material-symbols-outlined text-base">event</span>
+          Tous les événements
+        </a>
+        <a href="{{ path('front_my_registrations') }}" 
+           class="px-5 py-3 rounded-full bg-black/5 hover:bg-black/10 transition font-bold inline-flex items-center gap-2">
+          <span class="material-symbols-outlined text-base">list</span>
+          Mes inscriptions
+        </a>
+      </div>
+    </div>
+
+    {# RECOMMANDATIONS #}
+    {% if recommendations is empty %}
+      <div class="text-center py-16 bg-white/80 rounded-2xl border-2 border-dashed border-gray-200">
+        <span class="material-symbols-outlined text-6xl text-gray-400">auto_awesome</span>
+        <p class="text-xl font-bold text-gray-600 mt-4">Aucune recommandation pour le moment</p>
+        <p class="text-gray-500 mt-2">Inscrivez-vous à des événements pour en recevoir !</p>
+        <div class="mt-6 flex justify-center gap-4">
+          <a href="{{ path('front_event_index') }}" 
+             class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-full hover:bg-primary/80 transition">
+            <span class="material-symbols-outlined text-base">explore</span>
+            Découvrir des événements
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for item in recommendations %}
+          {% set event = item.event %}
+          <a href="{{ path('front_event_show', {id: event.id}) }}" 
+             class="event-card group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-primary/20 hover:border-primary/40">
+
+            {# Badge score #}
+            <div class="absolute top-2 right-2 z-10">
+              <span class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                <span class="material-symbols-outlined text-xs">auto_awesome</span>
+                Score {{ item.score }}
+              </span>
+            </div>
+
+            {# IMAGE #}
+            {% if event.imagePath %}
+              <div class="h-48 overflow-hidden">
+                <img src="{{ asset(event.imagePath) }}" 
+                     alt="{{ event.title }}"
+                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+              </div>
+            {% else %}
+              <div class="h-48 bg-gradient-to-br from-primary to-indigo-500 flex items-center justify-center">
+                <span class="material-symbols-outlined text-6xl text-white/80">event</span>
+              </div>
+            {% endif %}
+
+            {# CONTENU #}
+            <div class="p-6">
+              <h2 class="text-xl font-extrabold text-gray-900 group-hover:text-primary transition-colors">
+                {{ event.title }}
+              </h2>
+
+              <p class="text-gray-600 mt-2 line-clamp-2">
+                {{ event.description|striptags|slice(0, 100) ~ '...' }}
+              </p>
+
+              {# INFOS #}
+              <div class="mt-4 space-y-2 text-sm">
+                <div class="flex items-center gap-2 text-gray-700">
+                  <span class="material-symbols-outlined text-base text-primary">event</span>
+                  {{ event.startDate|date('d/m/Y H:i') }} → {{ event.endDate|date('d/m/Y H:i') }}
+                </div>
+
+                {% if event.location %}
+                  <div class="flex items-center gap-2 text-gray-700">
+                    <span class="material-symbols-outlined text-base text-primary">location_on</span>
+                    {{ event.location }}
+                  </div>
+                {% endif %}
+              </div>
+
+              {# RAISONS #}
+              <div class="mt-4">
+                <h3 class="text-xs font-bold text-gray-500 mb-2">Pourquoi cette recommandation ?</h3>
+                <div class="flex flex-wrap gap-2">
+                  {% for reason in item.reasons %}
+                    <span class="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full">
+                      {{ reason }}
+                    </span>
+                  {% endfor %}
+                  {% if item.reasons is empty %}
+                    <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full">
+                      Populaire auprès des familles
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+
+              {# BOUTON #}
+              <div class="mt-6 flex justify-end">
+                <span class="inline-flex items-center gap-2 text-primary font-bold group-hover:underline">
+                  Voir détails
+                  <span class="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">
+                    arrow_forward
+                  </span>
+                </span>
+              </div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+
+      {# NOTE SUR LES RECOMMANDATIONS #}
+      <div class="mt-10 bg-blue-50 rounded-xl p-4 text-sm text-blue-800 flex items-start gap-3">
+        <span class="material-symbols-outlined text-blue-600">info</span>
+        <div>
+          <span class="font-bold">Comment ça fonctionne ?</span>
+          <p class="mt-1">Les recommandations sont basées sur vos inscriptions passées : types d'événements, lieux préférés et âge de vos enfants. Plus vous participez, plus elles sont pertinentes !</p>
+        </div>
+      </div>
+
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

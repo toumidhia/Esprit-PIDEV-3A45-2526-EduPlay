@@ -42,11 +42,44 @@
             </div>
           </div>
 
-          {# ✅ Inscription #}
-          <a class="h-11 px-6 rounded-full bg-accent-yellow text-[#111518] font-extrabold hover:scale-105 transition-transform inline-flex items-center justify-center"
-            href="{{ path('front_event_register', {id: event.id}) }}">
-            S'inscrire
-          </a>
+          {# ✅ Boutons d'action #}
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            
+            {# Bouton calendrier avec dropdown #}
+            <div class="relative group">
+              <button class="w-11 h-11 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-transform inline-flex items-center justify-center"
+                      title="Ajouter à mon calendrier">
+                <span class="material-symbols-outlined text-base">calendar_month</span>
+              </button>
+              
+              {# Dropdown menu #}
+              <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 hidden group-hover:block z-50">
+                <a href="{{ path('event_calendar_google', {id: event.id}) }}" 
+                   class="block px-4 py-3 hover:bg-blue-50 rounded-t-xl text-sm font-medium"
+                   target="_blank">
+                  <span class="text-blue-600 mr-2">📅</span>
+                  Google Calendar
+                </a>
+                <a href="{{ path('event_calendar_outlook', {id: event.id}) }}" 
+                   class="block px-4 py-3 hover:bg-blue-50 text-sm font-medium"
+                   target="_blank">
+                  <span class="text-blue-600 mr-2">📧</span>
+                  Outlook
+                </a>
+                <a href="{{ path('event_calendar_ics', {id: event.id}) }}" 
+                   class="block px-4 py-3 hover:bg-blue-50 rounded-b-xl text-sm font-medium">
+                  <span class="text-blue-600 mr-2">📂</span>
+                  Fichier .ics
+                </a>
+              </div>
+            </div>
+
+            {# Bouton inscription #}
+            <a class="h-11 px-6 rounded-full bg-accent-yellow text-[#111518] font-extrabold hover:scale-105 transition-transform inline-flex items-center justify-center"
+               href="{{ path('front_event_register', {id: event.id}) }}">
+              S'inscrire
+            </a>
+          </div>
 
         </div>
       </div>
@@ -67,7 +100,7 @@
         {% if mainResources is empty %}
           <p class="text-sm font-bold">Aucune ressource disponible.</p>
         {% else %}
-          <div class="space-y-4">
+          <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
             {% for r in mainResources %}
               <div class="p-4 rounded-2xl bg-black/5 dark:bg-white/10">
                 <div class="flex items-start justify-between gap-4">
@@ -115,50 +148,143 @@
         {# Checklist #}
         <div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-2xl p-6">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-extrabold">Checklist</h2>
-            <span class="text-xs font-bold text-[#617989] dark:text-gray-400">Préparation</span>
+            <h2 class="text-xl font-extrabold">📋 Checklist</h2>
+            <span class="text-xs font-bold text-[#617989] dark:text-gray-400">À préparer</span>
           </div>
 
           {% set checklist = (resources|filter(r => r.type == 'CHECKLIST'))|first %}
           {% if checklist and checklist.context %}
-            <ul class="text-sm space-y-2">
-              {% for line in checklist.context|split("\n") %}
-                {% set item = line|trim %}
-                {% if item != '' %}
-                  <li class="flex gap-2">
-                    <span class="mt-[2px]">•</span>
-                    <span>{{ item|replace({'- ': ''}) }}</span>
-                  </li>
-                {% endif %}
-              {% endfor %}
-            </ul>
+            <div class="max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+              {% set lines = checklist.context|split("\n") %}
+              {% set inList = false %}
+              
+              <div class="space-y-3 text-sm">
+                {% for line in lines %}
+                  {% set trimmed = line|trim %}
+                  
+                  {% if trimmed starts with '#' or trimmed matches '/^[A-Z]{2,}/' or ':' in trimmed and trimmed|length < 50 %}
+                    {# Titre de section #}
+                    {% if inList %}</div>{% set inList = false %}{% endif %}
+                    <h3 class="font-extrabold text-primary mt-4 first:mt-0">{{ trimmed }}</h3>
+                  
+                  {% elseif trimmed starts with '•' or trimmed starts with '-' or trimmed starts with '*' %}
+                    {# Élément de liste #}
+                    {% if not inList %}
+                      <div class="space-y-2 pl-2">
+                      {% set inList = true %}
+                    {% endif %}
+                    <div class="flex items-start gap-2">
+                      <span class="text-primary mt-1">•</span>
+                      <span>{{ trimmed|replace({'• ': '', '- ': '', '* ': ''}) }}</span>
+                    </div>
+                  
+                  {% elseif trimmed starts with '[ ]' or trimmed starts with '☐' %}
+                    {# Case à cocher #}
+                    {% if not inList %}
+                      <div class="space-y-2 pl-2">
+                      {% set inList = true %}
+                    {% endif %}
+                    <div class="flex items-start gap-2">
+                      <span class="text-gray-400">☐</span>
+                      <span>{{ trimmed|replace({'[ ] ': '', '☐ ': ''}) }}</span>
+                    </div>
+                  
+                  {% elseif trimmed != '' %}
+                    {# Texte normal #}
+                    {% if inList %}</div>{% set inList = false %}{% endif %}
+                    <p class="text-gray-700 dark:text-gray-300">{{ trimmed }}</p>
+                  {% endif %}
+                {% endfor %}
+                {% if inList %}</div>{% endif %}
+              </div>
+            </div>
           {% else %}
-            <p class="text-sm font-bold">Aucune checklist.</p>
+            <p class="text-sm font-bold text-gray-500">Aucune checklist disponible.</p>
           {% endif %}
         </div>
 
         {# Planning #}
         <div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-2xl p-6">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-extrabold">Planning</h2>
+            <h2 class="text-xl font-extrabold">📅 Planning</h2>
             <span class="text-xs font-bold text-[#617989] dark:text-gray-400">Déroulement</span>
           </div>
 
           {% set planning = (resources|filter(r => r.type == 'PLANNING'))|first %}
           {% if planning and planning.context %}
-            <div class="space-y-2 text-sm">
-              {% for line in planning.context|split("\n") %}
-                {% set t = line|trim %}
-                {% if t != '' %}
-                  <div class="flex gap-3 items-start">
-                    <span class="mt-1 w-2 h-2 rounded-full bg-primary"></span>
-                    <div>{{ t }}</div>
-                  </div>
+            <div class="max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+              {% set lines = planning.context|split("\n") %}
+              {% set inTable = false %}
+              
+              <div class="space-y-2 text-sm">
+                {% for line in lines %}
+                  {% set trimmed = line|trim %}
+                  
+                  {% if '|' in trimmed and trimmed|length > 10 %}
+                    {# Format tableau #}
+                    {% if not inTable %}
+                      <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                      {% set inTable = true %}
+                    {% endif %}
+                    
+                    {% set cells = trimmed|split('|') %}
+                    {% if loop.first or loop.prev is defined and loop.prev0 is defined %}
+                      <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                          {% for cell in cells %}
+                            {% set cellTrim = cell|trim %}
+                            {% if cellTrim != '' %}
+                              <th class="py-2 px-2 font-extrabold text-primary">{{ cellTrim }}</th>
+                            {% endif %}
+                          {% endfor %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                    {% else %}
+                      <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/20">
+                        {% for cell in cells %}
+                          {% set cellTrim = cell|trim %}
+                          {% if cellTrim != '' %}
+                            <td class="py-2 px-2">{{ cellTrim }}</td>
+                          {% endif %}
+                        {% endfor %}
+                      </tr>
+                    {% endif %}
+                  
+                  {% elseif trimmed starts with '|' %}
+                    {# Ligne de séparation #}
+                    
+                  {% elseif trimmed matches '/^[0-9]{2}:[0-9]{2}/' or trimmed matches '/^⏱️/' or trimmed matches '/^🕘/' %}
+                    {# Horaire #}
+                    {% if inTable %}
+                      </tbody></table>
+                      {% set inTable = false %}
+                    {% endif %}
+                    <div class="flex items-center gap-2 mt-3 first:mt-0">
+                      <span class="material-symbols-outlined text-base text-primary">schedule</span>
+                      <span class="font-extrabold">{{ trimmed }}</span>
+                    </div>
+                  
+                  {% elseif trimmed != '' %}
+                    {# Texte normal #}
+                    {% if inTable %}
+                      </tbody></table>
+                      {% set inTable = false %}
+                    {% endif %}
+                    <div class="flex items-start gap-2 mt-2">
+                      <span class="text-primary mt-1">•</span>
+                      <span>{{ trimmed }}</span>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+                {% if inTable %}
+                  </tbody></table>
                 {% endif %}
-              {% endfor %}
+              </div>
             </div>
           {% else %}
-            <p class="text-sm font-bold">Aucun planning.</p>
+            <p class="text-sm font-bold text-gray-500">Aucun planning disponible.</p>
           {% endif %}
         </div>
 
@@ -167,4 +293,21 @@
 
   </div>
 </section>
+
+<style>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>
 {% endblock %}

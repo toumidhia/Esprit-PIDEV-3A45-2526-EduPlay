@@ -19,6 +19,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordC
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
+use App\Service\GeolocationService;
 
 class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 {
@@ -28,7 +29,9 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public function __construct(
         private UrlGeneratorInterface $urlGenerator,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private GeolocationService $geolocationService
+
     ) {}
 
     public function authenticate(Request $request): Passport
@@ -74,7 +77,19 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
          /** @var SessionInterface $session */
         $session = $request->getSession();
-        $session->getFlashBag()->clear(); 
+        $session->getFlashBag()->clear();
+
+        $ip = $request->getClientIp();
+        $location = $this->geolocationService->getLocationFromIp($ip);
+        
+        if ($location) {
+            $user->setLastLoginIp($ip);
+            $user->setLastLoginCountry($location['country_code'] ?? null);
+            $user->setLastLoginCity($location['city'] ?? null);
+            $user->setLastLoginAt(new \DateTime());
+            
+            $this->entityManager->flush();
+        }
 
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             return new RedirectResponse($targetPath);

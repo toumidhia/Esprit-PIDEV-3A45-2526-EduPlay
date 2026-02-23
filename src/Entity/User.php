@@ -90,6 +90,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $facialEmbedding = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $lastLoginIp = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $lastLoginCountry = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $lastLoginCity = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastLoginAt = null;
+
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'enfants')]
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     private ?User $parent = null;
@@ -301,6 +313,53 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->facialEmbedding = $facialEmbedding;
         return $this;
     }
+
+    // ==================== MÉTHODES DE GÉOLOCALISATION ====================
+
+public function getLastLoginIp(): ?string
+{
+    return $this->lastLoginIp;
+}
+
+public function setLastLoginIp(?string $lastLoginIp): static
+{
+    $this->lastLoginIp = $lastLoginIp;
+    return $this;
+}
+
+public function getLastLoginCountry(): ?string
+{
+    return $this->lastLoginCountry;
+}
+
+public function setLastLoginCountry(?string $lastLoginCountry): static
+{
+    $this->lastLoginCountry = $lastLoginCountry;
+    return $this;
+}
+
+public function getLastLoginCity(): ?string
+{
+    return $this->lastLoginCity;
+}
+
+public function setLastLoginCity(?string $lastLoginCity): static
+{
+    $this->lastLoginCity = $lastLoginCity;
+    return $this;
+}
+
+public function getLastLoginAt(): ?\DateTimeInterface
+{
+    return $this->lastLoginAt;
+}
+
+public function setLastLoginAt(?\DateTimeInterface $lastLoginAt): static
+{
+    $this->lastLoginAt = $lastLoginAt;
+    return $this;
+}
+
 
     // ==================== RELATION PARENT-ENFANT ====================
 

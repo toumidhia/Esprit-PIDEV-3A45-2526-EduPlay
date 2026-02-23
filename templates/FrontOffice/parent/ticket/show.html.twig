@@ -1,0 +1,84 @@
+{% extends 'FrontOffice/parent/Partials/container.html.twig' %}
+
+{% block title %}Mon ticket - {{ registration.event.title }}{% endblock %}
+
+{% block content %}
+<section class="px-6 md:px-20 lg:px-40 py-12">
+  <div class="max-w-[600px] mx-auto">
+
+    <a class="inline-flex items-center gap-2 text-primary font-bold mb-6 hover:underline"
+       href="{{ path('front_my_registrations') }}">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Retour à mes inscriptions
+    </a>
+
+    <div class="bg-white rounded-2xl shadow-xl border-2 border-primary/20 overflow-hidden">
+      
+      {# En-tête #}
+      <div class="bg-gradient-to-r from-primary to-primary/80 p-6 text-white text-center">
+        <span class="material-symbols-outlined text-5xl mb-2">confirmation_number</span>
+        <h1 class="text-2xl font-extrabold">Ticket d'entrée</h1>
+        <p class="text-white/80">{{ registration.event.title }}</p>
+      </div>
+
+      {# QR Code #}
+      <div class="p-8 flex flex-col items-center">
+        {% if registration.qrCodePath %}
+          <img src="{{ asset(registration.qrCodePath) }}" 
+               alt="QR Code ticket" 
+               class="w-64 h-64 mb-4">
+        {% else %}
+          <div class="w-64 h-64 mb-4 bg-gray-100 rounded-xl flex flex-col items-center justify-center">
+            <span class="material-symbols-outlined text-4xl text-gray-400">qr_code_scanner</span>
+            <p class="text-sm text-gray-500 mt-2">QR Code en cours de génération</p>
+          </div>
+        {% endif %}
+
+        <div class="w-full border-t border-gray-200 my-4"></div>
+
+        {# Informations #}
+        <div class="w-full space-y-3 text-left">
+          <div class="flex justify-between">
+            <span class="font-bold text-gray-600">Enfant :</span>
+            <span class="font-extrabold">{{ registration.childFullName }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-bold text-gray-600">Date :</span>
+            <span>{{ registration.event.startDate|date('d/m/Y') }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-bold text-gray-600">Horaire :</span>
+            <span>{{ registration.event.startDate|date('H:i') }} → {{ registration.event.endDate|date('H:i') }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-bold text-gray-600">Lieu :</span>
+            <span>{{ registration.event.location }}</span>
+          </div>
+        </div>
+
+        {# Statut #}
+        <div class="mt-6 w-full text-center">
+          {% if registration.scanned %}
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-full font-bold">
+              <span class="material-symbols-outlined text-base">block</span>
+              DÉJÀ UTILISÉ
+            </span>
+          {% else %}
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full font-bold">
+              <span class="material-symbols-outlined text-base">check_circle</span>
+              VALIDE
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# Instructions #}
+    <div class="mt-6 bg-blue-50 rounded-xl p-4 text-sm text-blue-800">
+      <span class="font-bold">📱 À présenter à l'entrée</span>
+      <p class="mt-1">Présentez ce QR code à l'accueil le jour de l'événement.</p>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

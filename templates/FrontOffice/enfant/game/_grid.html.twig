@@ -55,7 +55,7 @@
     {% endfor %}
   </div>
 
-  <div class="mt-8 flex justify-center">
-    {{ knp_pagination_render(games) }}
-  </div>
+  <div class="mt-8 flex justify-center [&_.pagination]:flex [&_.pagination]:gap-2 [&_.pagination_a]:px-4 [&_.pagination_a]:py-2 [&_.pagination_a]:rounded-lg [&_.pagination_a]:border [&_.pagination_a]:border-gray-300 [&_.pagination_a]:bg-white [&_.pagination_a]:text-gray-700 [&_.pagination_a:hover]:bg-blue-500 [&_.pagination_a:hover]:text-white [&_.pagination_span]:px-4 [&_.pagination_span]:py-2 [&_.pagination_span]:rounded-lg [&_.pagination_.current]:bg-blue-500 [&_.pagination_.current]:text-white [&_.pagination_.current]:border-blue-500">
+  {{ knp_pagination_render(games) }}
+</div>
 {% endif %}

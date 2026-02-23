@@ -71,41 +71,48 @@ document.addEventListener('DOMContentLoaded', () => {
   const results = document.getElementById('games-results');
   const clearBtn = document.getElementById('frontClearBtn');
 
-  async function load(url) {
+  async function load(url, { scrollToResults = false } = {}) {
     const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
     if (!res.ok) return;
+
     results.innerHTML = await res.text();
     window.history.replaceState({}, '', url);
+
+    if (scrollToResults) {
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const params = new URLSearchParams(new FormData(form));
-    load(form.action + '?' + params.toString());
+    params.set('page', '1');
+    load(form.action + '?' + params.toString(), { scrollToResults: true });
   });
 
   clearBtn.addEventListener('click', (e) => {
     e.preventDefault();
     form.reset();
-    load(form.action);
+    load(form.action + '?page=1', { scrollToResults: true });
+  });
+
+  // ✅ clique sur 1,2,3,... + flèches
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('.pagination a, a.page-link');
+    if (!a) return;
+
+    e.preventDefault();
+
+    // page visée (depuis href)
+    const urlFromLink = new URL(a.href, window.location.origin);
+    const page = urlFromLink.searchParams.get('page') || '1';
+
+    // on garde les filtres actuels + on change juste page
+    const params = new URLSearchParams(new FormData(form));
+    params.set('page', page);
+
+    load(form.action + '?' + params.toString(), { scrollToResults: true });
   });
 });
 </script>
-<script>
-document.addEventListener('click', (e) => {
-  const a = e.target.closest('.pagination a');
-  if (!a) return;
-
-  e.preventDefault();
-  const results = document.getElementById('games-results');
-
-  fetch(a.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-    .then(r => r.text())
-    .then(html => {
-      results.innerHTML = html;
-      window.history.replaceState({}, '', a.href);
-    });
-});
-</script>
-
 {% endblock %}

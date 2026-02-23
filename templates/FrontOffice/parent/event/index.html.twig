@@ -15,7 +15,7 @@
         </p>
       </div>
 
-      {# FILTRES #}
+      {# FILTRES - À REMETTRE #}
       <div class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-gray-100">
         <form id="filterForm" method="get" class="flex flex-wrap items-center gap-3">
           
@@ -56,6 +56,88 @@
           </span>
         </form>
       </div>
+    </div>
+
+    {# ===== SECTION RECOMMANDATIONS ===== #}
+    {% if recommendations is defined and recommendations is not empty %}
+    <div class="mb-12">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-extrabold flex items-center gap-2">
+          <span class="material-symbols-outlined text-3xl text-primary">auto_awesome</span>
+          Recommandé pour vous
+          <span class="text-sm font-normal text-gray-400 ml-2">Basé sur vos inscriptions</span>
+        </h2>
+        <a href="{{ path('parent_recommendations') }}" class="text-sm text-primary hover:underline">
+          Voir toutes les recommandations →
+        </a>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for item in recommendations %}
+          {% set event = item.event %}
+          <a href="{{ path('front_event_show', {id: event.id}) }}" 
+             class="event-card group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-primary/20 relative">
+
+            {# Badge recommandé #}
+            <div class="absolute top-2 right-2 z-10">
+              <span class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">auto_awesome</span>
+                Recommandé
+              </span>
+            </div>
+
+            {# IMAGE #}
+            {% if event.imagePath %}
+              <div class="h-40 overflow-hidden">
+                <img src="{{ asset(event.imagePath) }}" alt="{{ event.title }}" class="w-full h-full object-cover group-hover:scale-110 transition">
+              </div>
+            {% else %}
+              <div class="h-40 bg-gradient-to-br from-primary to-indigo-500 flex items-center justify-center">
+                <span class="material-symbols-outlined text-5xl text-white/80">event</span>
+              </div>
+            {% endif %}
+
+            <div class="p-4">
+              <h3 class="font-extrabold text-lg text-gray-900 group-hover:text-primary transition">
+                {{ event.title }}
+              </h3>
+
+              <div class="mt-2 text-sm text-gray-600 line-clamp-2">
+                {{ event.description|striptags|slice(0, 80) ~ '...' }}
+              </div>
+
+              <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                <span class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-primary text-sm">event</span>
+                  {{ event.startDate|date('d/m') }}
+                </span>
+                {% if event.location %}
+                  <span class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-primary text-sm">location_on</span>
+                    {{ event.location|split(' ')|first }}
+                  </span>
+                {% endif %}
+              </div>
+
+              <div class="mt-3">
+                <div class="flex flex-wrap gap-1">
+                  {% for reason in item.reasons %}
+                    <span class="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      {{ reason }}
+                    </span>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {# ===== TOUS LES ÉVÉNEMENTS ===== #}
+    <div class="mb-6">
+      <h2 class="text-2xl font-extrabold">📋 Tous les événements</h2>
     </div>
 
     {# LISTE DES ÉVÉNEMENTS #}
@@ -107,6 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const orderSelect = document.getElementById('orderSelect');
   const resetBtn = document.getElementById('resetFilters');
   const eventsContainer = document.getElementById('eventsContainer');
+  const resultCount = document.getElementById('resultCount');
 
   let debounceTimer;
 

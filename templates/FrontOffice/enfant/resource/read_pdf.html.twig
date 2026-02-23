@@ -612,5 +612,135 @@
 
     })();
     </script>
+
+
+<style>
+#translationBubble {
+    position: fixed;
+    background: #1a1a2e;
+    color: white;
+    padding: 14px 18px;
+    border-radius: 16px;
+    font-size: 14px;
+    max-width: 280px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 9999;
+    display: none;
+    border-left: 4px solid #f59e0b;
+}
+#langSelector {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 16px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: bold;
+}
+</style>
+
+<div id="translationBubble"></div>
+
+<div id="langSelector">
+    🌍 Traduire en :
+    <select id="langSelect" onchange="changeLanguage(this.value)"
+            style="border:2px solid #f59e0b; border-radius:8px; padding:4px 8px; cursor:pointer;">
+        <option value="ar">🇸🇦 Arabe (Standard)</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="en">🇬🇧 Anglais</option>
+        <option value="es">🇪🇸 Espagnol</option>
+        <option value="de">🇩🇪 Allemand</option>
+        <option value="it">🇮🇹 Italien</option>
+    </select>
+</div>
+
+<script>
+const flags = { 'ar':'🇸🇦','fr':'🇫🇷','en':'🇬🇧','es':'🇪🇸','de':'🇩🇪','it':'🇮🇹' };
+
+// Langue source du livre
+const bookLang = '{{ resource.language|lower|slice(0,2) }}';
+
+// Langue cible — depuis localStorage
+let userLang = localStorage.getItem('eduplay_lang') || 'ar';
+document.getElementById('langSelect').value = userLang;
+
+function changeLanguage(lang) {
+    userLang = lang;
+    localStorage.setItem('eduplay_lang', lang);
+}
+
+const bubble = document.getElementById('translationBubble');
+
+// Double-clic sur un mot → traduction
+document.addEventListener('dblclick', async function(e) {
+    const selection = window.getSelection().toString().trim();
+    if (!selection || selection.split(' ').length > 4) return;
+
+    // Ne pas traduire si même langue
+    if (bookLang === userLang) {
+        bubble.style.display = 'block';
+        bubble.style.left    = Math.min(e.pageX + 15, window.innerWidth - 300) + 'px';
+        bubble.style.top     = (e.pageY - 60) + 'px';
+        bubble.innerHTML     = '⚠️ Même langue que le livre !';
+        return;
+    }
+
+    bubble.style.display = 'block';
+    bubble.style.left    = Math.min(e.pageX + 15, window.innerWidth - 300) + 'px';
+    bubble.style.top     = (e.pageY - 60) + 'px';
+    bubble.innerHTML     = '⏳ Traduction...';
+    bubble.style.direction = 'ltr';
+
+    try {
+        const response = await fetch('/resource/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                word: selection,
+                from: bookLang,
+                to:   userLang
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            bubble.innerHTML = `❌ ${data.error}`;
+            return;
+        }
+
+        bubble.style.direction = userLang === 'ar' ? 'rtl' : 'ltr';
+        bubble.innerHTML = `
+            <div style="font-size:11px;color:#f59e0b;margin-bottom:6px;direction:ltr;">
+                📖 "<strong>${data.word}</strong>"
+            </div>
+            <div style="font-size:20px;font-weight:bold;margin-bottom:4px;">
+                ${flags[userLang] || '🌍'} ${data.translation}
+            </div>
+            <div style="font-size:10px;color:#9ca3af;margin-top:6px;
+                        display:flex;justify-content:space-between;direction:ltr;">
+                <span>✓ MyMemory</span>
+                <span onclick="bubble.style.display='none'"
+                      style="cursor:pointer;color:#f87171;">✕ Fermer</span>
+            </div>
+        `;
+
+    } catch(err) {
+        bubble.innerHTML = '❌ Erreur réseau';
+    }
+});
+
+// Clic ailleurs → ferme la bulle
+document.addEventListener('click', function(e) {
+    if (!bubble.contains(e.target)) bubble.style.display = 'none';
+});
+</script>
+    
 </body>
 </html>

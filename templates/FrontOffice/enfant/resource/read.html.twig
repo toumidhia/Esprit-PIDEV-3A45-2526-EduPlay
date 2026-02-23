@@ -198,6 +198,56 @@
             <span class="material-symbols-outlined text-2xl">menu_book</span>
             <span>Livre complet</span>
         </a>
+
+
+
+
+        {# Ajouter ce bouton dans FrontOffice/enfant/resource/read.html.twig #}
+{# À placer à côté du bouton "Lire le PDF" #}
+
+<div class="flex gap-3 flex-wrap">
+
+    {# Bouton Lire PDF existant #}
+    {% if resource.pdfFile %}
+    <a href="{{ asset('pdfs/' ~ resource.pdfFile) }}" target="_blank"
+       class="inline-flex items-center gap-2 px-5 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 transition-all shadow-lg">
+        <span class="material-symbols-outlined">visibility</span>
+        📖 Lire le PDF
+    </a>
+    {% endif %}
+
+    {# BOUTON BANDE DESSINÉE — génère une BD depuis le PDF du livre #}
+    {% if resource.pdfFile or resource.summary %}
+    <a href="{{ path('app_resource_comic', {'id': resource.id}) }}"
+       onclick="showComicLoading()"
+       class="inline-flex items-center gap-2 px-5 py-3 bg-yellow-400 text-black rounded-xl font-bold hover:bg-yellow-500 transition-all shadow-lg hover:scale-105">
+        🎨 Bande dessinée
+    </a>
+    {% endif %}
+
+</div>
+
+{# Écran de chargement pendant la génération #}
+<div id="comicLoadingOverlay" 
+     class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center flex-col text-white text-center p-8">
+    <div class="text-6xl mb-6 animate-bounce">🎨</div>
+    <div class="w-12 h-12 border-4 border-white/30 border-t-yellow-400 rounded-full animate-spin mb-6"></div>
+    <p class="text-2xl font-bold" style="font-family: 'Bangers', cursive; letter-spacing: 2px;">
+        Ton histoire prend vie...
+    </p>
+    <p class="text-white/60 mt-3 text-sm">
+        L'IA génère ton résumé et tes illustrations.<br>
+        Cela peut prendre 20-30 secondes ⏳
+    </p>
+    <div class="mt-6 space-y-2 text-left text-sm">
+        <p class="text-green-400">✅ Lecture du livre...</p>
+        <p class="text-yellow-400 animate-pulse">⏳ Génération des scènes...</p>
+        <p class="text-white/40">⬜ Création des illustrations...</p>
+    </div>
+</div>
+
+
+
         
         <!-- Bouton Arrêter -->
         <button id="stopBtn" 
@@ -609,6 +659,15 @@
             // Afficher un message de confirmation
             console.log('✅ Synthèse vocale prête !');
         })();
+
+
+
+
+      
+function showComicLoading() {
+    document.getElementById('comicLoadingOverlay').classList.remove('hidden');
+}
+
     </script>
 </body>
 </html>

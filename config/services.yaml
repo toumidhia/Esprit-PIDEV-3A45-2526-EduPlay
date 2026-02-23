@@ -61,3 +61,12 @@ services:
     App\Service\AgeDetectionService:
         arguments:
             $cohereApiKey: '%env(COHERE_API_KEY)%'
+
+    App\Service\ComicGeneratorService:
+        arguments:
+            $geminiApiKey: '%env(OPENROUTER_API_KEY)%'
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\BookRecommendationChatbotService:
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'

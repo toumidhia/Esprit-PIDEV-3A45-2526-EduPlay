@@ -244,6 +244,45 @@
     </div>
 </div>
 
+<!-- 🤖 CHATBOT RECOMMANDATION LIVRES -->
+<div id="chatbotPanel" class="hidden fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border-2 border-blue-100 z-50 overflow-hidden flex flex-col" style="max-height: 480px;">
+    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">📚</span>
+            <div>
+                <h4 class="font-bold">Assistant Livres</h4>
+                <p class="text-xs text-white/80">Dis-moi ce que tu aimes, je te recommande des livres !</p>
+            </div>
+        </div>
+        <button onclick="toggleChatbot()" class="p-1 hover:bg-white/20 rounded-lg transition-colors">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+    <div id="chatbotMessages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50" style="min-height: 200px;">
+        <div class="flex gap-2">
+            <span class="text-2xl flex-shrink-0">🤗</span>
+            <div class="bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-100">
+                <p class="text-sm text-gray-700">Salut ! Dis ton âge et tes préférences. Exemple : "J'ai 8 ans et j'aime les animaux" — je te montrerai tous les livres adaptés à ton âge !</p>
+            </div>
+        </div>
+    </div>
+    <div class="p-3 border-t border-gray-200 bg-white space-y-2">
+        <div class="flex gap-2">
+            <input type="text" id="chatbotInput" placeholder="Ex: J'aime les animaux..."
+                   class="flex-1 px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-sm"
+                   onkeydown="if(event.key==='Enter')sendChatbotMessage()">
+            <button onclick="sendChatbotMessage()"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors text-sm flex items-center gap-1">
+                <span class="material-symbols-outlined text-lg">send</span> Envoyer
+            </button>
+        </div>
+    </div>
+</div>
+<button id="chatbotToggle" onclick="toggleChatbot()"
+        class="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center z-40 transition-all hover:scale-110">
+    <span class="text-2xl">📚</span>
+</button>
+
 <!-- Toast notification -->
 <div id="toastNotif" class="hidden fixed top-6 right-6 z-50 max-w-sm bg-white rounded-2xl shadow-2xl border-l-4 border-green-500 p-4">
     <div class="flex items-start gap-3">
@@ -692,6 +731,81 @@ document.addEventListener('DOMContentLoaded', () => {
         loadMyNotifications();
     }
 });
+
+// ===== CHATBOT RECOMMANDATION LIVRES =====
+const chatbotUrl = '{{ path("app_resource_chatbot") }}';
+const chatbotLibraryId = {{ library is defined and library ? library.id : 0 }};
+
+function toggleChatbot() {
+    const panel = document.getElementById('chatbotPanel');
+    panel.classList.toggle('hidden');
+}
+
+async function sendChatbotMessage() {
+    const input = document.getElementById('chatbotInput');
+    const message = input.value.trim();
+    if (!message) return;
+
+    const messagesDiv = document.getElementById('chatbotMessages');
+    messagesDiv.innerHTML += `
+        <div class="flex gap-2 justify-end">
+            <div class="bg-blue-500 text-white rounded-xl px-4 py-2 shadow-sm max-w-[80%]">
+                <p class="text-sm">${escapeHtml(message)}</p>
+            </div>
+            <span class="text-2xl flex-shrink-0">👤</span>
+        </div>
+    `;
+    input.value = '';
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'flex gap-2';
+    loadingDiv.id = 'chatbotLoading';
+    loadingDiv.innerHTML = `
+        <span class="text-2xl flex-shrink-0">🤗</span>
+        <div class="bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Je réfléchis...</p>
+        </div>
+    `;
+    messagesDiv.appendChild(loadingDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    try {
+        const res = await fetch(chatbotUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: message, libraryId: chatbotLibraryId})
+        });
+        const data = await res.json();
+        loadingDiv.remove();
+        const responseText = data.success ? data.response : (data.response || 'Oups, une erreur est survenue.');
+        messagesDiv.innerHTML += `
+            <div class="flex gap-2">
+                <span class="text-2xl flex-shrink-0">🤗</span>
+                <div class="bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap">${escapeHtml(responseText)}</p>
+                </div>
+            </div>
+        `;
+    } catch (err) {
+        loadingDiv.remove();
+        messagesDiv.innerHTML += `
+            <div class="flex gap-2">
+                <span class="text-2xl flex-shrink-0">😕</span>
+                <div class="bg-red-50 rounded-xl px-4 py-2 border border-red-200">
+                    <p class="text-sm text-red-700">Erreur de connexion. Réessaie plus tard !</p>
+                </div>
+            </div>
+        `;
+    }
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 </script>
 </body>
 </html>

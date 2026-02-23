@@ -8,6 +8,7 @@ use App\Form\ResourceType;
 use App\Form\ResourceSearchType;
 use App\Repository\ResourceRepository;
 use App\Repository\BookRequestRepository;
+use App\Repository\LibraryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use App\Service\PdfExtractorService;
 use App\Service\AgeDetectionService;
+use App\Service\BookRecommendationChatbotService;
 
 final class ResourceController extends AbstractController
 {
@@ -87,6 +89,57 @@ final class ResourceController extends AbstractController
         }, $resources);
 
         return $this->json(['results' => $results, 'query' => $query]);
+    }
+
+    // ========================= CHATBOT RECOMMANDATION LIVRES =========================
+    #[Route('resource/chatbot', name: 'app_resource_chatbot', methods: ['POST'])]
+    public function chatbot(
+        Request $request,
+        ResourceRepository $resourceRepository,
+        LibraryRepository $libraryRepository,
+        BookRecommendationChatbotService $chatbot
+    ): Response {
+        $data = json_decode($request->getContent(), true);
+        $message = trim($data['message'] ?? '');
+        $libraryId = (int) ($data['libraryId'] ?? 0);
+
+        if (empty($message)) {
+            return $this->json(['success' => false, 'response' => 'Dis-moi ton âge et/ou tes préférences ! Ex: "J\'ai 8 ans et j\'aime les animaux" 😊']);
+        }
+
+        $age = $this->extractAgeFromMessage($message);
+
+        $library = $libraryId > 0 ? $libraryRepository->find($libraryId) : null;
+        $resources = $library
+            ? $resourceRepository->findBy(['libraryId' => $library], ['title' => 'ASC'])
+            : $resourceRepository->findBy([], ['title' => 'ASC']);
+
+        // Filtrer par tranche d'âge : minAge <= âge <= maxAge (âge = min, max ou dans l'intervalle)
+        if ($age !== null && $age >= 1) {
+            $resources = array_filter($resources, fn($r) =>
+                $r->getMinAge() <= $age && $age <= $r->getMaxAge()
+            );
+        }
+
+        $books = array_map(fn($r) => [
+            'title'   => $r->getTitle(),
+            'author'  => $r->getAuthor(),
+            'minAge'  => $r->getMinAge(),
+            'maxAge'  => $r->getMaxAge(),
+            'type'    => $r->getType(),
+            'summary' => $r->getSummary() ?? '',
+        ], array_values($resources));
+
+        $response = $chatbot->getRecommendation($message, $books, $age);
+
+        if ($response === null) {
+            return $this->json([
+                'success'  => false,
+                'response' => 'Oups, je n\'arrive pas à répondre pour l\'instant. Réessaie plus tard ! 🤗',
+            ]);
+        }
+
+        return $this->json(['success' => true, 'response' => $response]);
     }
 
     // ========================= DEMANDE DE LIVRE =========================
@@ -166,6 +219,124 @@ final class ResourceController extends AbstractController
             ], $notifications)
         ]);
     }
+
+
+// Ajouter cette route dans ResourceController.php
+// AVANT les routes avec {id} — donc avant admin/resource/{id}
+
+// ========================= FRONT — GÉNÉRATION BD =========================
+// Génère une bande dessinée depuis le PDF du livre
+// Route fixe — doit être AVANT resource/{id}
+// ========================= FRONT — PAGE BD (affichage) =========================
+// Affiche la page BD avec écran de chargement
+#[Route('resource/{id}/comic', name: 'app_resource_comic', methods: ['GET'], requirements: ['id' => '\d+'])]
+public function comic(Resource $resource): Response
+{
+    return $this->render('FrontOffice/enfant/resource/comic.html.twig', [
+        'resource' => $resource,
+    ]);
+}
+
+#[Route('resource/{id}/comic/generate', name: 'app_resource_comic_generate', methods: ['GET'], requirements: ['id' => '\d+'])]
+public function comicGenerate(
+    Resource $resource,
+    PdfExtractorService $pdfExtractor,
+    \App\Service\ComicGeneratorService $comicGenerator
+): Response {
+    set_time_limit(120);
+
+    $pdfText = '';
+    if ($resource->getPdfFile()) {
+        $pdfText = $pdfExtractor->extractTextFromPdf($resource->getPdfFile()) ?? '';
+    }
+
+    $contentToUse = !empty($pdfText)
+        ? $pdfText
+        : ($resource->getSummary()
+            ?? 'Livre : ' . $resource->getTitle() . ' par ' . $resource->getAuthor());
+
+    try {
+        $comic = $comicGenerator->generateComic(
+            resourceId: $resource->getId(),
+            pdfText:    $contentToUse,
+            minAge:     $resource->getMinAge(),
+            maxAge:     $resource->getMaxAge()
+        );
+
+        return $this->json(['success' => true, 'comic' => $comic]);
+
+    } catch (\Exception $e) {
+        return $this->json(['success' => false, 'message' => $e->getMessage()]);
+    }
+}
+
+// ========================= TRADUCTION MYMEMORY =========================
+// Double-clic sur un mot → traduction gratuite sans clé API
+// ========================= TRADUCTION MYMEMORY =========================
+// Double-clic sur un mot → traduction gratuite sans clé API
+#[Route('resource/translate', name: 'app_resource_translate', methods: ['POST'])]
+public function translate(Request $request): Response
+{
+    $data     = json_decode($request->getContent(), true);
+    $word     = trim($data['word'] ?? '');
+    $fromLang = $data['from'] ?? 'fr';
+    $toLang   = $data['to'] ?? 'ar-SA';
+
+    if (empty($word)) {
+        return $this->json(['error' => 'Mot vide']);
+    }
+
+    // Normaliser les codes de langue
+    // ar → ar-SA (arabe standard moderne, الفصحى)
+    $langMap = [
+        'ar'    => 'ar-SA',
+        'ar-TN' => 'ar-SA',
+        'fr'    => 'fr-FR',
+        'en'    => 'en-US',
+        'es'    => 'es-ES',
+        'de'    => 'de-DE',
+        'it'    => 'it-IT',
+    ];
+
+    $fromLang = $langMap[$fromLang] ?? $fromLang;
+    $toLang   = $langMap[$toLang]   ?? $toLang;
+
+    // MyMemory — gratuit, sans clé, sans inscription
+    $url = "https://api.mymemory.translated.net/get?q="
+         . urlencode($word)
+         . "&langpair={$fromLang}|{$toLang}";
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_SSL_VERIFYPEER => false,
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200 || !$response) {
+        return $this->json(['error' => 'Traduction indisponible']);
+    }
+
+    $result      = json_decode($response, true);
+    $translation = $result['responseData']['translatedText'] ?? 'Traduction indisponible';
+
+    // Vérifier que la traduction n'est pas une erreur MyMemory
+    if (str_contains(strtoupper($translation), 'QUERY LENGTH')) {
+        return $this->json(['error' => 'Mot trop long pour la traduction']);
+    }
+
+    return $this->json([
+        'word'        => $word,
+        'translation' => $translation,
+        'from'        => $fromLang,
+        'to'          => $toLang,
+    ]);
+}
+
 
     // ========================= FRONT READ — routes avec {id} =========================
     #[Route('resource/{id}/read', name: 'app_resource_read', methods: ['GET'])]
@@ -572,5 +743,26 @@ final class ResourceController extends AbstractController
                 $resource->getTitle()
             ));
         }
+    }
+
+    /**
+     * Extrait l'âge du message (ex: "J'ai 8 ans", "8 ans", "livres pour 10 ans")
+     */
+    private function extractAgeFromMessage(string $message): ?int
+    {
+        $message = mb_strtolower($message);
+        if (preg_match('/(?:j\'?ai\s+|j\'?a\s+)?(\d{1,2})\s*ans?/u', $message, $m)) {
+            $age = (int) $m[1];
+            return ($age >= 0 && $age <= 99) ? $age : null;
+        }
+        if (preg_match('/(?:pour|de)\s+(\d{1,2})\s*ans?/u', $message, $m)) {
+            $age = (int) $m[1];
+            return ($age >= 0 && $age <= 99) ? $age : null;
+        }
+        if (preg_match('/\b(\d{1,2})\s*ans?\b/u', $message, $m)) {
+            $age = (int) $m[1];
+            return ($age >= 0 && $age <= 99) ? $age : null;
+        }
+        return null;
     }
 }

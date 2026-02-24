@@ -432,35 +432,6 @@ public function translate(Request $request): Response
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            // ── Upload image ──────────────────────────────────────────
-            $coverImageFile = $form->get('coverImageFile')->getData();
-            if ($coverImageFile) {
-                $newFilename = uniqid() . '.' . $coverImageFile->guessExtension();
-                try {
-                    $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/uploads';
-                    $coverImageFile->move($uploadsDir, $newFilename);
-                    $resource->setCoverImage($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur upload image : ' . $e->getMessage());
-                    return $this->redirectToRoute('admin_resource_new');
-                }
-            }
-
-            // ── Upload PDF ────────────────────────────────────────────
-            $pdfFileFile = $form->get('pdfFileFile')->getData();
-            if ($pdfFileFile) {
-                $newFilename = uniqid() . '.' . $pdfFileFile->guessExtension();
-                try {
-                    $pdfsDir = $this->getParameter('kernel.project_dir') . '/public/pdfs';
-                    $pdfFileFile->move($pdfsDir, $newFilename);
-                    $resource->setPdfFile($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur upload PDF : ' . $e->getMessage());
-                    return $this->redirectToRoute('admin_resource_new');
-                }
-            }
-
             // ── 🤖 Détection IA de la tranche d'âge ──────────────────
             $pdfContent = '';
             if ($resource->getPdfFile()) {
@@ -599,49 +570,6 @@ public function translate(Request $request): Response
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            // ── Upload image ──────────────────────────────────────────
-            $coverImageFile = $form->get('coverImageFile')->getData();
-            if ($coverImageFile) {
-                $newFilename = uniqid() . '.' . $coverImageFile->guessExtension();
-                try {
-                    $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/uploads';
-                    $coverImageFile->move($uploadsDir, $newFilename);
-                    // Supprimer l'ancienne image si elle existe
-                    if ($oldCoverImage && file_exists($uploadsDir . '/' . $oldCoverImage)) {
-                        unlink($uploadsDir . '/' . $oldCoverImage);
-                    }
-                    $resource->setCoverImage($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur upload image : ' . $e->getMessage());
-                    $resource->setCoverImage($oldCoverImage);
-                }
-            } else {
-                // Conserver l'ancienne image si aucune nouvelle n'est uploadée
-                $resource->setCoverImage($oldCoverImage);
-            }
-
-            // ── Upload PDF ────────────────────────────────────────────
-            $pdfFileFile = $form->get('pdfFileFile')->getData();
-            if ($pdfFileFile) {
-                $newFilename = uniqid() . '.' . $pdfFileFile->guessExtension();
-                try {
-                    $pdfsDir = $this->getParameter('kernel.project_dir') . '/public/pdfs';
-                    $pdfFileFile->move($pdfsDir, $newFilename);
-                    // Supprimer l'ancien PDF si il existe
-                    if ($oldPdfFile && file_exists($pdfsDir . '/' . $oldPdfFile)) {
-                        unlink($pdfsDir . '/' . $oldPdfFile);
-                    }
-                    $resource->setPdfFile($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur upload PDF : ' . $e->getMessage());
-                    $resource->setPdfFile($oldPdfFile);
-                }
-            } else {
-                // Conserver l'ancien PDF si aucun nouveau n'est uploadé
-                $resource->setPdfFile($oldPdfFile);
-            }
-
             // ── 🤖 Re-détection IA à chaque édition pour garder les âges à jour ───
             $pdfContent = '';
             if ($resource->getPdfFile()) {
@@ -690,21 +618,6 @@ public function translate(Request $request): Response
         EntityManagerInterface $em
     ): Response {
         if ($this->isCsrfTokenValid('delete' . $resource->getId(), $request->request->get('_token'))) {
-
-            // Supprimer le fichier image du serveur
-            $coverImage  = $resource->getCoverImage();
-            $uploadsDir  = $this->getParameter('kernel.project_dir') . '/public/uploads';
-            if ($coverImage && file_exists($uploadsDir . '/' . $coverImage)) {
-                unlink($uploadsDir . '/' . $coverImage);
-            }
-
-            // Supprimer le fichier PDF du serveur
-            $pdfFile = $resource->getPdfFile();
-            $pdfsDir = $this->getParameter('kernel.project_dir') . '/public/pdfs';
-            if ($pdfFile && file_exists($pdfsDir . '/' . $pdfFile)) {
-                unlink($pdfsDir . '/' . $pdfFile);
-            }
-
             $em->remove($resource);
             $em->flush();
 

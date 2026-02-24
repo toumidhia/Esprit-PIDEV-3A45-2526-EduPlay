@@ -193,26 +193,6 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
         
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                // Gestion upload image
-                $imageFile = $form->get('coverImageFile')->getData();
-                
-                if ($imageFile) {
-                    $newFilename = uniqid().'.'.$imageFile->guessExtension();
-                    try {
-                        $imageFile->move(
-                            $this->getParameter('uploads_directory'),
-                            $newFilename
-                        );
-                        
-                        // Sauvegarder le nom du fichier
-                        $library->setCoverImage($newFilename);
-                        
-                    } catch (FileException $e) {
-                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image : ' . $e->getMessage());
-                        return $this->redirectToRoute('admin_library_new');
-                    }
-                }
-                
                 $em->persist($library);
                 $em->flush();
                 
@@ -243,8 +223,6 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
     #[Route('admin/library/{id}/edit', name: 'admin_library_edit', methods: ['GET','POST'])]
     public function adminEdit(Request $request, Library $library, EntityManagerInterface $em): Response
     {
-        $oldImage = $library->getCoverImage();
-        
         $form = $this->createForm(LibraryType::class, $library, [
             'attr' => ['novalidate' => 'novalidate', 'class' => 'space-y-6'] // Désactive HTML5
         ]);
@@ -252,34 +230,6 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
         
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                // Gestion upload image
-                $imageFile = $form->get('coverImageFile')->getData();
-                
-                if ($imageFile) {
-                    $newFilename = uniqid().'.'.$imageFile->guessExtension();
-                    try {
-                        $imageFile->move(
-                            $this->getParameter('uploads_directory'),
-                            $newFilename
-                        );
-                        
-                        // Supprimer l'ancienne image si elle existe
-                        if ($oldImage && file_exists($this->getParameter('uploads_directory') . '/' . $oldImage)) {
-                            unlink($this->getParameter('uploads_directory') . '/' . $oldImage);
-                        }
-                        
-                        $library->setCoverImage($newFilename);
-                        
-                    } catch (FileException $e) {
-                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image : ' . $e->getMessage());
-                        // En cas d'erreur, garder l'ancienne image
-                        $library->setCoverImage($oldImage);
-                    }
-                } else {
-                    // IMPORTANT : Si aucune nouvelle image, garder l'ancienne
-                    $library->setCoverImage($oldImage);
-                }
-                
                 $em->flush();
                 
                 $this->addFlash('success', 'Library modifiée avec succès');
@@ -302,12 +252,6 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
     public function adminDelete(Request $request, Library $library, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('delete'.$library->getId(), $request->request->get('_token'))) {
-            
-            // Supprimer l'image associée
-            $imageName = $library->getCoverImage();
-            if ($imageName && file_exists($this->getParameter('uploads_directory') . '/' . $imageName)) {
-                unlink($this->getParameter('uploads_directory') . '/' . $imageName);
-            }
             
             $em->remove($library);
             $em->flush();

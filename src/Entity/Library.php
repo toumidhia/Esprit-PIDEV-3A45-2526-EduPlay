@@ -8,8 +8,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: LibraryRepository::class)]
+#[Vich\Uploadable]
 class Library
 {
     #[ORM\Id]
@@ -37,6 +40,9 @@ class Library
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $coverImage = null;
+
+    #[Vich\UploadableField(mapping: 'library_cover', fileNameProperty: 'coverImage')]
+    private ?File $coverImageFile = null;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: 'L\'âge minimum est requis')]
@@ -111,6 +117,17 @@ class Library
     {
         $this->coverImage = $coverImage;
         return $this;
+    }
+
+    public function setCoverImageFile(?File $file = null): static
+    {
+        $this->coverImageFile = $file;
+        return $this;
+    }
+
+    public function getCoverImageFile(): ?File
+    {
+        return $this->coverImageFile;
     }
 
     public function getMinAge(): ?int

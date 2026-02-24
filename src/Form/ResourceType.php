@@ -40,7 +40,7 @@ class ResourceType extends AbstractType
             ->add('coverImageFile', FileType::class, [
                 'label' => 'Image de couverture',
                 'required' => !$isEdit, // Requis seulement en création
-                'mapped' => false,
+                'mapped' => true,
                 'constraints' => $isEdit ? [
                     // En édition, seulement valider le format si un fichier est uploadé
                     new File([
@@ -71,7 +71,7 @@ class ResourceType extends AbstractType
             ->add('pdfFileFile', FileType::class, [
                 'label' => 'Fichier PDF',
                 'required' => !$isEdit, // Requis seulement en création
-                'mapped' => false,
+                'mapped' => true,
                 'constraints' => $isEdit ? [
                     // En édition, seulement valider le format si un fichier est uploadé
                     new File([

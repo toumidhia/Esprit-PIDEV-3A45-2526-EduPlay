@@ -7,8 +7,11 @@ use App\Repository\ResourceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: ResourceRepository::class)]
+#[Vich\Uploadable]
 class Resource
 {
     #[ORM\Id]
@@ -56,6 +59,12 @@ class Resource
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $pdfFile = null;
+
+    #[Vich\UploadableField(mapping: 'resource_cover', fileNameProperty: 'coverImage')]
+    private ?File $coverImageFile = null;
+
+    #[Vich\UploadableField(mapping: 'resource_pdf', fileNameProperty: 'pdfFile')]
+    private ?File $pdfFileFile = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le type est requis')]
@@ -157,6 +166,17 @@ class Resource
         return $this;
     }
 
+    public function setCoverImageFile(?File $file = null): static
+    {
+        $this->coverImageFile = $file;
+        return $this;
+    }
+
+    public function getCoverImageFile(): ?File
+    {
+        return $this->coverImageFile;
+    }
+
     public function getPdfFile(): ?string
     {
         return $this->pdfFile;
@@ -166,6 +186,17 @@ class Resource
     {
         $this->pdfFile = $pdfFile;
         return $this;
+    }
+
+    public function setPdfFileFile(?File $file = null): static
+    {
+        $this->pdfFileFile = $file;
+        return $this;
+    }
+
+    public function getPdfFileFile(): ?File
+    {
+        return $this->pdfFileFile;
     }
 
     public function getType(): ?string

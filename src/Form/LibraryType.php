@@ -70,7 +70,7 @@ class LibraryType extends AbstractType
             ->add('coverImageFile', FileType::class, [
                 'label' => 'Image de couverture',
                 'required' => false,
-                'mapped' => false,
+                'mapped' => true,
                 'constraints' => [
                     new File([
                         'maxSize' => '2M',

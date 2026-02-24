@@ -7,6 +7,76 @@
     "content-hash": "a2203b60107a6bb036156e9fbe9e225a",
     "packages": [
         {
+            "name": "abstractapi/php-ip-geolocation",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/abstractapi/php-ip-geolocation.git",
+                "reference": "1040f5c31afa067e441792cbdaa10b2e33b13f8a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/abstractapi/php-ip-geolocation/zipball/1040f5c31afa067e441792cbdaa10b2e33b13f8a",
+                "reference": "1040f5c31afa067e441792cbdaa10b2e33b13f8a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "7.0.*",
+                "vlucas/phpdotenv": "^2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Abstractapi\\IpGeolocation\\": "src/AbstractIpGeolocation"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Benjamin Bouchet",
+                    "email": "libraries@abstractapi.com",
+                    "homepage": "https://www.abstractapi.com"
+                }
+            ],
+            "description": "AbstractIpGeolocation - Wrapper to quickly start using the powerful AbstractAPI's IP geolocation service in your projects.",
+            "homepage": "https://github.com/abstractapi/php-ip-geolocation",
+            "keywords": [
+                "IP",
+                "abstract",
+                "abstractapi",
+                "api",
+                "geolocation",
+                "geolocation-api",
+                "geolocation-application",
+                "geolocation-data",
+                "geolocation-database",
+                "geolocation-plugin",
+                "ip geolocation",
+                "ip-geo",
+                "ip-geolocation",
+                "ip-geolocation-api",
+                "ip-geolocation-ip2location",
+                "library",
+                "php",
+                "php-library",
+                "wrapper"
+            ],
+            "support": {
+                "docs": "https://app.abstractapi.com/api/ip-geolocation/documentation",
+                "issues": "https://github.com/abstractapi/php-ip-geolocation/issues",
+                "source": "https://github.com/abstractapi/php-ip-geolocation"
+            },
+            "time": "2021-04-15T00:00:00+00:00"
+        },
+        {
             "name": "bacon/bacon-qr-code",
             "version": "v3.0.3",
             "source": {

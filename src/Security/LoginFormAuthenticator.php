@@ -78,14 +78,13 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
          /** @var SessionInterface $session */
         $session = $request->getSession();
         $session->getFlashBag()->clear();
-
-        $ip = $request->getClientIp();
-        $location = $this->geolocationService->getLocationFromIp($ip);
         
-        if ($location) {
+        if ($user) {
+            $ip = $request->getClientIp();
+            $location = $this->geolocationService->getLocation($ip);
             $user->setLastLoginIp($ip);
-            $user->setLastLoginCountry($location['country_code'] ?? null);
-            $user->setLastLoginCity($location['city'] ?? null);
+            $user->setLastLoginCity($location['city']);
+            $user->setLastLoginCountry($location['country']);
             $user->setLastLoginAt(new \DateTime());
             
             $this->entityManager->flush();

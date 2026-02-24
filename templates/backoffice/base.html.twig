@@ -240,7 +240,7 @@
                 </a>
             </li>
 
-            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_ENSEIGNANT') %}
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TEACHER') %}
                 <div class="sidebar-heading">Gestion des Cours</div>
 
             {% endif %}
@@ -278,6 +278,11 @@
                 <li class="nav-item">
                     <a class="nav-link {% if app.request.get('_route') starts with 'app_back_commande' %}active{% endif %}" href="{{ path('app_back_commande_index') }}">
                         <i class="bi bi-cart3"></i> Commandes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if app.request.get('_route') starts with 'app_back_anomalies' %}active{% endif %}" href="{{ path('app_back_anomalies') }}">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Anomalies
                     </a>
                 </li>
 

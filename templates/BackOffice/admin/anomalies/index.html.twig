@@ -1,148 +1,212 @@
 {% extends 'BackOffice/base.html.twig' %}
 
-{% block title %}Détection de fraude / Anomalies{% endblock %}
+{% block title %}Détection de Fraude / Anomalies{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .stat-card {
+            border-left: 4px solid #ccc;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.danger {
+            border-left-color: #dc3545;
+            background-color: #fff5f5;
+        }
+
+        .stat-card.warning {
+            border-left-color: #ffc107;
+            background-color: #fffbf0;
+        }
+
+        .stat-card.info {
+            border-left-color: #0dcaf0;
+            background-color: #f0f7ff;
+        }
+
+        .stat-card .card-title {
+            color: #2c3e50;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <div class="mb-8">
-        <h1 class="text-3xl font-extrabold mb-2">
-            🔒 Détection de Fraude / Anomalies
-        </h1>
-        <p class="text-[#617989] text-lg">Système de détection automatique des commandes suspectes</p>
-    </div>
-
-    {# Summary Cards #}
-    {% if anomalies.summary %}
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {# Total Suspicious Orders #}
-            <div class="bg-red-50 border-l-4 border-red-500 rounded p-4">
-                <p class="text-xs font-semibold text-red-700 uppercase">Commandes Suspectes</p>
-                <p class="text-3xl font-bold text-red-600">{{ anomalies.summary.total_suspicious }}</p>
-            </div>
-
-            {# High Severity #}
-            <div class="bg-orange-50 border-l-4 border-orange-500 rounded p-4">
-                <p class="text-xs font-semibold text-orange-700 uppercase">Haute Sévérité</p>
-                <p class="text-3xl font-bold text-orange-600">{{ anomalies.summary.high_severity }}</p>
-            </div>
-
-            {# Medium Severity #}
-            <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded p-4">
-                <p class="text-xs font-semibold text-yellow-700 uppercase">Sévérité Moyen</p>
-                <p class="text-3xl font-bold text-yellow-600">{{ anomalies.summary.medium_severity }}</p>
-            </div>
-
-            {# Low Severity #}
-            <div class="bg-blue-50 border-l-4 border-blue-500 rounded p-4">
-                <p class="text-xs font-semibold text-blue-700 uppercase">Faible Sévérité</p>
-                <p class="text-3xl font-bold text-blue-600">{{ anomalies.summary.low_severity }}</p>
-            </div>
+    <div class="container-fluid mt-5">
+        <div class="mb-4">
+            <h1 class="h2">
+                <i class="bi bi-exclamation-triangle-fill text-danger"></i> Détection de Fraude / Anomalies
+            </h1>
+            <p class="text-muted">Système de détection automatique des commandes suspectes</p>
         </div>
-    {% endif %}
 
-    {# Flagged Orders Section #}
-    <div class="mb-8">
-        <h2 class="text-2xl font-bold mb-4">🚩 Commandes Signalées ({{ anomalies.suspicious_orders|length }})</h2>
-
-        {% if anomalies.suspicious_orders is not empty %}
-            <div class="space-y-4">
-                {% for order_data in anomalies.suspicious_orders %}
-                    <div class="bg-white rounded border border-gray-200 overflow-hidden">
-                        {# Order Header with Severity Badge #}
-                        <div class="{% if order_data.max_severity == 'high' %}bg-red-50 border-b-2 border-red-200{% elseif order_data.max_severity == 'medium' %}bg-yellow-50 border-b-2 border-yellow-200{% else %}bg-blue-50 border-b-2 border-blue-200{% endif %} p-4">
-                            <div class="flex justify-between items-start gap-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <h3 class="font-bold text-lg">Commande #{{ order_data.commande.id }}</h3>
-                                        <span class="inline-block px-2 py-1 text-xs font-bold rounded {% if order_data.max_severity == 'high' %}bg-red-200 text-red-800{% elseif order_data.max_severity == 'medium' %}bg-yellow-200 text-yellow-800{% else %}bg-blue-200 text-blue-800{% endif %}">
-                                            {{ order_data.max_severity|upper }}
-                                        </span>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-3 text-sm text-gray-700">
-                                        <p><strong>Client:</strong> {{ order_data.commande.user.firstName }} {{ order_data.commande.user.lastName }}</p>
-                                        <p><strong>Produit:</strong> {{ order_data.commande.product.name }}</p>
-                                        <p><strong>Quantité:</strong> {{ order_data.commande.quantity }}</p>
-                                        <p><strong>Montant:</strong> {{ order_data.commande.totalAmount|number_format(2, ',', ' ') }} €</p>
-                                        <p><strong>Paiement:</strong> 
-                                            {% if order_data.commande.isPaid %}
-                                                <span class="inline px-2 py-1 bg-green-100 text-green-700 text-xs rounded">✓ Payée</span>
-                                            {% else %}
-                                                <span class="inline px-2 py-1 bg-red-100 text-red-700 text-xs rounded">✗ Non Payée</span>
-                                            {% endif %}
-                                        </p>
-                                        <p><strong>Date:</strong> {{ order_data.commande.dateCommande|date('d/m/Y H:i') }}</p>
-                                    </div>
-                                </div>
-
-                                {# Action Link #}
-                                <a href="{{ path('app_back_commande_show', { id: order_data.commande.id }) }}" class="px-3 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 whitespace-nowrap">
-                                    Détails →
-                                </a>
-                            </div>
-                        </div>
-
-                        {# Flags Section #}
-                        <div class="p-4">
-                            <p class="text-sm font-medium text-gray-700 mb-3">{{ order_data.total_flags }} drapeau(x) détecté(s):</p>
-                            
-                            <div class="space-y-2">
-                                {% for flag in order_data.flags %}
-                                    <div class="flex gap-3 p-3 rounded border-l-4 {% if flag.severity == 'high' %}bg-red-50 border-red-400{% elseif flag.severity == 'medium' %}bg-yellow-50 border-yellow-400{% else %}bg-blue-50 border-blue-400{% endif %}">
-                                        <div class="text-xl flex-shrink-0">
-                                            {% if flag.severity == 'high' %}❌
-                                            {% elseif flag.severity == 'medium' %}⚠️
-                                            {% else %}ℹ️
-                                            {% endif %}
-                                        </div>
-                                        <div class="flex-1">
-                                            <p class="font-semibold {% if flag.severity == 'high' %}text-red-800{% elseif flag.severity == 'medium' %}text-yellow-800{% else %}text-blue-800{% endif %}">
-                                                {{ flag.title }}
-                                            </p>
-                                            <p class="text-sm {% if flag.severity == 'high' %}text-red-700{% elseif flag.severity == 'medium' %}text-yellow-700{% else %}text-blue-700{% endif %}">
-                                                {{ flag.description }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
+        {# Summary Cards #}
+        {% if anomalies.summary %}
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card danger">
+                        <div class="card-body">
+                            <p class="card-text text-muted small">Commandes Suspectes</p>
+                            <h3 class="card-title">{{ anomalies.summary.total_suspicious }}</h3>
                         </div>
                     </div>
-                {% endfor %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card danger">
+                        <div class="card-body">
+                            <p class="card-text text-muted small">Haute Sévérité</p>
+                            <h3 class="card-title">{{ anomalies.summary.high_severity }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card warning">
+                        <div class="card-body">
+                            <p class="card-text text-muted small">Sévérité Moyen</p>
+                            <h3 class="card-title">{{ anomalies.summary.medium_severity }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card info">
+                        <div class="card-body">
+                            <p class="card-text text-muted small">Faible Sévérité</p>
+                            <h3 class="card-title">{{ anomalies.summary.low_severity }}</h3>
+                        </div>
+                    </div>
+                </div>
             </div>
-        {% else %}
-            <div class="bg-green-50 border-2 border-green-300 rounded p-8 text-center">
-                <p class="text-4xl mb-3">✅</p>
-                <h3 class="text-lg font-bold text-green-800 mb-2">Aucune anomalie détectée</h3>
-                <p class="text-green-700">Toutes les commandes semblent légitimes. Continuez la surveillance!</p>
+        {% endif %}
+
+        {# Flagged Orders Section #}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-flag-fill text-danger"></i> Commandes Signalées ({{ anomalies.suspicious_orders|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if anomalies.suspicious_orders is not empty %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Client</th>
+                                    <th>Produit</th>
+                                    <th>Montant</th>
+                                    <th>Sévérité</th>
+                                    <th>Flags</th>
+                                    <th>Paiement</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order_data in anomalies.suspicious_orders %}
+                                    <tr>
+                                        <td><strong>#{{ order_data.commande.id }}</strong></td>
+                                        <td>{{ order_data.commande.user.firstName }} {{ order_data.commande.user.lastName }}</td>
+                                        <td>{{ order_data.commande.product.name }}</td>
+                                        <td><strong>{{ order_data.commande.totalAmount|number_format(2, ',', ' ') }} DT</strong></td>
+                                        <td>
+                                            {% if order_data.max_severity == 'high' %}
+                                                <span class="badge bg-danger">HAUTE</span>
+                                            {% elseif order_data.max_severity == 'medium' %}
+                                                <span class="badge bg-warning text-dark">MOYEN</span>
+                                            {% else %}
+                                                <span class="badge bg-info">FAIBLE</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark">{{ order_data.total_flags }}</span>
+                                        </td>
+                                        <td>
+                                            {% if order_data.commande.isPaid %}
+                                                <span class="badge bg-success">✓ Payée</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">✗ Non Payée</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ order_data.commande.dateCommande|date('d/m/Y H:i') }}</td>
+                                        <td>
+                                            <a href="{{ path('app_back_commande_show', { id: order_data.commande.id }) }}" class="btn btn-sm btn-primary" title="Voir détails">
+                                                <i class="bi bi-eye"></i> Voir
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {# Flags Details Row #}
+                                    <tr class="table-light">
+                                        <td colspan="9">
+                                            <small class="text-muted">
+                                                <strong>Flags détectés:</strong>
+                                                {% for flag in order_data.flags %}
+                                                    <br/>
+                                                    {% if flag.severity == 'high' %}
+                                                        <i class="bi bi-exclamation-circle-fill text-danger"></i>
+                                                    {% elseif flag.severity == 'medium' %}
+                                                        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                                                    {% else %}
+                                                        <i class="bi bi-info-circle-fill text-info"></i>
+                                                    {% endif %}
+                                                    <strong>{{ flag.title }}:</strong> {{ flag.description }}
+                                                {% endfor %}
+                                            </small>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-success mb-0" role="alert">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <strong>Aucune anomalie détectée</strong> - Toutes les commandes semblent légitimes.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Statistics by Type #}
+        {% if anomalies.summary.by_type is not empty %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Statistiques par type d'anomalie</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for type, count in anomalies.summary.by_type %}
+                            <div class="col-md-4 col-lg-2 mb-3">
+                                <div class="card text-center">
+                                    <div class="card-body p-3">
+                                        <p class="card-text small text-muted mb-2">
+                                            {% if type == 'rapid_orders' %}
+                                                Commandes Rapides
+                                            {% elseif type == 'high_quantity' %}
+                                                Quantités Élevées
+                                            {% elseif type == 'high_amount' %}
+                                                Montants Élevés
+                                            {% elseif type == 'multiple_failed_payments' %}
+                                                Paiements Échoués
+                                            {% elseif type == 'calculation_error' %}
+                                                Erreurs de Calcul
+                                            {% else %}
+                                                {{ type|replace('_', ' ')|capitalize }}
+                                            {% endif %}
+                                        </p>
+                                        <h4 class="card-title mb-0">{{ count }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         {% endif %}
     </div>
-
-    {# Key Metrics Section #}
-    {% if anomalies.summary.by_type is not empty %}
-        <div class="pt-6 border-t border-gray-200">
-            <h3 class="text-lg font-bold mb-4">📊 Statistiques par type d'anomalie</h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                {% for type, count in anomalies.summary.by_type %}
-                    <div class="bg-gray-50 rounded border border-gray-200 p-4 text-center">
-                        <p class="text-xs font-medium text-gray-600 mb-2">
-                            {% if type == 'rapid_orders' %}
-                                Commandes Rapides
-                            {% elseif type == 'high_quantity' %}
-                                Quantités Élevées
-                            {% elseif type == 'high_amount' %}
-                                Montants Élevés
-                            {% elseif type == 'multiple_failed_payments' %}
-                                Paiements Échoués
-                            {% elseif type == 'calculation_error' %}
-                                Erreurs de Calcul
-                            {% else %}
-                                {{ type|replace('_', ' ')|capitalize }}
-                            {% endif %}
-                        </p>
-                        <p class="text-2xl font-bold text-gray-900">{{ count }}</p>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    {% endif %}
 {% endblock %}

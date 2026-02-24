@@ -37,9 +37,9 @@ class FixUserRolesCommand extends Command
             $type = $user->getType();
             $expectedRole = match($type) {
                 'admin' => 'ROLE_ADMIN',
-                'enseignant' => 'ROLE_ENSEIGNANT',
+                'enseignant' => 'ROLE_TEACHER',
                 'parent' => 'ROLE_PARENT',
-                'enfant' => 'ROLE_ENFANT',
+                'enfant' => 'ROLE_KID',
                 default => 'ROLE_USER',
             };
 

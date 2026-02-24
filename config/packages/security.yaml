@@ -33,8 +33,8 @@ security:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/parent, roles: ROLE_PARENT }
-        - { path: ^/enseignant, roles: ROLE_ENSEIGNANT }
-        - { path: ^/enfant, roles: ROLE_ENFANT }
+        - { path: ^/enseignant, roles: ROLE_TEACHER }
+        - { path: ^/enfant, roles: ROLE_KID }
         - { path: ^/events, roles: ROLE_USER }
 
         - { path: ^/, roles: PUBLIC_ACCESS }
@@ -43,8 +43,8 @@ security:
     role_hierarchy:
         ROLE_ADMIN: [ROLE_USER]
         ROLE_PARENT: [ROLE_USER]
-        ROLE_ENSEIGNANT: [ROLE_USER]
-        ROLE_ENFANT: [ROLE_USER]
+        ROLE_TEACHER: [ROLE_USER]
+        ROLE_KID: [ROLE_USER]
 
 when@test:
     security:

@@ -94,4 +94,29 @@ class ResourceRepository extends ServiceEntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+
+
+    public function searchByVoice(string $query): array
+{
+    $qb = $this->createQueryBuilder('r');
+    
+    $terms = explode(' ', $query);
+    
+    foreach ($terms as $i => $term) {
+        if (strlen($term) < 2) continue;
+        $qb->andWhere(
+            $qb->expr()->orX(
+                $qb->expr()->like('LOWER(r.title)', ':term' . $i),
+                $qb->expr()->like('LOWER(r.author)', ':term' . $i),
+                $qb->expr()->like('LOWER(r.summary)', ':term' . $i),
+                $qb->expr()->like('LOWER(r.type)', ':term' . $i),
+                $qb->expr()->like('LOWER(r.language)', ':term' . $i)
+            )
+        )
+        ->setParameter('term' . $i, '%' . strtolower($term) . '%');
+    }
+    
+    return $qb->setMaxResults(10)->getQuery()->getResult();
+}
 }

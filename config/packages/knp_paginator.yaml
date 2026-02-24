@@ -1,4 +1,13 @@
 knp_paginator:
-  default_options:
-    sort_field_name: knpSort
-    sort_direction_name: knpDir
+    page_range: 5
+    default_options:
+        page_name: page
+        sort_field_name: knpSort
+        sort_direction_name: knpDir
+        distinct: true
+        filter_field_name: filterField
+        filter_value_name: filterValue
+    template:
+        pagination: '@KnpPaginator/Pagination/sliding.html.twig'
+        sortable: '@KnpPaginator/Pagination/sortable_link.html.twig'
+

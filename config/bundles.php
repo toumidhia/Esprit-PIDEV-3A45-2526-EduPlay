@@ -14,4 +14,8 @@ return [
     Stof\DoctrineExtensionsBundle\StofDoctrineExtensionsBundle::class => ['all' => true],
     Symfony\UX\StimulusBundle\StimulusBundle::class => ['all' => true],
     Symfony\UX\Turbo\TurboBundle::class => ['all' => true],
+    Karser\Recaptcha3Bundle\KarserRecaptcha3Bundle::class => ['all' => true],
+    CalendarBundle\CalendarBundle::class => ['all' => true],
+    Endroid\QrCodeBundle\EndroidQrCodeBundle::class => ['all' => true],
+    Symfony\WebpackEncoreBundle\WebpackEncoreBundle::class => ['all' => true],
 ];

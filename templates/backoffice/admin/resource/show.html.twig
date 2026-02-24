@@ -24,14 +24,37 @@
                         {{ resource.type }}
                     </span>
                     
-                    <!-- Tranche d'âge -->
-                    <span class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-full">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        {{ resource.minAge }} - {{ resource.maxAge }} ans
-                    </span>
-                    
+                   <!-- Tranche d'âge IA -->
+<div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+    <div class="flex items-center justify-between mb-2">
+        <p class="text-sm font-semibold text-blue-800">📊 Tranche d'âge</p>
+        <span class="inline-flex items-center px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full">
+            🤖 Détecté par IA
+        </span>
+    </div>
+    <p class="text-2xl font-bold text-blue-900">{{ resource.minAge }} - {{ resource.maxAge }} ans</p>
+    
+    {# Barre visuelle de 3 à 12 ans #}
+    <div class="mt-3">
+        <div class="flex justify-between text-xs text-blue-500 mb-1">
+            <span>3 ans</span>
+            <span>12 ans</span>
+        </div>
+        <div class="relative h-3 bg-blue-100 rounded-full overflow-hidden">
+            {# Zone couverte par la tranche #}
+            <div class="absolute h-full bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full"
+                 style="
+                    left: {{ ((resource.minAge - 3) / 9) * 100 }}%;
+                    width: {{ ((resource.maxAge - resource.minAge) / 9) * 100 }}%;
+                 ">
+            </div>
+        </div>
+        <div class="flex justify-between text-xs text-blue-600 mt-1">
+            <span class="font-bold">{{ resource.minAge }} ans</span>
+            <span class="font-bold">{{ resource.maxAge }} ans</span>
+        </div>
+    </div>
+</div>
                     <!-- Langue -->
                     <span class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-full">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

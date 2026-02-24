@@ -18,15 +18,20 @@ class SchoolEvent
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre est obligatoire.")]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "La description est obligatoire.")]
     private ?string $description = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'datetime')]
+    #[Assert\NotNull(message: "La date de début est obligatoire.")]
+    #[Assert\GreaterThanOrEqual('today', message: "La date de début ne doit pas être passée.")]
     private ?\DateTime $startDate = null;
 
     #[ORM\Column(type: 'datetime')]
+    #[Assert\NotNull(message: "La date de fin est obligatoire.")]
     #[Assert\GreaterThanOrEqual(
         propertyPath: 'startDate',
         message: 'La date de fin doit être supérieure ou égale à la date de début.'
@@ -34,9 +39,11 @@ class SchoolEvent
     private ?\DateTime $endDate = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le lieu est obligatoire.")]
     private ?string $location = null;
 
-    #[ORM\Column(length: 255)]
+    // ✅ image optionnelle
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $imagePath = null;
 
     #[ORM\Column]
@@ -54,6 +61,18 @@ class SchoolEvent
     #[ORM\OneToMany(targetEntity: EventRegistration::class, mappedBy: 'event', orphanRemoval: true)]
     private Collection $registrations;
 
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $latitude = null;
+
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $longitude = null;
+
+    public function getLatitude(): ?string { return $this->latitude; }
+    public function setLatitude(?string $latitude): static { $this->latitude = $latitude; return $this; }
+
+    public function getLongitude(): ?string { return $this->longitude; }
+    public function setLongitude(?string $longitude): static { $this->longitude = $longitude; return $this; }
+
     public function __construct()
     {
         $this->resources = new ArrayCollection();
@@ -61,95 +80,31 @@ class SchoolEvent
         $this->createdAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
+    public function getTitle(): ?string { return $this->title; }
+    public function setTitle(string $title): static { $this->title = $title; return $this; }
 
-    public function setTitle(string $title): static
-    {
-        $this->title = $title;
-        return $this;
-    }
+    public function getDescription(): ?string { return $this->description; }
+    public function setDescription(string $description): static { $this->description = $description; return $this; }
 
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
+    public function getStartDate(): ?\DateTime { return $this->startDate; }
+    public function setStartDate(\DateTime $startDate): static { $this->startDate = $startDate; return $this; }
 
-    public function setDescription(string $description): static
-    {
-        $this->description = $description;
-        return $this;
-    }
+    public function getEndDate(): ?\DateTime { return $this->endDate; }
+    public function setEndDate(\DateTime $endDate): static { $this->endDate = $endDate; return $this; }
 
-    public function getStartDate(): ?\DateTime
-    {
-        return $this->startDate;
-    }
+    public function getLocation(): ?string { return $this->location; }
+    public function setLocation(string $location): static { $this->location = $location; return $this; }
 
-    public function setStartDate(\DateTime $startDate): static
-    {
-        $this->startDate = $startDate;
-        return $this;
-    }
+    public function getImagePath(): ?string { return $this->imagePath; }
+    public function setImagePath(?string $imagePath): static { $this->imagePath = $imagePath; return $this; }
 
-    public function getEndDate(): ?\DateTime
-    {
-        return $this->endDate;
-    }
+    public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
 
-    public function setEndDate(\DateTime $endDate): static
-    {
-        $this->endDate = $endDate;
-        return $this;
-    }
-
-    public function getLocation(): ?string
-    {
-        return $this->location;
-    }
-
-    public function setLocation(string $location): static
-    {
-        $this->location = $location;
-        return $this;
-    }
-
-    public function getImagePath(): ?string
-    {
-        return $this->imagePath;
-    }
-
-    public function setImagePath(string $imagePath): static
-    {
-        $this->imagePath = $imagePath;
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, EventResource>
-     */
-    public function getResources(): Collection
-    {
-        return $this->resources;
-    }
+    /** @return Collection<int, EventResource> */
+    public function getResources(): Collection { return $this->resources; }
 
     public function addResource(EventResource $resource): static
     {
@@ -170,13 +125,8 @@ class SchoolEvent
         return $this;
     }
 
-    /**
-     * @return Collection<int, EventRegistration>
-     */
-    public function getRegistrations(): Collection
-    {
-        return $this->registrations;
-    }
+    /** @return Collection<int, EventRegistration> */
+    public function getRegistrations(): Collection { return $this->registrations; }
 
     public function addRegistration(EventRegistration $registration): static
     {

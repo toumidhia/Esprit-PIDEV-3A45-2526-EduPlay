@@ -41,8 +41,21 @@
             {% endfor %}
         {% endfor %}
 
-        <!-- FORMULAIRE -->
-        <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 shadow-xl p-6">
+       <!-- FORMULAIRE -->
+<div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 shadow-xl p-6">
+
+    {# ✅ Bandeau si titre pré-rempli depuis une demande #}
+    {% if app.request.query.get('prefill') %}
+        <div class="mb-6 flex items-center gap-3 px-4 py-3 bg-orange-50 border border-orange-200 rounded-xl text-orange-700 font-medium text-sm">
+            <span class="text-xl">📋</span>
+            <div>
+                <p class="font-bold">Titre pré-rempli depuis une demande enfant</p>
+                <p class="text-xs text-orange-500">Vérifiez et complétez les autres champs avant d'enregistrer</p>
+            </div>
+        </div>
+    {% endif %}
+
+        
             {% include 'BackOffice/admin/resource/_form.html.twig' with {'resource': null, 'is_edit': false} %}
         </div>
     </div>

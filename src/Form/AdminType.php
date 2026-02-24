@@ -3,6 +3,8 @@
 namespace App\Form;
 
 use App\Entity\User;
+use Karser\Recaptcha3Bundle\Form\Recaptcha3Type;
+use Karser\Recaptcha3Bundle\Validator\Constraints\Recaptcha3;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -78,6 +80,12 @@ class AdminType extends AbstractType
                     ]
                 ],
                 'invalid_message' => 'Les mots de passe ne correspondent pas.'
+            ])
+            // ✅ CAPTCHA AJOUTÉ
+            ->add('captcha', Recaptcha3Type::class, [
+                'constraints' => new Recaptcha3(),
+                'action_name' => 'create_admin',
+                'locale' => 'fr',
             ]);
     }
 

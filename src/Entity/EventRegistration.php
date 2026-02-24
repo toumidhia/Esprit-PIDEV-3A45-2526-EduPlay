@@ -51,6 +51,44 @@ class EventRegistration
     #[ORM\JoinColumn(nullable: false)]
     private ?User $parent = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $ticketQrCode = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $scannedAt = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $qrCodePath = null;
+
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $reminderSent = false;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $reminderSentAt = null;
+
+    // Getters et setters
+    public function getReminderSent(): ?bool { return $this->reminderSent; }
+    public function setReminderSent(?bool $reminderSent): static { $this->reminderSent = $reminderSent; return $this; }
+
+    public function getReminderSentAt(): ?\DateTimeInterface { return $this->reminderSentAt; }
+    public function setReminderSentAt(?\DateTimeInterface $reminderSentAt): static { $this->reminderSentAt = $reminderSentAt; return $this; }
+
+    // Getter et Setter
+    public function getQrCodePath(): ?string { return $this->qrCodePath; }
+    public function setQrCodePath(?string $qrCodePath): static { $this->qrCodePath = $qrCodePath; return $this; }
+
+    // Getters et setters
+    public function getTicketQrCode(): ?string { return $this->ticketQrCode; }
+    public function setTicketQrCode(?string $ticketQrCode): static { $this->ticketQrCode = $ticketQrCode; return $this; }
+
+    public function getScannedAt(): ?\DateTimeInterface { return $this->scannedAt; }
+    public function setScannedAt(?\DateTimeInterface $scannedAt): static { $this->scannedAt = $scannedAt; return $this; }
+
+    public function isScanned(): bool
+    {
+        return $this->scannedAt !== null;
+    }
+
     public function getId(): ?int { return $this->id; }
 
     public function getStatus(): ?string { return $this->status; }

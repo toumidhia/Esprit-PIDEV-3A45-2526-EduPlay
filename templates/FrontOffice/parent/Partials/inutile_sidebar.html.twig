@@ -92,6 +92,20 @@
     <div class="sidebar-sticky">
         <ul class="nav flex-column">
 
+        <a href="{{ path('front_event_index') }}" class="flex items-center gap-4 px-5 py-4 rounded-lg hover:bg-gray-50 transition-colors {{ app.request.get('_route') starts with 'front_event_index' ? 'active' : '' }}">
+            <span class="material-symbols-outlined text-gray-600">event</span>
+            <span class="font-semibold text-gray-700">Events</span>
+        </a>
+
+        <a href="{{ path('front_my_registrations') }}" class="flex items-center gap-4 px-5 py-4 rounded-lg hover:bg-gray-50 transition-colors {{ app.request.get('_route') starts with 'front_my_registrations' ? 'active' : '' }}">
+            <span class="material-symbols-outlined text-gray-600">event</span>
+            <span class="font-semibold text-gray-700">Inscriptions Events</span>
+        </a>
+
+        <a href="{{ path('app_front_shop') }}" class="flex items-center gap-4 px-5 py-4 rounded-lg hover:bg-gray-50 transition-colors {{ app.request.get('_route') starts with 'app_front_shop' ? 'active' : '' }}">
+            <span class="material-symbols-outlined text-gray-600">shopping_cart</span>
+            <span class="font-semibold text-gray-700">Boutique</span>
+        </a>
             {# ================= DASHBOARD ================= #}
             <li class="nav-item">
                 <a class="nav-link {% if app.request.get('_route') starts with 'app_dashboard' %}active{% endif %}"

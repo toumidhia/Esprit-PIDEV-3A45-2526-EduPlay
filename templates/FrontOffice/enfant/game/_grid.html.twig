@@ -1,64 +1,69 @@
-{# templates/teacher/game/_grid.html.twig #}
+{# templates/FrontOffice/enfant/game/_grid.html.twig #}
 
- {% if games|length == 0 %}
-      <div class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-[#dbe1e6] dark:border-gray-700">
-        Aucun jeu disponible.
-      </div>
-    {% else %}
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {% for game in games %}
-          <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-[#dbe1e6] dark:border-gray-700 hover:shadow-2xl transition">
-            
-            {# Image #}
-            <div class="aspect-[16/10] bg-gray-100 dark:bg-gray-900 overflow-hidden">
-              <img
-                class="w-full h-full object-cover"
-                src="{{ asset('uploads/games/' ~ game.image) }}"
-                alt="{{ game.name }}"
-                onerror="this.src='{{ asset('assets/images/default-game.jpg') }}'"
-              >
-            </div>
+{% if games.getTotalItemCount == 0 %}
+  <div class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-[#dbe1e6] dark:border-gray-700">
+    Aucun jeu disponible.
+  </div>
+{% else %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% for game in games %}
+      <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-[#dbe1e6] dark:border-gray-700 hover:shadow-2xl transition">
+        
+        <div class="aspect-[16/10] bg-gray-100 dark:bg-gray-900 overflow-hidden">
+          <img
+            class="w-full h-full object-cover"
+            src="{{ asset('uploads/games/' ~ game.image)|imagine_filter('game_thumb') }}"
+            alt="{{ game.name }}"
+            onerror="this.src='{{ asset('assets/images/default-game.jpg') }}'"
+          >
+        </div>
 
-            <div class="p-6">
-              <div class="flex items-center justify-between mb-3">
-                <span class="px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
-                  {{ game.type|upper }}
-                </span>
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
+              {{ game.type|upper }}
+            </span>
 
-                {% if game.idLevel %}
-                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-accent-pink/10 text-accent-pink">
-                    <p>level : </p>{{ game.idLevel.difficulty }}
-                  </span>
-                {% endif %}
-              </div>
-
-              <h3 class="text-xl font-extrabold mb-2">{{ game.name }}</h3>
-              <p class="text-sm text-[#617989] dark:text-gray-400 line-clamp-2">
-                <p>description : </p>{{ game.description }}
-              </p>
-              {#
-              <p class="text-sm text-[#617989] dark:text-gray-400 line-clamp-2">
-                <p>minage : </p>{{ game.idLevel.minage }}
-              </p>
-              <p class="text-sm text-[#617989] dark:text-gray-400 line-clamp-2">
-                <p>minage : </p>{{ game.idLevel.maxage }}
-              </p>
-              
-              <p class="text-sm text-[#617989] dark:text-gray-400 line-clamp-2">
-                <p>date birth user : </p>{{ app.user.birthDate|date('d/m/Y') }}
-              </p>
-                #}
-              <div class="mt-5">
-              
-                <a href="{{ path('front_game_show_front', { id: game.id }) }}"
-                   class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-white font-bold hover:scale-105 transition">
-                  <span class="material-symbols-outlined text-sm">play_arrow</span>
-                  Play / View
-                </a>
-              </div>
-            </div>
-
+            {% if game.idLevel %}
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-accent-pink/10 text-accent-pink">
+                level : {{ game.idLevel.difficulty }}
+              </span>
+            {% endif %}
           </div>
-        {% endfor %}
+
+          <h3 class="text-xl font-extrabold mb-2">{{ game.name }}</h3>
+
+          <p class="text-sm text-[#617989] dark:text-gray-400 line-clamp-2">
+            <strong>Description :</strong> {{ game.description }}
+          </p>
+
+          {% if game.idLevel %}
+            <p class="text-sm text-[#617989] dark:text-gray-400">
+              <strong>Âge :</strong> {{ game.idLevel.minAge }} - {{ game.idLevel.maxAge }}
+            </p>
+          {% endif %}
+
+         <div class="mt-5 flex items-center gap-3">
+
+  <a href="{{ path('front_game_show_front', { id: game.id }) }}"
+     class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-white font-bold hover:scale-105 transition">
+    <span class="material-symbols-outlined text-sm">play_arrow</span>
+    Play / View
+  </a>
+
+  {% include 'FrontOffice/enfant/game/_favorite_button.html.twig' with {
+      game: game,
+      isFavorite: game.id in favoriteIds
+  } %}
+
+</div>
+          
+        </div>
       </div>
-    {% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="mt-8 flex justify-center [&_.pagination]:flex [&_.pagination]:gap-2 [&_.pagination_a]:px-4 [&_.pagination_a]:py-2 [&_.pagination_a]:rounded-lg [&_.pagination_a]:border [&_.pagination_a]:border-gray-300 [&_.pagination_a]:bg-white [&_.pagination_a]:text-gray-700 [&_.pagination_a:hover]:bg-blue-500 [&_.pagination_a:hover]:text-white [&_.pagination_span]:px-4 [&_.pagination_span]:py-2 [&_.pagination_span]:rounded-lg [&_.pagination_.current]:bg-blue-500 [&_.pagination_.current]:text-white [&_.pagination_.current]:border-blue-500">
+  {{ knp_pagination_render(games) }}
+</div>
+{% endif %}

@@ -48,8 +48,38 @@
 
       <div class="flex gap-3">
         <button class="px-6 py-3 rounded-full bg-primary text-white font-bold">Apply</button>
-        <a href="#" id="frontClearBtn" class="px-6 py-3 rounded-full bg-gray-200 font-bold">Clear</a>
+        <a href="{{ path('front_games') }}" id="frontClearBtn" class="px-6 py-3 rounded-full bg-gray-200 font-bold">Clear</a>
+      <select name="order" class="px-10 py-3 rounded-full border-2 border-primary/20 bg-white dark:bg-gray-800 font-bold">
+    <option value="DESC" {% if sortOrder == 'DESC' %}selected{% endif %}>DESC</option>
+    <option value="ASC" {% if sortOrder == 'ASC' %}selected{% endif %}>ASC</option>
+  </select>
+  <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+
+  <input type="checkbox"
+         name="favoritesOnly"
+         value="1"
+         class="peer hidden"
+         {% if (filters.favoritesOnly ?? '') == '1' %}checked{% endif %}>
+
+  <div class="flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all duration-200
+              border-gray-300 text-gray-600 bg-white
+              peer-checked:bg-red-500 peer-checked:border-red-500 peer-checked:text-white
+              hover:border-red-400 hover:text-red-500">
+
+      <span class="text-lg transition-transform duration-200 peer-checked:scale-110">
+          ❤️
+      </span>
+
+      <span class="font-bold">
+          Favorites only
+      </span>
+
+  </div>
+
+</label>
       </div>
+      
+      
     </form>
 
     {# ✅ RESULTS #}
@@ -66,24 +96,94 @@ document.addEventListener('DOMContentLoaded', () => {
   const results = document.getElementById('games-results');
   const clearBtn = document.getElementById('frontClearBtn');
 
-  async function load(url) {
+  async function load(url, { scrollToResults = false } = {}) {
     const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
     if (!res.ok) return;
+
     results.innerHTML = await res.text();
     window.history.replaceState({}, '', url);
+
+    if (scrollToResults) {
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const params = new URLSearchParams(new FormData(form));
-    load(form.action + '?' + params.toString());
+    params.set('page', '1');
+    load(form.action + '?' + params.toString(), { scrollToResults: true });
   });
 
   clearBtn.addEventListener('click', (e) => {
     e.preventDefault();
     form.reset();
-    load(form.action);
+    load(form.action + '?page=1', { scrollToResults: true });
+  });
+
+  // ✅ clique sur 1,2,3,... + flèches
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('.pagination a, a.page-link');
+    if (!a) return;
+
+    e.preventDefault();
+
+    // page visée (depuis href)
+    const urlFromLink = new URL(a.href, window.location.origin);
+    const page = urlFromLink.searchParams.get('page') || '1';
+
+    // on garde les filtres actuels + on change juste page
+    const params = new URLSearchParams(new FormData(form));
+    params.set('page', page);
+
+    load(form.action + '?' + params.toString(), { scrollToResults: true });
   });
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('front-games-form');
+  const results = document.getElementById('games-results');
+  const clearBtn = document.getElementById('frontClearBtn');
+
+  async function load(url, { scrollToResults = false } = {}) {
+    const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    if (!res.ok) return;
+
+    results.innerHTML = await res.text();
+    window.history.replaceState({}, '', url);
+
+    if (scrollToResults) {
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function submitForm() {
+    const params = new URLSearchParams(new FormData(form));
+    params.set('page', '1');
+    load(form.action + '?' + params.toString(), { scrollToResults: true });
+  }
+
+  // submit normal
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitForm();
+  });
+
+  // ✅ AUTO-SUBMIT quand favoritesOnly change
+  const favoritesCheckbox = form.querySelector('input[name="favoritesOnly"]');
+
+  if (favoritesCheckbox) {
+    favoritesCheckbox.addEventListener('change', () => {
+      submitForm();
+    });
+  }
+
+  clearBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    form.reset();
+    submitForm();
+  });
+
+});</script>
 {% endblock %}

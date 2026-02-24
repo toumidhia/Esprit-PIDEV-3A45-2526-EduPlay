@@ -10,4 +10,3 @@ knp_paginator:
     template:
         pagination: '@KnpPaginator/Pagination/sliding.html.twig'
         sortable: '@KnpPaginator/Pagination/sortable_link.html.twig'
-

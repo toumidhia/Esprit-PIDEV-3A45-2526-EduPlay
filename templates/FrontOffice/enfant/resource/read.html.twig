@@ -216,15 +216,7 @@
     </a>
     {% endif %}
 
-    {# BOUTON BANDE DESSINÉE — génère une BD depuis le PDF du livre #}
-    {% if resource.pdfFile or resource.summary %}
-    <a href="{{ path('app_resource_comic', {'id': resource.id}) }}"
-       onclick="showComicLoading()"
-       class="inline-flex items-center gap-2 px-5 py-3 bg-yellow-400 text-black rounded-xl font-bold hover:bg-yellow-500 transition-all shadow-lg hover:scale-105">
-        🎨 Bande dessinée
-    </a>
-    {% endif %}
-
+   
 </div>
 
 {# Écran de chargement pendant la génération #}

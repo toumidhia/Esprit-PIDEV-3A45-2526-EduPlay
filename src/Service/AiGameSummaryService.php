@@ -22,7 +22,7 @@ class AiGameSummaryService
             'prompt' => $prompt,
             'stream' => false
         ],
-        'timeout' => 120,
+        'timeout' => 200,
     ]);
 
     $data = $res->toArray(false);

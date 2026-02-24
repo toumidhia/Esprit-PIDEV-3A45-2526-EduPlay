@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use App\Repository\FavoriteRepository;
 
 
 
@@ -221,22 +222,25 @@ public function frontIndex(
     Request $request,
     GameRepository $gameRepository,
     LevelRepository $levelRepository,
-    PaginatorInterface $paginator
+    PaginatorInterface $paginator,FavoriteRepository $favoriteRepository
 ): Response {
-    $filters = [
-        'search' => $request->query->get('search', ''),
-        'type' => $request->query->get('type', ''),
-        'difficulty' => $request->query->get('difficulty', ''),
-    ];
+   $filters = [
+    'search' => $request->query->get('search', ''),
+    'type' => $request->query->get('type', ''),
+    'difficulty' => $request->query->get('difficulty', ''),
+    'favoritesOnly' => $request->query->get('favoritesOnly', ''), // ✅ AJOUTER ICI
+];
 
     $sortBy = $request->query->get('sort', 'id');
     $sortOrder = $request->query->get('order', 'DESC');
 
-    $birthDate = $this->getUser()->getBirthDate();
-    $age = $birthDate ? $birthDate->diff(new \DateTimeImmutable())->y : null;
+   $user = $this->getUser(); // ✅ AJOUTER CETTE LIGNE
+
+$birthDate = $user?->getBirthDate();
+$age = $birthDate ? $birthDate->diff(new \DateTimeImmutable())->y : null;
 
     // ✅ on récupère QueryBuilder
-    $qb = $gameRepository->findPlayableForAgeQB($age, $filters, $sortBy, $sortOrder);
+    $qb = $gameRepository->findPlayableForAgeQB($age, $filters, $sortBy, $sortOrder, $user);
 
     // ✅ pagination
     $games = $paginator->paginate(
@@ -244,10 +248,16 @@ public function frontIndex(
         $request->query->getInt('page', 1),
         6 // nombre de jeux par page
     );
+    $favoriteIds = [];
+if ($this->getUser()) {
+    $favorites = $favoriteRepository->findBy(['user' => $this->getUser()]);
+    $favoriteIds = array_map(fn($f) => $f->getGame()->getId(), $favorites);
+}
 
     if ($request->isXmlHttpRequest()) {
         return $this->render('FrontOffice/enfant/game/_grid.html.twig', [
             'games' => $games,
+            'favoriteIds' => $favoriteIds,
         ]);
     }
 
@@ -258,6 +268,7 @@ public function frontIndex(
         'filters' => $filters,
         'sortBy' => $sortBy,
         'sortOrder' => $sortOrder,
+        'favoriteIds' => $favoriteIds,
     ]);
 }
 
@@ -273,6 +284,7 @@ public function frontShow(Game $game, AiGameSummaryService $ai): Response
 
     if ($age !== null) {
         $aiSummary = $ai->summarizeForAge((string) $game->getDescription(), $age);
+        
     }
 
     return $this->render('FrontOffice/enfant/game/show.html.twig', [

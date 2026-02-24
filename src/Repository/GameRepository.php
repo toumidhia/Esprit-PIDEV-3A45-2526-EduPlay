@@ -6,7 +6,7 @@ use App\Entity\Game;
 use App\Entity\Level;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-
+use App\Entity\Favorite;
 use Doctrine\ORM\QueryBuilder;
 
 /**
@@ -176,7 +176,7 @@ public function findChildEmails(): array
 
 
 
-public function findPlayableForAge(?int $age, array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC'): array
+public function findPlayableForAge(?int $age, array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC',$user = null): array
 {
     $qb = $this->createQueryBuilder('g')
         ->leftJoin('g.idLevel', 'l')
@@ -203,7 +203,12 @@ public function findPlayableForAge(?int $age, array $filters = [], string $sortB
         $qb->andWhere('l.difficulty = :diff')
            ->setParameter('diff', (int) $filters['difficulty']);
     }
-
+// ✅ Filtre "Favoris seulement"
+if (!empty($filters['favoritesOnly']) && $user) {
+    $qb->innerJoin(Favorite::class, 'f', 'WITH', 'f.game = g')
+       ->andWhere('f.user = :favUser')
+       ->setParameter('favUser', $user);
+}
     // Tri
     $allowedSort = ['id', 'name', 'type'];
     $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
@@ -225,7 +230,7 @@ public function findPlayableForAge(?int $age, array $filters = [], string $sortB
 
 
 
-public function findPlayableForAgeQB(?int $age, array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC'): QueryBuilder
+public function findPlayableForAgeQB(?int $age, array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC',$user = null): QueryBuilder
 {
     $qb = $this->createQueryBuilder('g')
         ->leftJoin('g.idLevel', 'l')
@@ -252,6 +257,12 @@ public function findPlayableForAgeQB(?int $age, array $filters = [], string $sor
         $qb->andWhere('l.difficulty = :diff')
            ->setParameter('diff', (int) $filters['difficulty']);
     }
+    // ✅ Filtre "Favoris seulement"
+if (!empty($filters['favoritesOnly']) && $user) {
+    $qb->innerJoin(Favorite::class, 'f', 'WITH', 'f.game = g')
+       ->andWhere('f.user = :favUser')
+       ->setParameter('favUser', $user);
+}
 
     // Tri
     $allowedSort = ['id', 'name', 'type'];

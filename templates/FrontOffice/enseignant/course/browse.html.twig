@@ -1,9 +1,9 @@
-{# templates/FrontOffice/parent/Partials/base_parent.html.twig #}
-{% extends 'backoffice/enseignant/Partials/container.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}Parcourir les Cours - EduOnly{% endblock %}
+{% block title %}Parcourir les Cours - EduPlay{% endblock %}
 
-{% block content %}
+{% block body %}
+    <div class="container mx-auto px-6 py-12">
     {# Define isKidView variable - use isEnfant() method #}
     {% set isKidView = isKidView is defined ? isKidView : (app.user and app.user.isEnfant ? true : false) %}
 
@@ -773,4 +773,5 @@
             console.log('🎯 Advanced Course Filtering System Initialized');
         });
     </script>
+    </div>
 {% endblock %}

@@ -41,9 +41,9 @@ security:
 
     # Hiérarchie des rôles
     role_hierarchy:
-        ROLE_ADMIN: [ROLE_USER]
-        ROLE_PARENT: [ROLE_USER]
+        ROLE_ADMIN: [ROLE_ENSEIGNANT, ROLE_PARENT, ROLE_ENFANT, ROLE_USER]
         ROLE_ENSEIGNANT: [ROLE_USER]
+        ROLE_PARENT: [ROLE_USER]
         ROLE_ENFANT: [ROLE_USER]
 
 when@test:

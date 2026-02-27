@@ -1,15 +1,14 @@
-{# templates/backoffice/course/show.html.twig #}
-{% extends 'BackOffice/enseignant/Partials/container.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block title %}Détails du cours - {{ course.title }}{% endblock %}
 
-{% block content %}
+{% block body %}
     <div class="container-fluid px-4">
         <h1 class="mt-4">
             <i class="bi bi-book"></i> Détails du cours
         </h1>
         <ol class="breadcrumb mb-4">
-            <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_dashboard_redirect') }}">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="{{ path('app_course_index') }}">Cours</a></li>
             <li class="breadcrumb-item active">{{ course.title }}</li>
         </ol>

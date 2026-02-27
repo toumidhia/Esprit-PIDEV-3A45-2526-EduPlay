@@ -22,7 +22,7 @@ class SecurityController extends AbstractController
     ): Response {
         // Rediriger si déjà connecté
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_dashboard');
+            return $this->redirectToRoute('app_dashboard_redirect');
         }
 
         $user = new User();
@@ -84,7 +84,7 @@ class SecurityController extends AbstractController
     {
         // Rediriger si déjà connecté
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_dashboard');
+            return $this->redirectToRoute('app_dashboard_redirect');
         }
 
         // Récupérer l'erreur de connexion s'il y en a une

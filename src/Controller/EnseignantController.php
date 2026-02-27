@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/enseignant')]
-#[IsGranted('ROLE_TEACHER')]
+#[IsGranted('ROLE_ENSEIGNANT')]
 class EnseignantController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_enseignant_dashboard')]

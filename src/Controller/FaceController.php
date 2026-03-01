@@ -18,7 +18,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class FaceController extends AbstractController
 {
-    private $entityManager;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -46,7 +46,6 @@ class FaceController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // Vérifier les permissions
         if (!$this->isGranted('edit', $targetUser)) {
             throw $this->createAccessDeniedException();
         }
@@ -59,7 +58,6 @@ class FaceController extends AbstractController
     #[Route('/face/login', name: 'app_face_login')]
     public function login(): Response
     {
-        // Si déjà connecté, rediriger
         if ($this->getUser()) {
             return $this->redirectToRoute('app_dashboard');
         }
@@ -73,13 +71,18 @@ class FaceController extends AbstractController
         UserRepository $userRepo
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
-        $embedding = $data['embedding'] ?? null;
 
-        if (!$embedding) {
+        if (!isset($data['embedding']) || !is_array($data['embedding'])) {
             return $this->json(['error' => 'Aucune donnée faciale fournie'], Response::HTTP_BAD_REQUEST);
         }
 
-        // Récupérer tous les utilisateurs avec un embedding facial
+        /** @var list<float> $embedding */
+        $embedding = $data['embedding'];
+
+        if (count($embedding) !== 128) {
+            return $this->json(['error' => 'Embedding invalide'], Response::HTTP_BAD_REQUEST);
+        }
+
         $users = $userRepo->createQueryBuilder('u')
             ->where('u.facialEmbedding IS NOT NULL')
             ->getQuery()
@@ -87,7 +90,7 @@ class FaceController extends AbstractController
 
         if (empty($users)) {
             return $this->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Aucun utilisateur enregistré'
             ], Response::HTTP_NOT_FOUND);
         }
@@ -97,23 +100,29 @@ class FaceController extends AbstractController
         $matches = [];
 
         foreach ($users as $user) {
-            $storedEmbedding = json_decode($user->getFacialEmbedding(), true);
-            
+            $storedEmbeddingRaw = $user->getFacialEmbedding();
+            if ($storedEmbeddingRaw === null) {
+                continue;
+            }
+
+            $storedEmbedding = json_decode($storedEmbeddingRaw, true);
+
             if (!is_array($storedEmbedding) || count($storedEmbedding) !== 128) {
                 continue;
             }
-            
+
+            /** @var list<float> $storedEmbedding */
             $distance = $this->euclideanDistance($embedding, $storedEmbedding);
-            
+
             $matches[] = [
-                'user' => $user->getUsername() ?? 'Sans nom',
-                'type' => $user->getType() ?? 'enfant',
+                'user' => $user->getUsername() ?? 'Sans Identifiant',
+                'type' => $user->getType(),
                 'distance' => $distance,
                 'confidence' => round((1 - $distance) * 100, 2)
             ];
 
             $threshold = $this->getThresholdForUserType($user);
-            
+
             if ($distance < $bestDistance && $distance < $threshold) {
                 $bestDistance = $distance;
                 $bestMatch = $user;
@@ -121,7 +130,6 @@ class FaceController extends AbstractController
         }
 
         if ($bestMatch) {
-            // Vérifier que l'utilisateur est actif
             if (!$bestMatch->isActive()) {
                 return $this->json([
                     'success' => false,
@@ -134,7 +142,7 @@ class FaceController extends AbstractController
                 'userId' => $bestMatch->getId(),
                 'username' => $bestMatch->getUsername() ?? 'Utilisateur',
                 'email' => $bestMatch->getEmail() ?? '',
-                'type' => $bestMatch->getType() ?? 'enfant',
+                'type' => $bestMatch->getType(),
                 'firstName' => $bestMatch->getFirstName() ?? '',
                 'confidence' => round((1 - $bestDistance) * 100, 2),
                 'message' => 'Visage reconnu avec succès'
@@ -142,7 +150,7 @@ class FaceController extends AbstractController
         }
 
         return $this->json([
-            'success' => false, 
+            'success' => false,
             'message' => 'Visage non reconnu',
             'matches' => $matches
         ], Response::HTTP_NOT_FOUND);
@@ -150,44 +158,38 @@ class FaceController extends AbstractController
 
     #[Route('/login/face/confirm/{id}', name: 'app_face_login_confirm')]
     public function confirmLogin(
-        User $user, 
+        User $user,
         Request $request,
         EventDispatcherInterface $eventDispatcher
     ): Response {
-        // 1. Créer le token d'authentification
         $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
-        
-        // 2. Stocker le token dans le security token storage
+
         $this->container->get('security.token_storage')->setToken($token);
-        
-        // 3. Stocker le token dans la session
+
         $session = $request->getSession();
         $session->set('_security_main', serialize($token));
-        
-        // 4. Déclencher l'événement de login interactif
+
         $event = new InteractiveLoginEvent($request, $token);
         $eventDispatcher->dispatch($event);
-        
-        // 5. Redirection basée sur le rôle
+
         $roles = $user->getRoles();
-        
-        if (in_array('ROLE_ADMIN', $roles)) {
+
+        if (in_array('ROLE_ADMIN', $roles, true)) {
             return $this->redirectToRoute('app_dashboard');
         }
-        
-        if (in_array('ROLE_PARENT', $roles)) {
+
+        if (in_array('ROLE_PARENT', $roles, true)) {
             return $this->redirectToRoute('app_parent_dashboard');
         }
-        
-        if (in_array('ROLE_ENSEIGNANT', $roles)) {
+
+        if (in_array('ROLE_ENSEIGNANT', $roles, true)) {
             return $this->redirectToRoute('teacher_game_index');
         }
-        
-        if (in_array('ROLE_ENFANT', $roles)) {
+
+        if (in_array('ROLE_ENFANT', $roles, true)) {
             return $this->redirectToRoute('front_games');
         }
-        
-        // Default redirect
+
         return $this->redirectToRoute('app_course_index');
     }
 
@@ -204,13 +206,12 @@ class FaceController extends AbstractController
         }
 
         $user = $this->entityManager->getRepository(User::class)->find($userId);
-        
+
         if (!$user) {
             return $this->json(['error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
         }
 
-        // Vérifier les permissions
-        if ($currentUser !== $user && !in_array('ROLE_ADMIN', $currentUser->getRoles())) {
+        if ($currentUser !== $user && !in_array('ROLE_ADMIN', $currentUser->getRoles(), true)) {
             return $this->json(['error' => 'Non autorisé'], Response::HTTP_FORBIDDEN);
         }
 
@@ -223,27 +224,33 @@ class FaceController extends AbstractController
         ]);
     }
 
+    /**
+     * @param list<float> $a
+     * @param list<float> $b
+     */
     private function euclideanDistance(array $a, array $b): float
     {
         if (count($a) !== count($b)) {
             return PHP_FLOAT_MAX;
         }
-        
-        $sum = 0;
-        for ($i = 0; $i < count($a); $i++) {
-            $sum += pow($a[$i] - $b[$i], 2);
+
+        $sum = 0.0;
+
+        for ($i = 0, $len = count($a); $i < $len; $i++) {
+            $sum += ($a[$i] - $b[$i]) ** 2;
         }
+
         return sqrt($sum);
     }
 
     private function getThresholdForUserType(User $user): float
     {
-        $type = $user->getType() ?? 'enfant';
-        
-        return match($type) {
+        $type = $user->getType();
+
+        return match ($type) {
             'admin' => 0.4,
             'parent' => 0.5,
-            default => 0.6
+            default => 0.6,
         };
     }
 }

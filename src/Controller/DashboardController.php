@@ -51,6 +51,9 @@ class DashboardController extends AbstractController
     /**
      * Helper method to get the main role for template rendering
      */
+    /**
+     * @param array<string> $roles
+     */
     private function getMainRole(array $roles): string
     {
         $priorityRoles = ['ROLE_ADMIN', 'ROLE_ENSEIGNANT', 'ROLE_PARENT', 'ROLE_ENFANT', 'ROLE_USER'];

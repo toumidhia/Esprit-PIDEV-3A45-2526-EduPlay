@@ -52,7 +52,7 @@ class FaceRecognitionController extends AbstractController
             'user' => [
                 'id' => $user->getId(),
                 'username' => $user->getUsername(),
-                'type' => $user->getType() ?? 'unknown'
+                'type' => $user->getType()
             ]
         ]);
     }
@@ -166,6 +166,10 @@ class FaceRecognitionController extends AbstractController
         ]);
     }
 
+    /**
+     * @param float[] $a
+     * @param float[] $b
+     */
     private function euclideanDistance(array $a, array $b): float
     {
         if (count($a) !== count($b)) {
@@ -181,7 +185,7 @@ class FaceRecognitionController extends AbstractController
 
     private function getThresholdForUserType(User $user): float
     {
-        $type = $user->getType() ?? 'enfant';
+        $type = $user->getType();
         
         // Seuils plus stricts pour les comptes sensibles
         return match($type) {

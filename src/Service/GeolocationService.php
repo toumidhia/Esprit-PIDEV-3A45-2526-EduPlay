@@ -1,19 +1,23 @@
 <?php
+
 namespace App\Service;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class GeolocationService
 {
-    private $httpClient;
-    private $apiKey;
+    private HttpClientInterface $httpClient;
+    private string $apiKey;
 
-    public function __construct(HttpClientInterface $httpClient, string $abstractApiKey)
+    public function __construct(HttpClientInterface $httpClient, string $abstractApiKey = '')
     {
         $this->httpClient = $httpClient;
         $this->apiKey = $abstractApiKey;
     }
 
+    /**
+     * @return array{city: string, country: string, region: string}
+     */
     public function getLocation(string $ip): array
     {
         try {
@@ -38,5 +42,23 @@ class GeolocationService
                 'region' => 'Unknown',
             ];
         }
+    }
+    
+    /**
+     * @param array<string> $historyCountries
+     */
+    public function isSuspiciousConnection(string $currentCountry, array $historyCountries): bool
+    {
+        $highRisk = ['RU'];
+
+        if (in_array($currentCountry, $highRisk, true)) {
+            return true;
+        }
+
+        if (count(array_unique($historyCountries)) >= 3) {
+            return true;
+        }
+
+        return false;
     }
 }

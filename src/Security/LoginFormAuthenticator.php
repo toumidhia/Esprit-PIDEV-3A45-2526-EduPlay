@@ -1,9 +1,9 @@
 <?php
-// src/Security/LoginFormAuthenticator.php
 
 namespace App\Security;
 
 use App\Entity\User;
+use App\Service\GeolocationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,9 +17,8 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
-use App\Service\GeolocationService;
+use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
 class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 {
@@ -31,7 +30,6 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         private UrlGeneratorInterface $urlGenerator,
         private EntityManagerInterface $entityManager,
         private GeolocationService $geolocationService
-
     ) {}
 
     public function authenticate(Request $request): Passport
@@ -43,10 +41,8 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
         return new Passport(
             new UserBadge($login, function ($userIdentifier) {
-                // Cherche par email
                 $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userIdentifier]);
 
-                // Si pas trouvé, cherche par username (pour les enfants)
                 if (!$user) {
                     $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => $userIdentifier]);
                 }
@@ -73,22 +69,17 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+        /** @var User $user */
         $user = $token->getUser();
 
-         /** @var SessionInterface $session */
-        $session = $request->getSession();
-        $session->getFlashBag()->clear();
+        $ip = $request->getClientIp();
+        $location = $this->geolocationService->getLocation($ip ?? '127.0.0.1');
+        $user->setLastLoginIp($ip);
+        $user->setLastLoginCity($location['city']);
+        $user->setLastLoginCountry($location['country']);
+        $user->setLastLoginAt(new \DateTime());
         
-        if ($user) {
-            $ip = $request->getClientIp();
-            $location = $this->geolocationService->getLocation($ip);
-            $user->setLastLoginIp($ip);
-            $user->setLastLoginCity($location['city']);
-            $user->setLastLoginCountry($location['country']);
-            $user->setLastLoginAt(new \DateTime());
-            
-            $this->entityManager->flush();
-        }
+        $this->entityManager->flush();
 
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             return new RedirectResponse($targetPath);
@@ -96,25 +87,23 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
         $roles = $user->getRoles();
 
-        if (in_array('ROLE_ADMIN', $roles)) {
-            return new RedirectResponse($this->urlGenerator->generate('app_admin_dashboard'));
+        if (in_array('ROLE_ADMIN', $roles, true)) {
+            return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));
         }
 
-        if (in_array('ROLE_PARENT', $roles)) {
+        if (in_array('ROLE_PARENT', $roles, true)) {
             return new RedirectResponse($this->urlGenerator->generate('app_parent_dashboard'));
         }
 
-        if (in_array('ROLE_ENSEIGNANT', $roles)) {
-            // Note: User manually set this to teacher_game_index in DashboardRedirectController
+        if (in_array('ROLE_ENSEIGNANT', $roles, true)) {
             return new RedirectResponse($this->urlGenerator->generate('teacher_game_index'));
         }
 
-        if (in_array('ROLE_ENFANT', $roles)) {
+        if (in_array('ROLE_ENFANT', $roles, true)) {
             return new RedirectResponse($this->urlGenerator->generate('front_games'));
         }
 
-        // Default redirect
-        return new RedirectResponse($this->urlGenerator->generate('app_course_index'));
+        return new RedirectResponse($this->urlGenerator->generate('app_home'));
     }
 
     protected function getLoginUrl(Request $request): string

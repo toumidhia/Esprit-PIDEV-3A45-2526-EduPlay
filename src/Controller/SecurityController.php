@@ -105,7 +105,7 @@ public function verifyUserEmail(
     }
 
     try {
-        $emailVerifier->handleEmailConfirmation($request, $user);
+        $emailVerifier->handleEmailConfirmation($request);
         
         $this->addFlash('success', '✅ Félicitations ! Votre email a été vérifié. Vous pouvez maintenant vous connecter.');
         

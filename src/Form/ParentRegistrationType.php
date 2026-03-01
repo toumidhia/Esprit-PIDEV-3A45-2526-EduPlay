@@ -17,6 +17,9 @@ use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
+/**
+ * @extends AbstractType<User>
+ */
 class ParentRegistrationType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void

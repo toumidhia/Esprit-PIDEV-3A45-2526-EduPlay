@@ -54,6 +54,7 @@
         "vich/uploader-bundle": "^2.9"
     },
     "require-dev": {
+        "ahmed-bhs/doctrine-doctor": "^1.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-doctrine": "^2.0",

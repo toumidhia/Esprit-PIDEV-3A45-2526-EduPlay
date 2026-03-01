@@ -109,7 +109,7 @@
             {# ================= DASHBOARD ================= #}
             <li class="nav-item">
                 <a class="nav-link {% if app.request.get('_route') starts with 'app_dashboard' %}active{% endif %}"
-                   href="{{ path('app_dashboard') }}">
+                   href="{{ path('app_dashboard_redirect') }}">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>

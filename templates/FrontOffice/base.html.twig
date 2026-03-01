@@ -47,27 +47,7 @@
     
     <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
         <!-- Barre de navigation -->
-        <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#dbe1e6] dark:border-gray-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-6 md:px-20 lg:px-40 py-4 sticky top-0 z-50">
-            <div class="flex items-center gap-3">
-                <div class="size-10 bg-primary rounded-full flex items-center justify-center text-white">
-                    <span class="material-symbols-outlined text-2xl">rocket_launch</span>
-                </div>
-                <h2 class="text-2xl font-extrabold tracking-tight">EduPlay</h2>
-            </div>
-            <nav class="hidden md:flex items-center gap-8">
-                <a class="text-sm font-bold hover:text-primary transition-colors" href="#">Jeux</a>
-                <a class="text-sm font-bold hover:text-primary transition-colors" href="{{ path('app_library') }}">Bibliothèque</a>
-                <a class="text-sm font-bold hover:text-primary transition-colors" href="#">Boutique</a>
-                <a class="text-sm font-bold hover:text-primary transition-colors" href="#">Pour les Enseignants</a>
-                <a class="text-sm font-bold hover:text-primary transition-colors" href="#">Pour les Parents</a>
-            </nav>
-            <div class="flex items-center gap-4">
-                <button class="hidden sm:flex text-sm font-bold px-4 py-2">S'inscrire</button>
-                <button class="flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-11 px-6 bg-primary text-white text-sm font-bold leading-normal shadow-lg shadow-primary/30 hover:scale-105 transition-transform">
-                    <span>Connexion</span>
-                </button>
-            </div>
-        </header>
+        {% include 'Partials/_navbar.html.twig' %}
         
         <main class="flex-1">
             <!-- Section Héros -->

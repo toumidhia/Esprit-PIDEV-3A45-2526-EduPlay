@@ -187,24 +187,14 @@ Examples:
         $parent->setFirstName($firstName);
         $parent->setLastName($lastName);
 
-        // Use telephone (not phone) - check if method exists
-        if (method_exists($parent, 'setTelephone') && $phone) {
+        // Use telephone directly (method always exists on User entity)
+        if ($phone) {
             $parent->setTelephone($phone);
-        } elseif ($phone) {
-            // If method doesn't exist, try setPhone as fallback
-            if (method_exists($parent, 'setPhone')) {
-                $parent->setPhone($phone);
-            }
         }
 
-        // Use adresse (not address) - check if method exists
-        if (method_exists($parent, 'setAdresse') && $address) {
+        // Use adresse directly (method always exists on User entity)
+        if ($address) {
             $parent->setAdresse($address);
-        } elseif ($address) {
-            // If method doesn't exist, try setAddress as fallback
-            if (method_exists($parent, 'setAddress')) {
-                $parent->setAddress($address);
-            }
         }
 
         $parent->setType('parent');

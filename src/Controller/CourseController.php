@@ -50,6 +50,7 @@ final class CourseController extends AbstractController
     ): Response
     {
         // Check if user is authenticated
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         if (!$user) {
             $this->addFlash('warning', 'Please login to access courses.');
@@ -71,9 +72,10 @@ final class CourseController extends AbstractController
         $sortOrder = $request->query->get('order', 'DESC');
 
         // Filter courses based on user role
-        if (in_array('ROLE_TEACHER', $userRoles)) {
-            // Teacher sees only their own courses
-            $courses = $courseRepository->findByTeacher($user, $filters);
+        if (in_array('ROLE_ENSEIGNANT', $userRoles)) {
+            // Teacher sees only their own courses, with filters applied
+            $filters['teacher'] = $user;
+            $courses = $courseRepository->findWithFilters($filters, $sortBy, $sortOrder);
             $template = 'BackOffice/enseignant/course/index.html.twig';
             $recommendations = [];
         } elseif (in_array('ROLE_PARENT', $userRoles)) {
@@ -95,21 +97,25 @@ final class CourseController extends AbstractController
                     ];
                 }
             }
-        } elseif (in_array('ROLE_KID', $userRoles)) {
-            // Kids see only courses they are subscribed to
-            $subscriptions = $subscriptionRepository->findActiveSubscriptionsByKid($user->getId());
+        } elseif (in_array('ROLE_ENFANT', $userRoles)) {
+            // Kids see courses they are subscribed to (themselves OR parent self-registered)
+            /** @var \App\Entity\User $user */
+            $subscriptions = $subscriptionRepository->findActiveSubscriptionsByKidAndParent(
+                $user->getId(),
+                $user->getParent() ? $user->getParent()->getId() : null
+            );
+            
             $courses = [];
             foreach ($subscriptions as $subscription) {
                 $courses[] = $subscription->getCourse();
             }
+            
             $template = 'FrontOffice/enseignant/course/browse.html.twig';
-            $kids = [];
-
             // Get recommendations for this kid (courses they are NOT subscribed to)
             $recommendations = $RecommendationCourseService->getRecommendationsForKid($user, 6);
         } else {
-            // Admin sees all courses with filters
-            $courses = $courseRepository->findAll();
+            // Admin sees all courses with filters and sort
+            $courses = $courseRepository->findWithFilters($filters, $sortBy, $sortOrder);
             $template = 'BackOffice/enseignant/course/index.html.twig';
             $recommendations = [];
             $kids = [];
@@ -131,6 +137,7 @@ final class CourseController extends AbstractController
         $subscriptionMap = [];
         if (in_array('ROLE_PARENT', $userRoles) && !empty($kids)) {
             // Get all active subscriptions for this parent
+            /** @var \App\Entity\User $user */
             $activeSubscriptions = $subscriptionRepository->findActiveSubscriptionsByParent($user->getId());
 
             foreach ($activeSubscriptions as $subscription) {
@@ -141,6 +148,7 @@ final class CourseController extends AbstractController
         // Get all teachers for filter dropdown
         $teachers = $userRepository->findBy(['type' => 'teacher']);
 
+        /** @var \App\Entity\User $user */
         return $this->render($template, [
             'courses' => $courses,
             'userRole' => $this->getMainRole($userRoles),
@@ -153,19 +161,21 @@ final class CourseController extends AbstractController
             'subscriptions' => $subscriptionMap,
             'currentUserId' => $user->getId(),
             'recommendations' => $recommendations,
-            'isKidView' => in_array('ROLE_KID', $userRoles)
+            'isKidView' => in_array('ROLE_ENFANT', $userRoles)
         ]);
     }
 
     #[Route('/new', name: 'app_course_new', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_TEACHER')]
+    #[IsGranted('ROLE_ENSEIGNANT')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $this->logger->info('=== DÉBUT CRÉATION COURS ===');
 
         $course = new Course();
         $course->setStatus('pending');
-        $course->setTeacherId($this->getUser());
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $course->setTeacherId($user);
 
         $form = $this->createForm(CourseType::class, $course, [
             'is_teacher' => true,
@@ -261,15 +271,16 @@ final class CourseController extends AbstractController
             return $this->redirectToRoute('app_course_index');
         }
 
-        return $this->render('BackOffice/course/new.html.twig', [
+        return $this->render('BackOffice/enseignant/course/new.html.twig', [
             'course' => $course,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
 
     #[Route('/course/{id}', name: 'app_course_show', methods: ['GET'])]
     public function show(Course $course, SubscriptionRepository $subscriptionRepository): Response
     {
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
@@ -278,7 +289,7 @@ final class CourseController extends AbstractController
         $userRoles = $user->getRoles();
 
         // Check permissions based on user role
-        if (in_array('ROLE_TEACHER', $userRoles)) {
+        if (in_array('ROLE_ENSEIGNANT', $userRoles)) {
             // Teachers can only see their own courses
             if ($course->getTeacherId() !== $user) {
                 $this->addFlash('error', 'Vous ne pouvez voir que vos propres cours.');
@@ -290,13 +301,16 @@ final class CourseController extends AbstractController
                 $this->addFlash('error', 'Vous ne pouvez voir que les cours acceptés.');
                 return $this->redirectToRoute('app_course_index');
             }
-        } elseif (in_array('ROLE_KID', $userRoles)) {
-            // Kids can only see courses they are subscribed to
-            // FIX: Use isKidSubscribedToCourse instead of isSubscribed
-            $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse(
-                $user->getId(), // Kid ID
-                $course->getId() // Course ID
-            );
+        } elseif (in_array('ROLE_ENFANT', $userRoles)) {
+            // Kids can see courses they are subscribed to (self OR parent self-registered)
+            /** @var \App\Entity\User $user */
+            $parentId = $user->getParent() ? $user->getParent()->getId() : null;
+            $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse($user->getId(), $course->getId());
+            
+            if (!$isSubscribed && $parentId) {
+                $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse($parentId, $course->getId());
+            }
+            
             if (!$isSubscribed) {
                 $this->addFlash('error', 'Vous n\'êtes pas inscrit à ce cours.');
                 return $this->redirectToRoute('app_course_index');
@@ -304,15 +318,26 @@ final class CourseController extends AbstractController
         }
         // Admin can see all courses
 
-        // Route to backoffice for admin/teacher, frontoffice for parent/kid
-        $template = (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_TEACHER', $userRoles))
-            ? 'BackOffice/course/show.html.twig'
-            : 'FrontOffice/enseignant/course/show.html.twig';
+        // Admin/Teacher see BackOffice, Parent/Kid see FrontOffice
+        if (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_ENSEIGNANT', $userRoles)) {
+            $template = 'BackOffice/enseignant/course/show.html.twig';
+            $params = [
+                'course' => $course,
+            ];
+        } else {
+            $template = 'FrontOffice/enseignant/course/show.html.twig';
+            $params = [
+                'course' => $course,
+            ];
+            
+            if (in_array('ROLE_PARENT', $userRoles)) {
+                /** @var \App\Entity\User $user */
+                $params['kids'] = $this->userRepository->findBy(['parent' => $user, 'type' => 'kid']);
+            }
+        }
 
-        return $this->render($template, [
-            'course' => $course,
-            'userRole' => $this->getMainRole($userRoles),
-        ]);
+        return $this->render($template, $params);
+
     }
 
     // Download PDF file
@@ -326,13 +351,16 @@ final class CourseController extends AbstractController
 
         // Check permissions
         $userRoles = $user->getRoles();
-        if (in_array('ROLE_KID', $userRoles)) {
+        if (in_array('ROLE_ENFANT', $userRoles)) {
             // Kids can only download PDFs of courses they're subscribed to
-            $isSubscribed = $subscriptionRepository->isSubscribed(
-                $user->getId(),
-                $user->getId(),
-                $course->getId()
-            );
+            /** @var \App\Entity\User $user */
+            $parentId = $user->getParent() ? $user->getParent()->getId() : null;
+            $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse($user->getId(), $course->getId());
+            
+            if (!$isSubscribed && $parentId) {
+                $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse($parentId, $course->getId());
+            }
+
             if (!$isSubscribed) {
                 $this->addFlash('error', 'You are not subscribed to this course.');
                 return $this->redirectToRoute('app_course_index');
@@ -343,7 +371,7 @@ final class CourseController extends AbstractController
                 $this->addFlash('error', 'This course is not available for download.');
                 return $this->redirectToRoute('app_course_index');
             }
-        } elseif (in_array('ROLE_TEACHER', $userRoles)) {
+        } elseif (in_array('ROLE_ENSEIGNANT', $userRoles)) {
             // Teachers can only download PDFs of their own courses
             if ($course->getTeacherId() !== $user) {
                 $this->addFlash('error', 'You can only download PDFs of your own courses.');
@@ -386,7 +414,7 @@ final class CourseController extends AbstractController
         $userRoles = $user->getRoles();
 
         // Check permissions
-        if (in_array('ROLE_TEACHER', $userRoles)) {
+        if (in_array('ROLE_ENSEIGNANT', $userRoles)) {
             // Teachers can only edit their own pending courses
             if ($course->getTeacherId() !== $user) {
                 $this->addFlash('error', 'You can only edit your own courses.');
@@ -396,7 +424,7 @@ final class CourseController extends AbstractController
                 $this->addFlash('error', 'You can only edit pending courses.');
                 return $this->redirectToRoute('app_course_index');
             }
-        } elseif (in_array('ROLE_PARENT', $userRoles) || in_array('ROLE_KID', $userRoles)) {
+        } elseif (in_array('ROLE_PARENT', $userRoles) || in_array('ROLE_ENFANT', $userRoles)) {
             // Parents and kids cannot edit courses
             $this->addFlash('error', 'You do not have permission to edit courses.');
             return $this->redirectToRoute('app_course_index');
@@ -442,9 +470,9 @@ final class CourseController extends AbstractController
             return $this->redirectToRoute('app_course_index');
         }
 
-        return $this->render('BackOffice/course/edit.html.twig', [
+        return $this->render('BackOffice/enseignant/course/edit.html.twig', [
             'course' => $course,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -490,19 +518,19 @@ final class CourseController extends AbstractController
     {
         if ($this->isCsrfTokenValid('subscribe'.$course->getId(), $request->request->get('_token'))) {
             $kidId = $request->request->get('kid_id');
-
             if (!$kidId) {
-                $this->addFlash('error', 'Veuillez sélectionner un enfant.');
+                // Parent subscribing themselves
+                $kid = $this->getUser();
+            } else {
+                $kid = $userRepository->find($kidId);
+            }
+
+            if (!$kid) {
+                $this->addFlash('error', 'Cible d\'inscription invalide.');
                 return $this->redirectToRoute('app_course_index');
             }
 
-            $kid = $userRepository->find($kidId);
-
-            if (!$kid || $kid->getType() !== 'kid') {
-                $this->addFlash('error', 'Enfant invalide.');
-                return $this->redirectToRoute('app_course_index');
-            }
-
+            /** @var \App\Entity\User $parent */
             $parent = $this->getUser();
 
             // Check if already subscribed
@@ -514,12 +542,14 @@ final class CourseController extends AbstractController
             ]);
 
             if ($existingSubscription) {
+                /** @var \App\Entity\User $kid */
                 $this->addFlash('warning', $kid->getFirstName() . ' est déjà inscrit à ce cours.');
                 return $this->redirectToRoute('app_course_index');
             }
 
             $subscription = new Subscription();
             $subscription->setParent($parent);
+            /** @var \App\Entity\User $kid */
             $subscription->setKid($kid);
             $subscription->setCourse($course);
             $subscription->setActive(true);
@@ -529,7 +559,9 @@ final class CourseController extends AbstractController
             $entityManager->persist($subscription);
             $entityManager->flush();
 
-            $this->addFlash('success', $kid->getFirstName() . ' a été inscrit avec succès à ' . $course->getTitle() . '!');
+            /** @var \App\Entity\User $kid */
+            $targetName = ($kid === $parent) ? "vous-même" : $kid->getFirstName();
+            $this->addFlash('success', $targetName . ' a été inscrit avec succès à ' . $course->getTitle() . '!');
         }
 
         return $this->redirectToRoute('app_course_index');
@@ -547,11 +579,15 @@ final class CourseController extends AbstractController
     {
         if ($this->isCsrfTokenValid('unsubscribe'.$course->getId(), $request->request->get('_token'))) {
             $kidId = $request->request->get('kid_id');
+            /** @var \App\Entity\User $parent */
             $parent = $this->getUser();
+            
+            // Si l'id de l'enfant n'est pas fourni, cela signifie que le parent se désinscrit lui-même
+            $targetKidId = $kidId ? $kidId : $parent->getId();
 
             $subscription = $entityManager->getRepository(Subscription::class)->findOneBy([
                 'parent' => $parent,
-                'kid' => $kidId,
+                'kid' => $targetKidId,
                 'course' => $course,
                 'active' => true
             ]);
@@ -580,7 +616,7 @@ final class CourseController extends AbstractController
         $userRoles = $user->getRoles();
 
         // Check permissions
-        if (in_array('ROLE_TEACHER', $userRoles)) {
+        if (in_array('ROLE_ENSEIGNANT', $userRoles)) {
             // Teachers can only delete their own pending courses
             if ($course->getTeacherId() !== $user) {
                 $this->addFlash('error', 'You can only delete your own courses.');
@@ -590,7 +626,7 @@ final class CourseController extends AbstractController
                 $this->addFlash('error', 'You can only delete pending courses.');
                 return $this->redirectToRoute('app_course_index');
             }
-        } elseif (in_array('ROLE_PARENT', $userRoles) || in_array('ROLE_KID', $userRoles)) {
+        } elseif (in_array('ROLE_PARENT', $userRoles) || in_array('ROLE_ENFANT', $userRoles)) {
             // Parents and kids cannot delete courses
             $this->addFlash('error', 'You do not have permission to delete courses.');
             return $this->redirectToRoute('app_course_index');
@@ -619,7 +655,7 @@ final class CourseController extends AbstractController
      */
     private function getMainRole(array $roles): string
     {
-        $priorityRoles = ['ROLE_ADMIN', 'ROLE_TEACHER', 'ROLE_PARENT', 'ROLE_KID', 'ROLE_USER'];
+        $priorityRoles = ['ROLE_ADMIN', 'ROLE_ENSEIGNANT', 'ROLE_PARENT', 'ROLE_ENFANT', 'ROLE_USER'];
 
         foreach ($priorityRoles as $priorityRole) {
             if (in_array($priorityRole, $roles)) {
@@ -690,16 +726,27 @@ final class CourseController extends AbstractController
             throw $this->createNotFoundException('Cours non trouvé');
         }
 
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         $userRoles = $user ? $user->getRoles() : [];
 
         // Check permissions
-        if (in_array('ROLE_KID', $userRoles)) {
-            // Kids can only see courses they are subscribed to
+        if (in_array('ROLE_ENFANT', $userRoles)) {
+            // Kids can only see courses they are subscribed to (self OR parent self-registered)
+            /** @var \App\Entity\User $user */
+            $parentId = $user->getParent() ? $user->getParent()->getId() : null;
             $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse(
                 $user->getId(),
                 $course->getId()
             );
+            
+            if (!$isSubscribed && $parentId) {
+                $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse(
+                    $parentId,
+                    $course->getId()
+                );
+            }
+            
             if (!$isSubscribed) {
                 $this->addFlash('error', 'Vous n\'êtes pas inscrit à ce cours.');
                 return $this->redirectToRoute('app_course_index');
@@ -710,7 +757,7 @@ final class CourseController extends AbstractController
                 $this->addFlash('error', 'Ce cours n\'est pas disponible.');
                 return $this->redirectToRoute('app_course_index');
             }
-        } elseif (in_array('ROLE_TEACHER', $userRoles)) {
+        } elseif (in_array('ROLE_ENSEIGNANT', $userRoles)) {
             // Teachers can only see their own courses
             if ($course->getTeacherId() !== $user) {
                 $this->addFlash('error', 'Vous ne pouvez voir que vos propres cours.');
@@ -744,8 +791,8 @@ final class CourseController extends AbstractController
         $enrollmentCount = $subscriptionRepository->countActiveSubscriptions($course->getId());
 
         // Determine which template to use
-        $template = (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_TEACHER', $userRoles))
-            ? 'BackOffice/course/detail.html.twig'
+        $template = (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_ENSEIGNANT', $userRoles))
+            ? 'BackOffice/enseignant/course/detail.html.twig'
             : 'FrontOffice/enseignant/course/detail.html.twig';
 
         return $this->render($template, [

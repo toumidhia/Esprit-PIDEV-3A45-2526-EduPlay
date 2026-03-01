@@ -8,8 +8,6 @@ class AiGameSummaryService
 {
     public function __construct(
         private HttpClientInterface $http,
-        private string $openaiApiKey,
-        private string $openaiModel,
 ) {}
 
     public function summarizeForAge(string $description, int $age): string

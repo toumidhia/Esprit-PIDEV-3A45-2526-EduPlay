@@ -1,129 +1,154 @@
 {% extends 'BackOffice/enseignant/Partials/container.html.twig' %}
 
-{% block title %}{{ seance.title }} - EduPlay{% endblock %}
+{% block title %}Détails de la séance - {{ seance.title }}{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <a href="{{ path('app_seance_index') }}" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Retour à la liste
-    </a>
-</div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {# Header Section #}
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-4xl">event_note</span>
+                {{ seance.title|default('Détail de la Séance') }}
+            </h1>
+            <p class="mt-2 text-sm text-gray-500">Informations et vue d'ensemble de la session en direct.</p>
+        </div>
+        <div>
+            <a href="{{ path('app_seance_index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                Retour aux séances
+            </a>
+        </div>
+    </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h4><i class="bi bi-calendar-event"></i> {{ seance.title }}</h4>
-            </div>
-            <div class="card-body">
-                <div class="mb-4">
-                    <label class="fw-bold">Cours associé:</label>
-                    <p>
-                        <a href="{{ path('app_course_show', {'id': seance.course.id}) }}" class="text-decoration-none">
-                            <i class="bi bi-book"></i> {{ seance.course.title }}
-                        </a>
-                    </p>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {# Left Column: Quick Info & Actions #}
+        <div class="lg:col-span-1 space-y-6">
+            
+            {# Info Card #}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">info</span>
+                        Récapitulatif
+                    </h2>
                 </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="fw-bold"><i class="bi bi-calendar3"></i> Date:</label>
-                        <p>{{ seance.date|date('d/m/Y') }} ({{ seance.date|date('l') }})</p>
+                <div class="p-6 space-y-4">
+                    <div class="flex flex-col pb-3 border-b border-gray-50">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">calendar_today</span>Date</span>
+                        <span class="font-medium text-gray-900">{{ seance.date|date('d/m/Y') }} ({{ seance.date|date('l') }})</span>
                     </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold"><i class="bi bi-clock"></i> Horaire:</label>
-                        <p>{{ seance.startTime|date('H:i') }} - {{ seance.endTime|date('H:i') }}</p>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="fw-bold"><i class="bi bi-geo-alt"></i> Lieu:</label>
-                        <p>{{ seance.location }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="fw-bold"><i class="bi bi-flag"></i> Statut:</label>
-                        <p>
-                            {% if seance.status == 'scheduled' %}
-                                <span class="badge bg-primary">Planifiée</span>
-                            {% elseif seance.status == 'ongoing' %}
-                                <span class="badge bg-success">En cours</span>
-                            {% elseif seance.status == 'completed' %}
-                                <span class="badge bg-secondary">Terminée</span>
-                            {% else %}
-                                <span class="badge bg-danger">Annulée</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                </div>
-
-                {% if seance.description %}
-                    <div class="mb-3">
-                        <label class="fw-bold"><i class="bi bi-file-text"></i> Description:</label>
-                        <p class="text-muted">{{ seance.description }}</p>
-                    </div>
-                {% endif %}
-
-                <div class="mt-4 d-flex gap-2">
-                    <a href="{{ path('app_seance_edit', {'id': seance.id}) }}" class="btn btn-primary">
-                        <i class="bi bi-pencil"></i> Modifier
-                    </a>
                     
-                    <form method="post" action="{{ path('app_seance_delete', {'id': seance.id}) }}" style="display:inline;">
+                    <div class="flex flex-col pb-3 border-b border-gray-50">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">schedule</span>Horaire</span>
+                        <span class="font-medium text-gray-900">{{ seance.startTime|date('H:i') }} - {{ seance.endTime|date('H:i') }}</span>
+{% set duration = seance.startTime.diff(seance.endTime) %}
+                        <span class="text-xs text-gray-500 mt-0.5">Durée: {{ duration.h }}h {% if duration.i > 0 %}{{ duration.i }}m{% endif %}</span>
+                    </div>
+
+                    <div class="flex flex-col pb-3 border-b border-gray-50">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">location_on</span>Lieu / URL</span>
+                        <span class="font-medium text-gray-900">{{ seance.location }}</span>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">flag</span>Statut actuel</span>
+                        <div>
+                            {% if seance.status == 'scheduled' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Planifiée</span>
+                            {% elseif seance.status == 'ongoing' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>En cours
+                                </span>
+                            {% elseif seance.status == 'completed' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Terminée</span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Annulée</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Actions Card #}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-gray-500">settings</span>
+                        Actions
+                    </h2>
+                </div>
+                <div class="p-6 space-y-3">
+                    <a href="{{ path('app_seance_edit', {'id': seance.id}) }}" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                        <span class="material-symbols-outlined text-sm">edit</span>
+                        Modifier la séance
+                    </a>
+
+                    <form method="post" action="{{ path('app_seance_delete', {'id': seance.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette séance ? Cette action est irréversible.');">
                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ seance.id) }}">
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette séance ?')">
-                            <i class="bi bi-trash"></i> Supprimer
+                        <button type="submit" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg transition-colors">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                            Supprimer
                         </button>
                     </form>
                 </div>
             </div>
+
         </div>
-    </div>
 
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="bi bi-info-circle"></i> Détails du cours</h5>
-            </div>
-            <div class="card-body">
-                <p><strong>Titre:</strong><br>
-                    {{ seance.course.title }}
-                </p>
-
-                <p><strong>Niveau:</strong><br>
-                    {% if seance.course.level == 'Beginner' %}
-                        <span class="badge bg-success">Débutant</span>
-                    {% elseif seance.course.level == 'Intermediate' %}
-                        <span class="badge bg-warning">Intermédiaire</span>
+        {# Right Column: Course Info & Description #}
+        <div class="lg:col-span-2 space-y-6">
+            
+            {# Description #}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="border-b border-gray-100 bg-gray-50/50 px-8 py-5">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">notes</span>
+                        Description / Annotations
+                    </h2>
+                </div>
+                <div class="p-8">
+                    {% if seance.description %}
+                        <p class="text-gray-600 leading-relaxed whitespace-pre-line">{{ seance.description }}</p>
                     {% else %}
-                        <span class="badge bg-danger">Avancé</span>
+                        <p class="text-gray-400 italic">Aucune description n'a été fournie pour cette séance.</p>
                     {% endif %}
-                </p>
-
-                <p><strong>Enseignant:</strong><br>
-                    {{ seance.course.teacherId.firstName }} {{ seance.course.teacherId.lastName }}
-                </p>
-
-                <p><strong>Durée du cours:</strong><br>
-                    {{ seance.course.durationTraining }} semaines
-                </p>
-
-                <a href="{{ path('app_course_show', {'id': seance.course.id}) }}" class="btn btn-outline-primary w-100">
-                    <i class="bi bi-eye"></i> Voir le cours
-                </a>
+                </div>
             </div>
-        </div>
 
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5><i class="bi bi-clock-history"></i> Durée de la séance</h5>
+            {# Course Link Card #}
+            <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-sm border border-gray-800 overflow-hidden text-white relative">
+                <div class="absolute top-0 right-0 -mr-16 -mt-16 text-white/5">
+                    <span class="material-symbols-outlined" style="font-size: 200px">school</span>
+                </div>
+                <div class="relative z-10 p-8">
+                    <h2 class="text-lg font-semibold text-white/90 flex items-center gap-2 mb-6">
+                        <span class="material-symbols-outlined text-primary">school</span>
+                        Cours de rattachement
+                    </h2>
+                    
+                    <h3 class="text-2xl font-bold mb-2">{{ seance.course.title }}</h3>
+                    <p class="text-gray-400 text-sm mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">person</span>
+                        Par {{ seance.course.teacherId.fullName }}
+                    </p>
+                    
+                    <div class="flex items-center gap-4 mb-8 text-sm font-medium">
+                        <span class="inline-flex items-center px-3 py-1 bg-white/10 rounded-lg">
+                            {{ seance.course.level == 'Beginner' ? 'Débutant' : (seance.course.level == 'Intermediate' ? 'Intermédiaire' : 'Avancé') }}
+                        </span>
+                        <span class="inline-flex items-center px-3 py-1 bg-white/10 rounded-lg">
+                            {{ seance.course.durationTraining }} semaines
+                        </span>
+                    </div>
+                    
+                    <a href="{{ path('app_course_show', {'id': seance.course.id}) }}" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 hover:bg-gray-100 font-semibold rounded-xl transition-colors shadow-sm">
+                        Voir les détails du cours
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </a>
+                </div>
             </div>
-            <div class="card-body">
-                {% set duration = seance.startTime.diff(seance.endTime) %}
-                <p class="text-center mb-0">
-                    <span class="h3">{{ duration.h }}h {{ duration.i }}min</span>
-                </p>
-            </div>
+
         </div>
     </div>
 </div>

@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Favorite;
+use App\Entity\Game; // Ajouté
+use App\Entity\User; // Ajouté
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,41 +18,18 @@ class FavoriteRepository extends ServiceEntityRepository
         parent::__construct($registry, Favorite::class);
     }
 
-//    /**
-//     * @return Favorite[] Returns an array of Favorite objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('f')
-//            ->andWhere('f.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('f.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Favorite
-//    {
-//        return $this->createQueryBuilder('f')
-//            ->andWhere('f.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
-
-
-public function isFavorite(User $user, Game $game): bool
-{
-    return $this->createQueryBuilder('f')
-        ->select('COUNT(f.id)')
-        ->where('f.user = :user')
-        ->andWhere('f.game = :game')
-        ->setParameter('user', $user)
-        ->setParameter('game', $game)
-        ->getQuery()
-        ->getSingleScalarResult() > 0;
-}
+    /**
+     * Vérifie si un jeu est dans les favoris d'un utilisateur
+     */
+    public function isFavorite(User $user, Game $game): bool
+    {
+        return (int) $this->createQueryBuilder('f')
+            ->select('COUNT(f.id)')
+            ->where('f.user = :user')
+            ->andWhere('f.game = :game')
+            ->setParameter('user', $user)
+            ->setParameter('game', $game)
+            ->getQuery()
+            ->getSingleScalarResult() > 0;
+    }
 }

@@ -234,6 +234,7 @@ public function frontIndex(
     $sortBy = $request->query->get('sort', 'id');
     $sortOrder = $request->query->get('order', 'DESC');
 
+   /** @var \App\Entity\User|null $user */
    $user = $this->getUser(); // ✅ AJOUTER CETTE LIGNE
 
 $birthDate = $user?->getBirthDate();
@@ -276,7 +277,9 @@ if ($this->getUser()) {
 #[Route('/game/{id}', name: 'front_game_show_front', methods: ['GET'])]
 public function frontShow(Game $game, AiGameSummaryService $ai): Response
 {
-    $birthDate = $this->getUser()->getBirthDate();
+    /** @var \App\Entity\User|null $user */
+    $user = $this->getUser();
+    $birthDate = $user?->getBirthDate();
     $age = $birthDate ? $birthDate->diff(new \DateTimeImmutable())->y : null;
 
     // garde-fou: si age inconnu, on affiche la description normale

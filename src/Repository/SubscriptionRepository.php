@@ -72,6 +72,33 @@ class SubscriptionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find active subscriptions for a specific kid, including those where a parent registered as a kid
+     */
+    public function findActiveSubscriptionsByKidAndParent(int $kidId, ?int $parentId): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->leftJoin('s.course', 'c')
+            ->addSelect('c')
+            ->where('s.active = :active')
+            ->setParameter('active', true);
+
+        if ($parentId) {
+            $qb->andWhere($qb->expr()->orX(
+                's.kid = :kidId',
+                's.kid = :parentId'
+            ))
+            ->setParameter('kidId', $kidId)
+            ->setParameter('parentId', $parentId);
+        } else {
+            $qb->andWhere('s.kid = :kidId')
+                ->setParameter('kidId', $kidId);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+
+    /**
      * Check if a kid is subscribed to a course
      */
     public function isKidSubscribedToCourse(int $kidId, int $courseId): bool

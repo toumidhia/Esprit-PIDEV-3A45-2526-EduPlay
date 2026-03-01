@@ -21,7 +21,7 @@ class FavoriteController extends AbstractController
         Request $request
     ): Response {
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof \App\Entity\User) {
             return new Response('', 403);
         }
 

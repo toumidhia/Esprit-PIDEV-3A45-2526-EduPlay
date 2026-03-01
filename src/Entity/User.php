@@ -100,11 +100,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: EventRegistration::class, mappedBy: 'parent')]
     private Collection $eventRegistrations;
 
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $commandes;
+
     public function __construct()
     {
         $this->courses = new ArrayCollection();
         $this->eventRegistrations = new ArrayCollection();
         $this->enfants = new ArrayCollection();
+        $this->commandes = new ArrayCollection();
         $this->createdAt = new \DateTime();
         $this->active = true;
     }
@@ -370,6 +374,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $eventRegistration->setParent(null);
             }
         }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
+    {
+        return $this->commandes;
+    }
+
+    public function addCommande(Commande $commande): static
+    {
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes->add($commande);
+            $commande->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommande(Commande $commande): static
+    {
+        if ($this->commandes->removeElement($commande)) {
+            // set the owning side to null (unless already changed)
+            if ($commande->getUser() === $this) {
+                $commande->setUser(null);
+            }
+        }
+
         return $this;
     }
 

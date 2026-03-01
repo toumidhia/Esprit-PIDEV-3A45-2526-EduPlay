@@ -72,8 +72,8 @@ Examples:
         $teacher->setEmail($email);
         $teacher->setFirstName($firstName);
         $teacher->setLastName($lastName);
-        $teacher->setType('teacher');
-        $teacher->setRoles(['ROLE_TEACHER']);
+        $teacher->setType('enseignant');
+        $teacher->setRoles(['ROLE_ENSEIGNANT']);
 
         // Set optional fields
         if ($specialite) {
@@ -101,7 +101,7 @@ Examples:
             "Email: {$email}",
             "Name: {$firstName} {$lastName}",
             "Password: {$password}",
-            "Role: ROLE_TEACHER",
+            "Role: ROLE_ENSEIGNANT",
             "Specialité: " . ($specialite ?: 'Not provided'),
             "Téléphone: " . ($telephone ?: 'Not provided'),
             "Adresse: " . ($adresse ?: 'Not provided'),

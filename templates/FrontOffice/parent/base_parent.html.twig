@@ -5,30 +5,6 @@
 {% block content %}
 <div class="min-h-screen bg-gray-50">
 
-    <!-- Header -->
-    <header class="bg-white shadow">
-        <div class="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-gray-900">
-                Bienvenue {{ parent.firstName }} !
-            </h1>
-            <div class="flex gap-4">
-                <a href="{{ path('app_parent_enfant_new') }}"
-                   class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">
-                    Ajouter un enfant
-                </a>
-
-                <a href="{{ path('app_subscription_list') }}"
-                   class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600">
-                    Voir les cours
-                </a>
-
-                <a href="{{ path('app_logout') }}"
-                   class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
-                    Déconnexion
-                </a>
-            </div>
-        </div>
-    </header>
 
     <!-- Flash messages -->
     <div class="max-w-7xl mx-auto px-4 py-4">

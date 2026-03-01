@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+
+if (!file_exists(__DIR__.'/../vendor/autoload.php')) {
+    echo "Please run 'composer install' before running PHPUnit.\n";
+    exit(1);
+}
+
+require __DIR__.'/../vendor/autoload.php';
+
+$phpunitBin = __DIR__.'/../vendor/bin/phpunit';
+
+if (!file_exists($phpunitBin)) {
+    echo "PHPUnit is not installed. Please run 'composer require --dev phpunit/phpunit'.\n";
+    exit(1);
+}
+
+// Pass all arguments to PHPUnit
+$args = array_slice($argv, 1);
+$cmd = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($phpunitBin) . ' ' . implode(' ', array_map('escapeshellarg', $args));
+
+passthru($cmd, $exitCode);
+exit($exitCode);

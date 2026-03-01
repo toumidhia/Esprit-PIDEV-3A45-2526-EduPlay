@@ -1,5 +1,5 @@
 <?php
-// src/Service/RecommendationService.php
+// src/Service/RecommendationEventService.php
 
 namespace App\Service;
 
@@ -7,14 +7,12 @@ use App\Entity\User;
 use App\Entity\SchoolEvent;
 use App\Repository\EventRegistrationRepository;
 use App\Repository\SchoolEventRepository;
-use Doctrine\ORM\EntityManagerInterface;
 
 class RecommendationEventService
 {
     public function __construct(
         private EventRegistrationRepository $registrationRepo,
         private SchoolEventRepository $eventRepo,
-        private EntityManagerInterface $em
     ) {}
 
     public function getRecommendationsForParent(User $parent, int $limit = 3): array
@@ -33,9 +31,7 @@ class RecommendationEventService
         $preferences = $this->analyzePreferences($registrations);
 
         // 3. Trouver des événements correspondants
-        $recommendations = $this->findMatchingEvents($preferences, $limit);
-
-        return $recommendations;
+        return $this->findMatchingEvents($preferences, $limit);
     }
 
     private function analyzePreferences(array $registrations): array
@@ -49,8 +45,9 @@ class RecommendationEventService
 
         foreach ($registrations as $reg) {
             $event = $reg->getEvent();
+            if (!$event) continue;
             
-            // Analyser les types (basé sur le titre/mots-clés)
+            // Analyser les types
             $type = $this->categorizeEvent($event);
             if (!isset($preferences['eventTypes'][$type])) {
                 $preferences['eventTypes'][$type] = 0;
@@ -65,22 +62,10 @@ class RecommendationEventService
                 }
                 $preferences['locations'][$city]++;
             }
-
-            // Analyser l'âge de l'enfant inscrit
-            $childAge = $this->getChildAge($reg);
-            if ($childAge) {
-                $ageGroup = $this->getAgeGroup($childAge);
-                if (!isset($preferences['childAges'][$ageGroup])) {
-                    $preferences['childAges'][$ageGroup] = 0;
-                }
-                $preferences['childAges'][$ageGroup]++;
-            }
         }
 
-        // Trier par fréquence
         arsort($preferences['eventTypes']);
         arsort($preferences['locations']);
-        arsort($preferences['childAges']);
 
         return $preferences;
     }
@@ -91,7 +76,7 @@ class RecommendationEventService
             ->where('e.startDate > :now')
             ->setParameter('now', new \DateTime())
             ->orderBy('e.startDate', 'ASC')
-            ->setMaxResults($limit * 2); // On prend plus pour pouvoir filtrer
+            ->setMaxResults($limit * 2);
 
         $events = $qb->getQuery()->getResult();
         $scoredEvents = [];
@@ -99,13 +84,11 @@ class RecommendationEventService
         foreach ($events as $event) {
             $score = 0;
             
-            // Score basé sur le type d'événement
             $eventType = $this->categorizeEvent($event);
             if (isset($preferences['eventTypes'][$eventType])) {
                 $score += $preferences['eventTypes'][$eventType] * 3;
             }
 
-            // Score basé sur la localisation
             if ($event->getLocation()) {
                 $city = $this->extractCity($event->getLocation());
                 if (isset($preferences['locations'][$city])) {
@@ -113,9 +96,7 @@ class RecommendationEventService
                 }
             }
 
-            // Score basé sur la popularité (si pas d'historique)
-            $popularityScore = $this->getPopularityScore($event);
-            $score += $popularityScore;
+            $score += $this->getPopularityScore($event);
 
             $scoredEvents[] = [
                 'event' => $event,
@@ -124,17 +105,13 @@ class RecommendationEventService
             ];
         }
 
-        // Trier par score décroissant
-        usort($scoredEvents, function($a, $b) {
-            return $b['score'] <=> $a['score'];
-        });
+        usort($scoredEvents, fn($a, $b) => $b['score'] <=> $a['score']);
 
         return array_slice($scoredEvents, 0, $limit);
     }
 
     private function getPopularEvents(int $limit): array
     {
-        // Événements les plus populaires (avec le plus d'inscriptions)
         $qb = $this->eventRepo->createQueryBuilder('e')
             ->select('e, COUNT(r.id) as registrationCount')
             ->leftJoin('e.registrations', 'r')
@@ -150,8 +127,8 @@ class RecommendationEventService
         foreach ($results as $result) {
             $popularEvents[] = [
                 'event' => $result[0],
-                'score' => $result['registrationCount'],
-                'reasons' => ['populaire']
+                'score' => (int)$result['registrationCount'],
+                'reasons' => ['Populaire auprès des familles']
             ];
         }
 
@@ -160,21 +137,13 @@ class RecommendationEventService
 
     private function categorizeEvent(SchoolEvent $event): string
     {
-        $title = strtolower($event->getTitle());
-        $desc = strtolower($event->getDescription());
+        $title = strtolower((string)$event->getTitle());
+        $desc = strtolower((string)$event->getDescription());
 
-        if (strpos($title, 'musée') !== false || strpos($desc, 'musée') !== false) {
-            return 'culturel';
-        }
-        if (strpos($title, 'sport') !== false || strpos($desc, 'sport') !== false) {
-            return 'sportif';
-        }
-        if (strpos($title, 'atelier') !== false || strpos($desc, 'atelier') !== false) {
-            return 'atelier';
-        }
-        if (strpos($title, 'jeu') !== false || strpos($desc, 'jeu') !== false) {
-            return 'ludique';
-        }
+        if (str_contains($title, 'musée') || str_contains($desc, 'musée')) return 'culturel';
+        if (str_contains($title, 'sport') || str_contains($desc, 'sport')) return 'sportif';
+        if (str_contains($title, 'atelier') || str_contains($desc, 'atelier')) return 'atelier';
+        if (str_contains($title, 'jeu') || str_contains($desc, 'jeu')) return 'ludique';
         
         return 'autre';
     }
@@ -182,30 +151,12 @@ class RecommendationEventService
     private function extractCity(?string $location): string
     {
         if (!$location) return 'inconnu';
-        
-        // Extraction simple (premier mot ou code postal)
-        if (preg_match('/\b\d{5}\b/', $location, $matches)) {
-            return $matches[0]; // Code postal
-        }
+        if (preg_match('/\b\d{5}\b/', $location, $matches)) return $matches[0];
         
         $parts = explode(' ', trim($location));
         return $parts[0] ?? 'inconnu';
     }
 
-    private function getChildAge($registration): ?int
-    {
-        // À adapter selon comment l'âge de l'enfant est stocké
-        // Si tu as une entité Child, tu peux calculer l'âge
-        return null;
-    }
-
-    private function getAgeGroup(?int $age): string
-    {
-        if (!$age) return 'inconnu';
-        if ($age < 6) return 'maternelle';
-        if ($age < 10) return 'primaire';
-        return 'college';
-    }
 
     private function getPopularityScore(SchoolEvent $event): int
     {
@@ -215,8 +166,8 @@ class RecommendationEventService
     private function getRecommendationReasons(SchoolEvent $event, array $preferences): array
     {
         $reasons = [];
-        
         $eventType = $this->categorizeEvent($event);
+        
         if (isset($preferences['eventTypes'][$eventType])) {
             $reasons[] = "Vous aimez les événements {$eventType}s";
         }
@@ -228,10 +179,6 @@ class RecommendationEventService
             }
         }
 
-        if (empty($reasons)) {
-            $reasons[] = "Populaire auprès des familles";
-        }
-
-        return $reasons;
+        return !empty($reasons) ? $reasons : ["Populaire auprès des familles"];
     }
 }

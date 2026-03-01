@@ -11,6 +11,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[IsGranted('ROLE_USER')]
 class EventController extends AbstractController
 {
     #[Route('/events', name: 'front_event_index', methods: ['GET'])]
@@ -59,7 +62,9 @@ class EventController extends AbstractController
         $recommendations = [];
         if ($this->getUser()) {
             // 3 recommandations maximum en haut de page
-            $recommendations = $recommendationEventService->getRecommendationsForParent($this->getUser(), 3);
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $recommendations = $recommendationEventService->getRecommendationsForParent($user, 3);
         }
 
         // Si requête AJAX
@@ -85,7 +90,7 @@ class EventController extends AbstractController
     #[Route('/events/{id}', name: 'front_event_show', methods: ['GET'])]
     public function show(SchoolEvent $event): Response
     {
-        $resources = $event->getResources() ? $event->getResources()->toArray() : [];
+        $resources = $event->getResources()->toArray();
 
         usort($resources, function ($a, $b) {
             $tb = $b->getCreatedAt()?->getTimestamp() ?? 0;

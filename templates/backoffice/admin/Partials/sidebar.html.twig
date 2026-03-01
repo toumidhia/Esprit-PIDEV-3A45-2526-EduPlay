@@ -19,8 +19,8 @@
         <ul class="space-y-1">
             {# ================= DASHBOARD ================= #}
             <li>
-                <a href="{{ path('app_dashboard') }}" 
-                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {% if app.request.get('_route') starts with 'app_dashboard' %}bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 border border-blue-100{% else %}text-gray-700 hover:bg-gray-50{% endif %}">
+                <a href="{{ path('app_admin_dashboard') }}" 
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {% if app.request.get('_route') == 'app_admin_dashboard' %}bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 border border-blue-100{% else %}text-gray-700 hover:bg-gray-50{% endif %}">
                     <i class="bi bi-speedometer2 text-lg"></i>
                     <span class="font-medium">Dashboard</span>
                 </a>
@@ -86,7 +86,7 @@
 
                 <li>
                     <a href="{{ path('admin_event_registrations_events') }}" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {% if app.request.get('_route') starts with 'admin_event_inscriptions_index' %}bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 border border-blue-100{% else %}text-gray-700 hover:bg-gray-50{% endif %}">
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {% if app.request.get('_route') starts with 'admin_event_registrations' %}bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 border border-blue-100{% else %}text-gray-700 hover:bg-gray-50{% endif %}">
                         <i class="bi bi-people text-lg"></i>
                         <span class="font-medium">Inscriptions Events</span>
                     </a>
@@ -94,9 +94,9 @@
 
                 <li>
                     <a href="{{ path('admin_scan_index') }}" 
-                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100">
-                        <span class="material-symbols-outlined">qr_code_scanner</span>
-                        Scanner tickets
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {% if app.request.get('_route') starts with 'admin_scan' %}bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 border border-blue-100{% else %}text-gray-700 hover:bg-gray-50{% endif %}">
+                        <i class="bi bi-qr-code-scan text-lg"></i>
+                        <span class="font-medium">Scanner tickets</span>
                     </a>
                 </li>
 

@@ -3,260 +3,175 @@
 {% block title %}Nouvelle Séance - EduPlay{% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header">
-                    <h4><i class="bi bi-plus-circle"></i> Créer une Nouvelle Séance</h4>
-                </div>
-                <div class="card-body">
-                    {# Affichage des erreurs globales du formulaire #}
-                    {% if form.vars.errors|length > 0 %}
-                        <div class="alert alert-danger">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
-                            {{ form_errors(form) }}
-                        </div>
-                    {% endif %}
-
-                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
-
-                    {# Cours associé #}
-                    <div class="mb-3">
-                        {{ form_label(form.course, 'Cours associé', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        <span class="text-danger">*</span>
-                        {{ form_widget(form.course, {'attr': {
-                            'class': form.course.vars.errors|length > 0 ? 'form-select is-invalid' : 'form-select'
-                        }}) }}
-                        {% if form.course.vars.errors|length > 0 %}
-                            <div class="invalid-feedback">
-                                {% for error in form.course.vars.errors %}
-                                    {{ error.message }}<br>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <small class="text-muted">Seuls les cours acceptés sont disponibles</small>
-                    </div>
-
-                    {# Titre de la séance #}
-                    <div class="mb-3">
-                        {{ form_label(form.title, 'Titre de la séance', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.title, {'attr': {
-                            'class': form.title.vars.errors|length > 0 ? 'form-control is-invalid' : 'form-control',
-                            'placeholder': 'Ex: Introduction à Python - Séance 1'
-                        }}) }}
-                        {% if form.title.vars.errors|length > 0 %}
-                            <div class="invalid-feedback">
-                                {% for error in form.title.vars.errors %}
-                                    {{ error.message }}<br>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <small class="form-text text-muted">Optionnel - Maximum 255 caractères</small>
-                    </div>
-
-                    <div class="row">
-                        {# Date #}
-                        <div class="col-md-4 mb-3">
-                            {{ form_label(form.date, 'Date', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.date, {'attr': {
-                                'class': form.date.vars.errors|length > 0 ? 'form-control is-invalid' : 'form-control',
-                                'placeholder': 'JJ/MM/AAAA'
-                            }}) }}
-                            {% if form.date.vars.errors|length > 0 %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.date.vars.errors %}
-                                        {{ error.message }}<br>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        {# Heure de début #}
-                        <div class="col-md-4 mb-3">
-                            {{ form_label(form.startTime, 'Heure de début', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            <span class="text-danger">*</span>
-                            {{ form_widget(form.startTime, {'attr': {
-                                'class': form.startTime.vars.errors|length > 0 ? 'form-control is-invalid' : 'form-control',
-                                'placeholder': 'HH:MM'
-                            }}) }}
-                            {% if form.startTime.vars.errors|length > 0 %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.startTime.vars.errors %}
-                                        {{ error.message }}<br>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        {# Heure de fin #}
-                        <div class="col-md-4 mb-3">
-                            {{ form_label(form.endTime, 'Heure de fin', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            <span class="text-danger">*</span>
-                            {{ form_widget(form.endTime, {'attr': {
-                                'class': form.endTime.vars.errors|length > 0 ? 'form-control is-invalid' : 'form-control',
-                                'placeholder': 'HH:MM'
-                            }}) }}
-                            {% if form.endTime.vars.errors|length > 0 %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.endTime.vars.errors %}
-                                        {{ error.message }}<br>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        {# Lieu #}
-                        <div class="col-md-6 mb-3">
-                            {{ form_label(form.location, 'Lieu', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.location, {'attr': {
-                                'class': form.location.vars.errors|length > 0 ? 'form-control is-invalid' : 'form-control',
-                                'placeholder': 'Ex: Salle 101, En ligne (Zoom), etc.'
-                            }}) }}
-                            {% if form.location.vars.errors|length > 0 %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.location.vars.errors %}
-                                        {{ error.message }}<br>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <small class="form-text text-muted">Optionnel - Maximum 255 caractères</small>
-                        </div>
-
-                        {# Statut #}
-                        <div class="col-md-6 mb-3">
-                            {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.status, {'attr': {
-                                'class': form.status.vars.errors|length > 0 ? 'form-select is-invalid' : 'form-select'
-                            }}) }}
-                            {% if form.status.vars.errors|length > 0 %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.status.vars.errors %}
-                                        {{ error.message }}<br>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    {# Description #}
-                    <div class="mb-3">
-                        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.description, {'attr': {
-                            'class': form.description.vars.errors|length > 0 ? 'form-control is-invalid' : 'form-control',
-                            'placeholder': 'Décrivez le contenu de cette séance, les objectifs, les activités prévues...',
-                            'rows': 5
-                        }}) }}
-                        {% if form.description.vars.errors|length > 0 %}
-                            <div class="invalid-feedback">
-                                {% for error in form.description.vars.errors %}
-                                    {{ error.message }}<br>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <small class="form-text text-muted">Optionnel - Maximum 1000 caractères</small>
-                    </div>
-
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i>
-                        <strong>Information :</strong> La séance sera associée au cours sélectionné.
-                        Assurez-vous que les horaires sont corrects.
-                    </div>
-
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ path('app_seance_index') }}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Annuler
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Créer la Séance
-                        </button>
-                    </div>
-
-                    {{ form_end(form) }}
-                </div>
-            </div>
-        </div>
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <a href="{{ path('app_seance_index') }}" class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors mb-4">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>
+            Retour à l'agenda
+        </a>
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-4xl">event_available</span>
+            Programmer une séance
+        </h1>
+        <p class="mt-2 text-sm text-gray-500">Créer une session d'apprentissage en direct rattachée à l'un de vos cours.</p>
     </div>
 
-    <style>
-        /* Style pour les messages d'erreur */
-        .invalid-feedback {
-            display: block;
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="border-b border-gray-100 bg-gray-50/50 px-8 py-5">
+            <h2 class="text-lg font-semibold text-gray-900">Détails de la session</h2>
+        </div>
+        
+        <div class="p-8">
+            {# Form Error Handling #}
+            {% if form.vars.errors|length > 0 %}
+                <div class="rounded-lg bg-red-50 p-4 border border-red-100 mb-8 flex items-start gap-3">
+                    <span class="material-symbols-outlined text-red-500 mt-0.5">error</span>
+                    <div>
+                        <h3 class="text-sm font-bold text-red-800">Des erreurs ont été trouvées :</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            {{ form_errors(form) }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
 
-        /* Style pour les champs en erreur */
-        .is-invalid {
-            border-color: #dc3545 !important;
-            padding-right: calc(1.5em + 0.75rem);
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right calc(0.375em + 0.1875rem) center;
-            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-        }
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'space-y-6'}}) }}
 
-        /* Animation pour les erreurs */
-        .is-invalid {
-            animation: shake 0.5s;
-        }
+            {# Cours associé #}
+            <div>
+                {{ form_label(form.course, 'Cours associé', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1.5'}}) }}
+                {{ form_widget(form.course, {'attr': {
+                    'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white shadow-sm ' ~ (form.course.vars.errors|length > 0 ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : '')
+                }}) }}
+                <p class="mt-1.5 text-xs text-gray-500 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">info</span>
+                    Seuls les cours acceptés par l'administration sont disponibles.
+                </p>
+                {% if form.course.vars.errors|length > 0 %}
+                    <p class="mt-1 text-sm text-red-600">{{ form_errors(form.course) }}</p>
+                {% endif %}
+            </div>
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
+            {# Titre #}
+            <div>
+                {{ form_label(form.title, 'Titre de la séance', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1.5'}}) }}
+                {{ form_widget(form.title, {'attr': {
+                    'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white shadow-sm ' ~ (form.title.vars.errors|length > 0 ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''),
+                    'placeholder': 'Ex: Introduction à la programmation - Partie 1'
+                }}) }}
+                {% if form.title.vars.errors|length > 0 %}
+                    <p class="mt-1 text-sm text-red-600">{{ form_errors(form.title) }}</p>
+                {% endif %}
+            </div>
 
-        /* Style pour les champs obligatoires */
-        .text-danger {
-            margin-left: 2px;
-        }
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {# Date #}
+                <div>
+                    {{ form_label(form.date, 'Date de la séance', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1.5'}}) }}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-gray-400 text-lg">calendar_today</span>
+                        </div>
+                        {{ form_widget(form.date, {'attr': {
+                            'class': 'w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white shadow-sm ' ~ (form.date.vars.errors|length > 0 ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''),
+                            'placeholder': 'JJ/MM/AAAA'
+                        }}) }}
+                    </div>
+                    {% if form.date.vars.errors|length > 0 %}
+                        <p class="mt-1 text-sm text-red-600">{{ form_errors(form.date) }}</p>
+                    {% endif %}
+                </div>
 
-        /* Style pour le formulaire */
-        .form-control:focus, .form-select:focus {
-            border-color: #86b7fe;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        }
+                {# Heure début #}
+                <div>
+                    {{ form_label(form.startTime, 'Heure de début', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1.5'}}) }}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-gray-400 text-lg">schedule</span>
+                        </div>
+                        {{ form_widget(form.startTime, {'attr': {
+                            'class': 'w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white shadow-sm ' ~ (form.startTime.vars.errors|length > 0 ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''),
+                            'placeholder': 'HH:MM'
+                        }}) }}
+                    </div>
+                    {% if form.startTime.vars.errors|length > 0 %}
+                        <p class="mt-1 text-sm text-red-600">{{ form_errors(form.startTime) }}</p>
+                    {% endif %}
+                </div>
 
-        .form-control.is-invalid:focus, .form-select.is-invalid:focus {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
-        }
-    </style>
+                {# Heure fin #}
+                <div>
+                    {{ form_label(form.endTime, 'Heure de fin', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1.5'}}) }}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-gray-400 text-lg">timelapse</span>
+                        </div>
+                        {{ form_widget(form.endTime, {'attr': {
+                            'class': 'w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white shadow-sm ' ~ (form.endTime.vars.errors|length > 0 ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''),
+                            'placeholder': 'HH:MM'
+                        }}) }}
+                    </div>
+                    {% if form.endTime.vars.errors|length > 0 %}
+                        <p class="mt-1 text-sm text-red-600">{{ form_errors(form.endTime) }}</p>
+                    {% endif %}
+                </div>
+            </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Validation en temps réel de la cohérence des heures
-            const startTimeInput = document.querySelector('[id$="_startTime"]');
-            const endTimeInput = document.querySelector('[id$="_endTime"]');
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {# Lieu #}
+                <div>
+                    {{ form_label(form.location, 'Lieu ou URL', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1.5'}}) }}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-gray-400 text-lg">location_on</span>
+                        </div>
+                        {{ form_widget(form.location, {'attr': {
+                            'class': 'w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white shadow-sm ' ~ (form.location.vars.errors|length > 0 ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''),
+                            'placeholder': 'Ex: Salle 101 ou Lien Zoom'
+                        }}) }}
+                    </div>
+                    {% if form.location.vars.errors|length > 0 %}
+                        <p class="mt-1 text-sm text-red-600">{{ form_errors(form.location) }}</p>
+                    {% endif %}
+                </div>
 
-            if (startTimeInput && endTimeInput) {
-                function validateEndTime() {
-                    if (startTimeInput.value && endTimeInput.value) {
-                        const startTime = startTimeInput.value;
-                        const endTime = endTimeInput.value;
+                {# Statut #}
+                <div>
+                    {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1.5'}}) }}
+                    {{ form_widget(form.status, {'attr': {
+                        'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white shadow-sm ' ~ (form.status.vars.errors|length > 0 ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : '')
+                    }}) }}
+                    {% if form.status.vars.errors|length > 0 %}
+                        <p class="mt-1 text-sm text-red-600">{{ form_errors(form.status) }}</p>
+                    {% endif %}
+                </div>
+            </div>
 
-                        if (endTime <= startTime) {
-                            endTimeInput.classList.add('is-invalid');
-                            let feedback = endTimeInput.nextElementSibling;
-                            if (!feedback || !feedback.classList.contains('invalid-feedback')) {
-                                feedback = document.createElement('div');
-                                feedback.className = 'invalid-feedback';
-                                endTimeInput.parentNode.appendChild(feedback);
-                            }
-                            feedback.innerHTML = 'L\'heure de fin doit être après l\'heure de début';
-                        } else {
-                            endTimeInput.classList.remove('is-invalid');
-                        }
-                    }
-                }
+            {# Description #}
+            <div>
+                {{ form_label(form.description, 'Description de la séance', {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1.5'}}) }}
+                {{ form_widget(form.description, {'attr': {
+                    'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors shadow-sm resize-y ' ~ (form.description.vars.errors|length > 0 ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''),
+                    'rows': 4,
+                    'placeholder': 'Décrivez le programme ou les préparatifs requis pour cette session.'
+                }}) }}
+                {% if form.description.vars.errors|length > 0 %}
+                    <p class="mt-1 text-sm text-red-600">{{ form_errors(form.description) }}</p>
+                {% endif %}
+            </div>
 
-                startTimeInput.addEventListener('change', validateEndTime);
-                endTimeInput.addEventListener('change', validateEndTime);
-                endTimeInput.addEventListener('input', validateEndTime);
-            }
-        });
-    </script>sy
+            <div class="pt-6 mt-2 border-t border-gray-100 flex items-center justify-end gap-3">
+                <a href="{{ path('app_seance_index') }}" class="px-5 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
+                    Annuler
+                </a>
+                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-all shadow-sm shadow-primary/20 hover:shadow-md">
+                    <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                    Planifier la séance
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
 {% endblock %}

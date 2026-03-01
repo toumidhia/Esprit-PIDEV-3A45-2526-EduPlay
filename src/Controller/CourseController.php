@@ -72,8 +72,9 @@ final class CourseController extends AbstractController
 
         // Filter courses based on user role
         if (in_array('ROLE_ENSEIGNANT', $userRoles)) {
-            // Teacher sees only their own courses
-            $courses = $courseRepository->findByTeacher($user, $filters);
+            // Teacher sees only their own courses, with filters applied
+            $filters['teacher'] = $user;
+            $courses = $courseRepository->findWithFilters($filters, $sortBy, $sortOrder);
             $template = 'BackOffice/enseignant/course/index.html.twig';
             $recommendations = [];
         } elseif (in_array('ROLE_PARENT', $userRoles)) {
@@ -96,20 +97,23 @@ final class CourseController extends AbstractController
                 }
             }
         } elseif (in_array('ROLE_ENFANT', $userRoles)) {
-            // Kids see only courses they are subscribed to
-            $subscriptions = $subscriptionRepository->findActiveSubscriptionsByKid($user->getId());
+            // Kids see courses they are subscribed to (themselves OR parent self-registered)
+            $subscriptions = $subscriptionRepository->findActiveSubscriptionsByKidAndParent(
+                $user->getId(),
+                $user->getParent() ? $user->getParent()->getId() : null
+            );
+            
             $courses = [];
             foreach ($subscriptions as $subscription) {
                 $courses[] = $subscription->getCourse();
             }
+            
             $template = 'FrontOffice/enseignant/course/browse.html.twig';
-            $kids = [];
-
             // Get recommendations for this kid (courses they are NOT subscribed to)
             $recommendations = $RecommendationCourseService->getRecommendationsForKid($user, 6);
         } else {
-            // Admin sees all courses with filters
-            $courses = $courseRepository->findAll();
+            // Admin sees all courses with filters and sort
+            $courses = $courseRepository->findWithFilters($filters, $sortBy, $sortOrder);
             $template = 'BackOffice/enseignant/course/index.html.twig';
             $recommendations = [];
             $kids = [];
@@ -261,9 +265,9 @@ final class CourseController extends AbstractController
             return $this->redirectToRoute('app_course_index');
         }
 
-        return $this->render('BackOffice/course/new.html.twig', [
+        return $this->render('BackOffice/enseignant/course/new.html.twig', [
             'course' => $course,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -291,12 +295,14 @@ final class CourseController extends AbstractController
                 return $this->redirectToRoute('app_course_index');
             }
         } elseif (in_array('ROLE_ENFANT', $userRoles)) {
-            // Kids can only see courses they are subscribed to
-            // FIX: Use isKidSubscribedToCourse instead of isSubscribed
-            $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse(
-                $user->getId(), // Kid ID
-                $course->getId() // Course ID
-            );
+            // Kids can see courses they are subscribed to (self OR parent self-registered)
+            $parentId = $user->getParent() ? $user->getParent()->getId() : null;
+            $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse($user->getId(), $course->getId());
+            
+            if (!$isSubscribed && $parentId) {
+                $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse($parentId, $course->getId());
+            }
+            
             if (!$isSubscribed) {
                 $this->addFlash('error', 'Vous n\'êtes pas inscrit à ce cours.');
                 return $this->redirectToRoute('app_course_index');
@@ -304,15 +310,25 @@ final class CourseController extends AbstractController
         }
         // Admin can see all courses
 
-        // Route to backoffice for admin/teacher, frontoffice for parent/kid
-        $template = (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_ENSEIGNANT', $userRoles))
-            ? 'BackOffice/course/show.html.twig'
-            : 'FrontOffice/enseignant/course/show.html.twig';
+        // Admin/Teacher see BackOffice, Parent/Kid see FrontOffice
+        if (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_ENSEIGNANT', $userRoles)) {
+            $template = 'BackOffice/enseignant/course/show.html.twig';
+            $params = [
+                'course' => $course,
+            ];
+        } else {
+            $template = 'FrontOffice/enseignant/course/show.html.twig';
+            $params = [
+                'course' => $course,
+            ];
+            
+            if (in_array('ROLE_PARENT', $userRoles)) {
+                $params['kids'] = $userRepository->findBy(['parent' => $user, 'type' => 'kid']);
+            }
+        }
 
-        return $this->render($template, [
-            'course' => $course,
-            'userRole' => $this->getMainRole($userRoles),
-        ]);
+        return $this->render($template, $params);
+
     }
 
     // Download PDF file
@@ -328,11 +344,13 @@ final class CourseController extends AbstractController
         $userRoles = $user->getRoles();
         if (in_array('ROLE_ENFANT', $userRoles)) {
             // Kids can only download PDFs of courses they're subscribed to
-            $isSubscribed = $subscriptionRepository->isSubscribed(
-                $user->getId(),
-                $user->getId(),
-                $course->getId()
-            );
+            $parentId = $user->getParent() ? $user->getParent()->getId() : null;
+            $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse($user->getId(), $course->getId());
+            
+            if (!$isSubscribed && $parentId) {
+                $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse($parentId, $course->getId());
+            }
+
             if (!$isSubscribed) {
                 $this->addFlash('error', 'You are not subscribed to this course.');
                 return $this->redirectToRoute('app_course_index');
@@ -442,9 +460,9 @@ final class CourseController extends AbstractController
             return $this->redirectToRoute('app_course_index');
         }
 
-        return $this->render('BackOffice/course/edit.html.twig', [
+        return $this->render('BackOffice/enseignant/course/edit.html.twig', [
             'course' => $course,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -490,16 +508,15 @@ final class CourseController extends AbstractController
     {
         if ($this->isCsrfTokenValid('subscribe'.$course->getId(), $request->request->get('_token'))) {
             $kidId = $request->request->get('kid_id');
-
             if (!$kidId) {
-                $this->addFlash('error', 'Veuillez sélectionner un enfant.');
-                return $this->redirectToRoute('app_course_index');
+                // Parent subscribing themselves
+                $kid = $this->getUser();
+            } else {
+                $kid = $userRepository->find($kidId);
             }
 
-            $kid = $userRepository->find($kidId);
-
-            if (!$kid || $kid->getType() !== 'kid') {
-                $this->addFlash('error', 'Enfant invalide.');
+            if (!$kid) {
+                $this->addFlash('error', 'Cible d\'inscription invalide.');
                 return $this->redirectToRoute('app_course_index');
             }
 
@@ -529,7 +546,8 @@ final class CourseController extends AbstractController
             $entityManager->persist($subscription);
             $entityManager->flush();
 
-            $this->addFlash('success', $kid->getFirstName() . ' a été inscrit avec succès à ' . $course->getTitle() . '!');
+            $targetName = ($kid === $parent) ? "vous-même" : $kid->getFirstName();
+            $this->addFlash('success', $targetName . ' a été inscrit avec succès à ' . $course->getTitle() . '!');
         }
 
         return $this->redirectToRoute('app_course_index');
@@ -548,10 +566,13 @@ final class CourseController extends AbstractController
         if ($this->isCsrfTokenValid('unsubscribe'.$course->getId(), $request->request->get('_token'))) {
             $kidId = $request->request->get('kid_id');
             $parent = $this->getUser();
+            
+            // Si l'id de l'enfant n'est pas fourni, cela signifie que le parent se désinscrit lui-même
+            $targetKidId = $kidId ? $kidId : $parent->getId();
 
             $subscription = $entityManager->getRepository(Subscription::class)->findOneBy([
                 'parent' => $parent,
-                'kid' => $kidId,
+                'kid' => $targetKidId,
                 'course' => $course,
                 'active' => true
             ]);
@@ -695,11 +716,20 @@ final class CourseController extends AbstractController
 
         // Check permissions
         if (in_array('ROLE_ENFANT', $userRoles)) {
-            // Kids can only see courses they are subscribed to
+            // Kids can only see courses they are subscribed to (self OR parent self-registered)
+            $parentId = $user->getParent() ? $user->getParent()->getId() : null;
             $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse(
                 $user->getId(),
                 $course->getId()
             );
+            
+            if (!$isSubscribed && $parentId) {
+                $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse(
+                    $parentId,
+                    $course->getId()
+                );
+            }
+            
             if (!$isSubscribed) {
                 $this->addFlash('error', 'Vous n\'êtes pas inscrit à ce cours.');
                 return $this->redirectToRoute('app_course_index');
@@ -745,7 +775,7 @@ final class CourseController extends AbstractController
 
         // Determine which template to use
         $template = (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_ENSEIGNANT', $userRoles))
-            ? 'BackOffice/course/detail.html.twig'
+            ? 'BackOffice/enseignant/course/detail.html.twig'
             : 'FrontOffice/enseignant/course/detail.html.twig';
 
         return $this->render($template, [

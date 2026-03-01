@@ -1,47 +1,161 @@
-<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#dbe1e6] dark:border-gray-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-6 md:px-20 lg:px-40 py-4 sticky top-0 z-50">
-    <div class="flex items-center gap-3">
-        <div class="size-10 bg-primary rounded-full flex items-center justify-center text-white">
-            <span class="material-symbols-outlined text-2xl">rocket_launch</span>
-        </div>
-        <h2 class="text-2xl font-extrabold tracking-tight">EduPlay</h2>
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#dbe1e6] dark:border-gray-800 bg-white/90 dark:bg-background-dark/95 backdrop-blur-lg px-6 md:px-20 lg:px-40 py-4 sticky top-0 z-50 shadow-sm transition-all duration-300">
+    <div class="flex items-center gap-4">
+        <a href="{{ path('app_home') }}" class="group flex items-center gap-3 hover:scale-105 transition-transform duration-300">
+            <div class="size-11 bg-gradient-to-tr from-primary to-blue-400 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:rotate-12 transition-transform">
+                <span class="material-symbols-outlined text-2xl">rocket_launch</span>
+            </div>
+            <h2 class="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-[#111518] to-gray-600 dark:from-white dark:to-gray-400">EduPlay</h2>
+        </a>
     </div>
-    <nav class="hidden md:flex items-center gap-8">
-        <a class="text-sm font-bold hover:text-primary transition-colors" href="{{ path('app_home') }}">Home</a>
-        <a class="text-sm font-bold hover:text-primary transition-colors" href="{{ path('front_games') }}">Games</a>
-        <a class="text-sm font-bold hover:text-primary transition-colors" href="{{ path('app_library') }}">Library</a>
-        <a class="text-sm font-bold hover:text-primary transition-colors" href="{{ path('app_front_shop') }}">Shop</a>
-        <a class="text-sm font-bold hover:text-primary transition-colors" href="{{ path('front_event_index') }}">Events</a>
+
+    <!-- Main Navigation -->
+    <nav class="hidden xl:flex items-center gap-1">
+        <a class="px-4 py-2 text-sm font-bold rounded-lg hover:bg-background-light dark:hover:bg-gray-800 hover:text-primary transition-all flex items-center gap-2" href="{{ path('app_home') }}">
+            <span class="material-symbols-outlined text-sm">home</span> Home
+        </a>
+        <a class="px-4 py-2 text-sm font-bold rounded-lg hover:bg-background-light dark:hover:bg-gray-800 hover:text-primary transition-all flex items-center gap-2" href="{{ path('front_games') }}">
+            <span class="material-symbols-outlined text-sm">sports_esports</span> Jeux
+        </a>
+        <a class="px-4 py-2 text-sm font-bold rounded-lg hover:bg-background-light dark:hover:bg-gray-800 hover:text-primary transition-all flex items-center gap-2" href="{{ path('app_library') }}">
+            <span class="material-symbols-outlined text-sm">library_books</span> Bibliothèque
+        </a>
+        <a class="px-4 py-2 text-sm font-bold rounded-lg hover:bg-background-light dark:hover:bg-gray-800 hover:text-primary transition-all flex items-center gap-2" href="{{ path('app_front_shop') }}">
+            <span class="material-symbols-outlined text-sm">shopping_bag</span> Shop
+        </a>
+        <a class="px-4 py-2 text-sm font-bold rounded-lg hover:bg-background-light dark:hover:bg-gray-800 hover:text-primary transition-all flex items-center gap-2" href="{{ path('front_event_index') }}">
+            <span class="material-symbols-outlined text-sm">event</span> Événements
+        </a>
 
         {% if app.user %}
+            <div class="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
+            
             {% if is_granted('ROLE_ADMIN') %}
-                <a class="text-sm font-bold text-red-500 hover:text-red-400 transition-colors" href="{{ path('app_admin_dashboard') }}">Admin Panel</a>
+                <!-- Admin Dropdown -->
+                <div class="relative group/menu">
+                    <button class="px-4 py-2 text-sm font-bold text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm text-red-500">admin_panel_settings</span> Admin Panel
+                        <span class="material-symbols-outlined text-sm transition-transform group-hover/menu:rotate-180">expand_more</span>
+                    </button>
+                    <div class="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-2xl opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 py-2">
+                        <a href="{{ path('app_admin_users') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">group</span> Utilisateurs
+                        </a>
+                        <a href="{{ path('app_back_product_index') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">inventory_2</span> Produits
+                        </a>
+                        <a href="{{ path('app_back_commande_index') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">receipt_long</span> Commandes
+                        </a>
+                        <a href="{{ path('admin_event_index') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">calendar_month</span> Gestion Événements
+                        </a>
+                        <a href="{{ path('admin_resource_index') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">folder_open</span> Ressources
+                        </a>
+                        <a href="{{ path('admin_stats') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 border-t border-gray-50 dark:border-gray-800 mt-1">
+                            <span class="material-symbols-outlined text-lg">monitoring</span> Statistiques
+                        </a>
+                    </div>
+                </div>
             {% elseif is_granted('ROLE_ENSEIGNANT') %}
-                <a class="text-sm font-bold text-blue-500 hover:text-blue-400 transition-colors" href="{{ path('teacher_game_index') }}">My teaching</a>
+                <!-- Teacher Dropdown -->
+                <div class="relative group/menu">
+                    <button class="px-4 py-2 text-sm font-bold text-blue-500 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">school</span> Espace Enseignant
+                        <span class="material-symbols-outlined text-sm transition-transform group-hover/menu:rotate-180">expand_more</span>
+                    </button>
+                    <div class="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-2xl opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 py-2">
+                        <a href="{{ path('app_course_index') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">auto_stories</span> Mes Cours
+                        </a>
+                        <a href="{{ path('teacher_game_index') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">gamepad</span> Gestion Jeux
+                        </a>
+                        <a href="{{ path('teacher_level_index') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">leaderboard</span> Niveaux
+                        </a>
+                    </div>
+                </div>
             {% elseif is_granted('ROLE_PARENT') %}
-                <a class="text-sm font-bold text-green-500 hover:text-green-400 transition-colors" href="{{ path('app_parent_dashboard') }}">My Kids</a>
-            {% elseif is_granted('ROLE_KID') or is_granted('ROLE_ENFANT') %}
-                <a class="text-sm font-bold text-purple-500 hover:text-purple-400 transition-colors" href="{{ path('front_games') }}">My Playground</a>
+                <!-- Parent Dropdown -->
+                <div class="relative group/menu">
+                    <button class="px-4 py-2 text-sm font-bold text-green-500 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">family_restroom</span> Espace Parent
+                        <span class="material-symbols-outlined text-sm transition-transform group-hover/menu:rotate-180">expand_more</span>
+                    </button>
+                    <div class="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-2xl opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 py-2">
+                        <a href="{{ path('app_parent_dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">child_care</span> Mes Enfants
+                        </a>
+                        <a href="{{ path('app_parent_commandes') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">shopping_cart_checkout</span> Mes Commandes
+                        </a>
+                        <a href="{{ path('parent_recommendations') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">stars</span> Recommandations
+                        </a>
+                        <a href="{{ path('app_subscription_list') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">subscriptions</span> Inscriptions
+                        </a>
+                    </div>
+                </div>
+            {% elseif is_granted('ROLE_ENFANT') %}
+                <!-- Enfant Menu -->
+                <div class="relative group/menu">
+                    <button class="px-4 py-2 text-sm font-bold text-purple-500 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">face</span> Espace Enfant
+                        <span class="material-symbols-outlined text-sm transition-transform group-hover/menu:rotate-180">expand_more</span>
+                    </button>
+                    <div class="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-2xl opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 py-2">
+                        <a href="{{ path('front_games') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">potted_plant</span> Mon Jardin Secret
+                        </a>
+                        <a href="{{ path('app_course_index') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">school</span> Mes Cours
+                        </a>
+                    </div>
+                </div>
             {% endif %}
         {% endif %}
     </nav>
-    <div class="flex items-center gap-4">
+
+    <!-- User Actions -->
+    <div class="flex items-center gap-3">
         {% if app.user %}
-            <div class="flex items-center gap-3">
-                <span class="hidden sm:flex text-sm font-bold">{{ app.user.fullName }}</span>
-                <a href="{{ path('app_dashboard_redirect') }}" class="flex items-center justify-center overflow-hidden rounded-full h-11 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30 hover:scale-105 transition-transform">
-                    Dashboard
-                </a>
-                <a href="{{ path('app_logout') }}" class="hidden sm:flex text-sm font-bold px-4 py-2 hover:text-primary transition-colors">
-                    Déconnexion
-                </a>
+            <div class="flex items-center gap-2">
+                <div class="hidden sm:flex flex-col items-end mr-2">
+                    <span class="text-sm font-bold leading-none">{{ app.user.fullName }}</span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{{ app.user.type }}</span>
+                </div>
+                <div class="relative group/user">
+                    <button class="size-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:ring-2 hover:ring-primary transition-all">
+                        <span class="material-symbols-outlined">person</span>
+                    </button>
+                    <!-- User Mini Menu -->
+                    <div class="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-2xl opacity-0 invisible group-hover/user:opacity-100 group-hover/user:visible transition-all duration-200 py-2">
+                        <a href="{{ path('app_dashboard_redirect') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-lg">dashboard</span> Dashboard
+                        </a>
+                        <div class="h-px bg-gray-50 dark:bg-gray-800 my-1"></div>
+                        <a href="{{ path('app_logout') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10">
+                            <span class="material-symbols-outlined text-lg">logout</span> Déconnexion
+                        </a>
+                    </div>
+                </div>
             </div>
-        {% else %}
-            <a href="{{ path('app_register') }}" class="hidden sm:flex text-sm font-bold px-4 py-2 hover:text-primary transition-colors">
-                Sign Up
+            <!-- Cart Shortcut (Optional if Cart exists) -->
+             <a href="{{ path('app_front_cart_index') }}" class="size-11 rounded-xl bg-background-light dark:bg-gray-800 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+                <span class="material-symbols-outlined">shopping_cart</span>
             </a>
-            <a href="{{ path('app_login') }}" class="flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-11 px-6 bg-primary text-white text-sm font-bold leading-normal shadow-lg shadow-primary/30 hover:scale-105 transition-transform">
-                Login
+        {% else %}
+            <a href="{{ path('app_login') }}" class="px-6 py-2.5 text-sm font-bold hover:text-primary transition-all">Login</a>
+            <a href="{{ path('app_register') }}" class="px-6 py-2.5 bg-primary text-white text-sm font-extrabold rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                Rejoindre EduPlay
             </a>
         {% endif %}
+        
+        <!-- Mobile Menu Toggle (Simplified) -->
+        <button class="xl:hidden size-11 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
     </div>
 </header>

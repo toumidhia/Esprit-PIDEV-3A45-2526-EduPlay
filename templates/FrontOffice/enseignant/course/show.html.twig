@@ -1,46 +1,116 @@
-{% extends 'backoffice/enseignant/Partials/container.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}Course{% endblock %}
+{% block title %}Détails du cours - {{ course.title }}{% endblock %}
 
-{% block content %}
-    <h1>Course</h1>
+{% block body %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    {# Breadcrumb #}
+    <nav class="flex mb-8 items-center gap-2 text-sm font-medium text-gray-500">
+        <a href="{{ path('app_course_index') }}" class="hover:text-primary transition-colors">Explorer les cours</a>
+        <span class="material-symbols-outlined text-sm text-gray-300">chevron_right</span>
+        <span class="text-gray-900">{{ course.title }}</span>
+    </nav>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ course.id }}</td>
-            </tr>
-            <tr>
-                <th>Title</th>
-                <td>{{ course.title }}</td>
-            </tr>
-            <tr>
-                <th>DurationTraining</th>
-                <td>{{ course.durationTraining }}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{ course.description }}</td>
-            </tr>
-            <tr>
-                <th>Level</th>
-                <td>{{ course.level }}</td>
-            </tr>
-            <tr>
-                <th>PdfFile</th>
-                <td>{{ course.pdfFile }}</td>
-            </tr>
-            <tr>
-                <th>Status</th>
-                <td>{{ course.status }}</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {# Main Content #}
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-10">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium mb-6">
+                    <span class="material-symbols-outlined text-base">school</span>
+                    Cours EduPlay
+                </div>
+                
+                <h1 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">{{ course.title }}</h1>
+                
+                <div class="flex items-center gap-4 mb-8 pb-8 border-b border-gray-100">
+                    <div class="size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">
+                        {{ course.teacherId.firstName|slice(0, 1) }}{{ course.teacherId.lastName|slice(0, 1) }}
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Enseignant</p>
+                        <p class="font-semibold text-gray-900">{{ course.teacherId.fullName }}</p>
+                    </div>
+                </div>
 
-    <a href="{{ path('app_course_index') }}">back to list</a>
+                <div class="prose prose-lg max-w-none text-gray-600">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">description</span>
+                        À propos de ce cours
+                    </h3>
+                    <p class="whitespace-pre-line leading-relaxed">{{ course.description }}</p>
+                </div>
+            </div>
+        </div>
 
-    <a href="{{ path('app_course_edit', {'id': course.id}) }}">edit</a>
+        {# Sidebar #}
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 sticky top-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">info</span>
+                    Détails du programme
+                </h3>
 
-    {{ include('FrontOffice/enseignant/course/_delete_form.html.twig') }}
+                <div class="space-y-4 mb-8">
+                    <div class="flex items-center justify-between p-4 rounded-2xl bg-gray-50">
+                        <div class="flex items-center gap-3 text-gray-600">
+                            <span class="material-symbols-outlined">signal_cellular_alt</span>
+                            <span class="font-medium">Niveau</span>
+                        </div>
+                        <span class="font-semibold text-gray-900">
+                            {{ course.level == 'Beginner' ? 'Débutant' : (course.level == 'Intermediate' ? 'Intermédiaire' : 'Avancé') }}
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 rounded-2xl bg-gray-50">
+                        <div class="flex items-center gap-3 text-gray-600">
+                            <span class="material-symbols-outlined">schedule</span>
+                            <span class="font-medium">Durée</span>
+                        </div>
+                        <span class="font-semibold text-gray-900">{{ course.durationTraining }} semaines</span>
+                    </div>
+                </div>
+
+                {% if is_granted('ROLE_PARENT') and kids is defined and kids|length > 0 %}
+                    <div class="pt-6 border-t border-gray-100">
+                        <h4 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-green-500">person_add</span>
+                            Inscription
+                        </h4>
+                        
+                        <form method="post" action="{{ path('app_course_subscribe', {'id': course.id}) }}" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Pour qui est cette inscription ?</label>
+                                <select name="kid_id" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white shadow-sm" required>
+                                    <option value="" disabled selected>Sélectionner un participant...</option>
+                                    <optgroup label="Vos enfants">
+                                        {% for kid in kids %}
+                                            <option value="{{ kid.id }}">{{ kid.firstName }} {{ kid.lastName }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    <optgroup label="Vous-même">
+                                        <option value="parent">M'inscrire moi-même ({{ app.user.firstName }})</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            
+                            <input type="hidden" name="_token" value="{{ csrf_token('subscribe' ~ course.id) }}">
+                            
+                            <button type="submit" class="w-full inline-flex justify-center items-center gap-2 px-6 py-4 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-all shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/30">
+                                Confirmer l'inscription
+                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </button>
+                        </form>
+                    </div>
+                {% elseif not is_granted('ROLE_PARENT') and not is_granted('ROLE_ENFANT') %}
+                    <div class="pt-6 border-t border-gray-100 text-center">
+                        <p class="text-sm text-gray-600 mb-4">Connectez-vous en tant que parent pour inscrire vos enfants.</p>
+                        <a href="{{ path('app_login') }}" class="w-full inline-flex justify-center items-center px-6 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold rounded-xl transition-all">
+                            Se connecter
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

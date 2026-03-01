@@ -104,7 +104,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Récupère tous les professeurs (avec rôle ROLE_TEACHER)
+     * Récupère tous les professeurs (avec rôle ROLE_ENSEIGNANT)
      *
      * @return User[]
      */
@@ -112,7 +112,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         return $this->createQueryBuilder('u')
             ->where('u.roles LIKE :role')
-            ->setParameter('role', '%ROLE_TEACHER%')
+            ->setParameter('role', '%ROLE_ENSEIGNANT%')
             ->orderBy('u.firstName', 'ASC')
             ->getQuery()
             ->getResult();

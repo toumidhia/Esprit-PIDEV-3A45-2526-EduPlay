@@ -9,7 +9,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 #[Route('/shop')]
+#[IsGranted('ROLE_USER')]
 class ShopController extends AbstractController
 {
     public function __construct(
@@ -20,6 +23,9 @@ class ShopController extends AbstractController
     #[Route('', name: 'app_front_shop', methods: ['GET'])]
     public function index(Request $request, ProductRepository $productRepository): Response
     {
+        if ($this->isGranted('ROLE_ENFANT')) {
+            throw $this->createAccessDeniedException('Les enfants ne peuvent pas accéder à la boutique.');
+        }
         $search = $request->query->get('search');
         $priceMin = $request->query->get('price_min') ? (float) $request->query->get('price_min') : null;
         $priceMax = $request->query->get('price_max') ? (float) $request->query->get('price_max') : null;
@@ -47,6 +53,9 @@ class ShopController extends AbstractController
     #[Route('/{id}', name: 'app_front_shop_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(int $id, ProductRepository $productRepository): Response
     {
+        if ($this->isGranted('ROLE_ENFANT')) {
+            throw $this->createAccessDeniedException('Les enfants ne peuvent pas accéder à la boutique.');
+        }
         $product = $productRepository->find($id);
         if (!$product || !$product->isAvailability()) {
             throw $this->createNotFoundException('Produit non trouvé.');

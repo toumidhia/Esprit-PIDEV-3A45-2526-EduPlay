@@ -35,6 +35,9 @@ security:
         - { path: ^/parent, roles: ROLE_PARENT }
         - { path: ^/enseignant, roles: ROLE_ENSEIGNANT }
         - { path: ^/enfant, roles: ROLE_ENFANT }
+        - { path: ^/shop, roles: ROLE_USER }
+        - { path: ^/jeux, roles: ROLE_USER }
+        - { path: ^/games, roles: ROLE_USER }
         - { path: ^/events, roles: ROLE_USER }
 
         - { path: ^/, roles: PUBLIC_ACCESS }

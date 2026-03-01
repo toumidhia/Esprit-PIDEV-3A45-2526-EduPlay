@@ -1,213 +1,224 @@
-{% extends 'base.html.twig' %}
+{% extends 'BackOffice/enseignant/Partials/container.html.twig' %}
 
 {% block title %}Détails du cours - {{ course.title }}{% endblock %}
 
-{% block body %}
-    <div class="container-fluid px-4">
-        <h1 class="mt-4">
-            <i class="bi bi-book"></i> Détails du cours
-        </h1>
-        <ol class="breadcrumb mb-4">
-            <li class="breadcrumb-item"><a href="{{ path('app_dashboard_redirect') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('app_course_index') }}">Cours</a></li>
-            <li class="breadcrumb-item active">{{ course.title }}</li>
-        </ol>
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {# Header Section #}
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-4xl">book</span>
+                {{ course.title }}
+            </h1>
+            <p class="mt-2 text-sm text-gray-500">Détails et gestion du cours</p>
+        </div>
+        <div>
+            <a href="{{ path('app_course_index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                Retour aux cours
+            </a>
+        </div>
+    </div>
 
-        <div class="row">
-            <div class="col-xl-8">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Informations du cours
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <div class="col-md-3 fw-bold">Titre :</div>
-                            <div class="col-md-9">{{ course.title }}</div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-3 fw-bold">Description :</div>
-                            <div class="col-md-9">{{ course.description }}</div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-3 fw-bold">Niveau :</div>
-                            <div class="col-md-9">
-                            <span class="badge bg-{{
-                            course.level == 'Beginner' ? 'success' :
-                            (course.level == 'Intermediate' ? 'warning' : 'danger')
-                            }}">
-                                {{ course.level == 'Beginner' ? 'Débutant' :
-                                (course.level == 'Intermediate' ? 'Intermédiaire' : 'Avancé') }}
-                            </span>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-3 fw-bold">Durée :</div>
-                            <div class="col-md-9">{{ course.durationTraining }} semaines</div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-3 fw-bold">Enseignant :</div>
-                            <div class="col-md-9">{{ course.teacherId.fullName }}</div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-3 fw-bold">Date de création :</div>
-                            <div class="col-md-9">{{ course.createdAt|date('d/m/Y H:i') }}</div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-3 fw-bold">Statut :</div>
-                            <div class="col-md-9">
-                                {% if course.status == 'pending' %}
-                                    <span class="badge bg-warning">En attente</span>
-                                {% elseif course.status == 'accepted' %}
-                                    <span class="badge bg-success">Accepté</span>
-                                {% elseif course.status == 'rejected' %}
-                                    <span class="badge bg-danger">Rejeté</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-3 fw-bold">PDF :</div>
-                            <div class="col-md-9">
-                                {% if course.pdfFile %}
-                                    <a href="{{ asset('uploads/courses/' ~ course.pdfFile) }}" target="_blank" class="btn btn-sm btn-primary">
-                                        <i class="bi bi-file-pdf"></i> Télécharger le PDF
-                                    </a>
-                                {% else %}
-                                    <span class="text-muted">Aucun PDF</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {# Left Column: Details & Actions #}
+        <div class="lg:col-span-1 space-y-6">
+            
+            {# Info Card #}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">info</span>
+                        Informations
+                    </h2>
                 </div>
-
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="bi bi-people me-1"></i>
-                        Inscriptions ({{ course.subscriptions|length }})
+                <div class="p-6 space-y-4">
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <span class="text-sm text-gray-500">ID</span>
+                        <span class="font-medium text-gray-900">#{{ course.id }}</span>
                     </div>
-                    <div class="card-body">
-                        {% if course.subscriptions|length > 0 %}
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
-                                    <tr>
-                                        <th>Enfant</th>
-                                        <th>Parent</th>
-                                        <th>Date d'inscription</th>
-                                        <th>Statut</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for subscription in course.subscriptions %}
-                                        <tr>
-                                            <td>{{ subscription.kid.fullName }}</td>
-                                            <td>{{ subscription.parent.fullName }}</td>
-                                            <td>{{ subscription.subscribedAt|date('d/m/Y') }}</td>
-                                            <td>
-                                                {% if subscription.active %}
-                                                    <span class="badge bg-success">Active</span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary">Inactive</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
+                    
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <span class="text-sm text-gray-500">Enseignant</span>
+                        <span class="font-medium text-gray-900">{{ course.teacherId.fullName }}</span>
+                    </div>
+
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <span class="text-sm text-gray-500">Niveau</span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                            {{ course.level == 'Beginner' ? 'Débutant' : (course.level == 'Intermediate' ? 'Intermédiaire' : 'Avancé') }}
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <span class="text-sm text-gray-500">Durée</span>
+                        <span class="font-medium text-gray-900">{{ course.durationTraining }} semaines</span>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-500">Statut</span>
+                        {% if course.status == 'pending' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">En attente</span>
+                        {% elseif course.status == 'accepted' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Accepté</span>
                         {% else %}
-                            <p class="text-muted mb-0">Aucune inscription pour ce cours.</p>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Rejeté</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
-            <div class="col-xl-4">
-                {# Actions card #}
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="bi bi-gear me-1"></i>
-                        Actions
-                    </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
-                            {# Modifier le cours #}
-                            <a href="{{ path('app_course_edit', {'id': course.id}) }}" class="btn btn-warning">
-                                <i class="bi bi-pencil"></i> Modifier
-                            </a>
-
-                            {# Actions admin - CORRIGÉ: utilise accept et reject au lieu de approve #}
-                            {% if is_granted('ROLE_ADMIN') and course.status == 'pending' %}
-                                <form method="post" action="{{ path('app_course_accept', {'id': course.id}) }}" style="display: inline-block;" class="w-100">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ course.id) }}">
-                                    <button type="submit" class="btn btn-success w-100">
-                                        <i class="bi bi-check-circle"></i> Accepter le cours
-                                    </button>
-                                </form>
-
-                                <form method="post" action="{{ path('app_course_reject', {'id': course.id}) }}" style="display: inline-block;" class="w-100">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ course.id) }}">
-                                    <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce cours ?');">
-                                        <i class="bi bi-x-circle"></i> Rejeter le cours
-                                    </button>
-                                </form>
-                            {% endif %}
-
-                            {# Supprimer le cours - uniquement pour admin ou teacher du cours #}
-                            {% if is_granted('ROLE_ADMIN') or (is_granted('ROLE_TEACHER') and app.user == course.teacherId and course.status == 'pending') %}
-                                <form method="post" action="{{ path('app_course_delete', {'id': course.id}) }}"
-                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible.');"
-                                      class="w-100">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ course.id) }}">
-                                    <button type="submit" class="btn btn-danger w-100">
-                                        <i class="bi bi-trash"></i> Supprimer
-                                    </button>
-                                </form>
-                            {% endif %}
-
-                            <hr>
-
-                            <a href="{{ path('app_course_index') }}" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Retour à la liste
-                            </a>
+            {# Support Card (if PDF exists) #}
+            {% if course.pdfFile %}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="size-12 rounded-xl bg-red-50 text-red-500 flex items-center justify-center">
+                            <span class="material-symbols-outlined">picture_as_pdf</span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Support de cours</h3>
+                            <p class="text-xs text-gray-500">Document PDF attaché</p>
                         </div>
                     </div>
-                </div>
-
-                {# Statistiques rapides #}
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="bi bi-bar-chart me-1"></i>
-                        Statistiques
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Inscriptions actives
-                                <span class="badge bg-primary rounded-pill">
-                                {% set activeCount = 0 %}
-                                    {% for sub in course.subscriptions %}
-                                        {% if sub.active %}
-                                            {% set activeCount = activeCount + 1 %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    {{ activeCount }}
-                            </span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Séances
-                                <span class="badge bg-primary rounded-pill">{{ course.seances|length }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Statut
-                                <span class="badge bg-{{ course.status == 'pending' ? 'warning' : (course.status == 'accepted' ? 'success' : 'danger') }}">
-                                {{ course.status == 'pending' ? 'En attente' : (course.status == 'accepted' ? 'Accepté' : 'Rejeté') }}
-                            </span>
-                            </li>
-                        </ul>
-                    </div>
+                    <a href="{{ asset('uploads/courses/' ~ course.pdfFile) }}" target="_blank" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                        Ouvrir le document
+                        <span class="material-symbols-outlined text-sm">open_in_new</span>
+                    </a>
                 </div>
             </div>
+            {% endif %}
+
+            {# Actions Card #}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-gray-500">settings</span>
+                        Actions
+                    </h2>
+                </div>
+                <div class="p-6 space-y-3">
+                    {% if is_granted('ROLE_ADMIN') and course.status == 'pending' %}
+                        <form method="post" action="{{ path('app_course_accept', {'id': course.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ course.id) }}">
+                            <button type="submit" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                Approuver ce cours
+                            </button>
+                        </form>
+                        <form method="post" action="{{ path('app_course_reject', {'id': course.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ course.id) }}">
+                            <button type="submit" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm" onclick="return confirm('Rejeter ce cours ?');">
+                                <span class="material-symbols-outlined text-sm">cancel</span>
+                                Rejeter ce cours
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    {% if is_granted('ROLE_ENSEIGNANT') and app.user == course.teacherId and course.status == 'pending' %}
+                        <a href="{{ path('app_course_edit', {'id': course.id}) }}" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                            <span class="material-symbols-outlined text-sm">edit</span>
+                            Modifier le cours
+                        </a>
+                    {% endif %}
+
+                    <form method="post" action="{{ path('app_course_delete', {'id': course.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer ce cours ? Cette action est irréversible.');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ course.id) }}">
+                        <button type="submit" class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg transition-colors">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                            Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        {# Right Column: Description & Subscriptions #}
+        <div class="lg:col-span-2 space-y-6">
+            
+            {# Description #}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="border-b border-gray-100 bg-gray-50/50 px-8 py-5">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">description</span>
+                        Description du cours
+                    </h2>
+                </div>
+                <div class="p-8">
+                    <p class="text-gray-600 leading-relaxed whitespace-pre-line">{{ course.description }}</p>
+                </div>
+            </div>
+
+            {# Subscriptions Table #}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="border-b border-gray-100 bg-gray-50/50 px-8 py-5 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">group</span>
+                        Élèves inscrits
+                    </h2>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+                        {{ course.subscriptions|length }}
+                    </span>
+                </div>
+                
+                {% if course.subscriptions|length > 0 %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Élève</th>
+                                    <th scope="col" class="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent</th>
+                                    <th scope="col" class="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date d'inscription</th>
+                                    <th scope="col" class="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for subscription in course.subscriptions %}
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-8 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm mr-3">
+                                                    {{ subscription.kid.firstName|slice(0, 1) }}
+                                                </div>
+                                                <div class="font-medium text-gray-900">{{ subscription.kid.fullName }}</div>
+                                            </div>
+                                        </td>
+                                        <td class="px-8 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ subscription.parent.fullName }}
+                                        </td>
+                                        <td class="px-8 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ subscription.subscribedAt|date('d/m/Y') }}
+                                        </td>
+                                        <td class="px-8 py-4 whitespace-nowrap">
+                                            {% if subscription.active %}
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Actif
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    Inactif
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="p-12 text-center">
+                        <div class="inline-flex items-center justify-center size-16 rounded-full bg-gray-50 text-gray-400 mb-4">
+                            <span class="material-symbols-outlined text-3xl">person_off</span>
+                        </div>
+                        <h3 class="text-sm font-medium text-gray-900">Aucun inscrit</h3>
+                        <p class="mt-1 text-sm text-gray-500">Il n'y a pas encore d'élèves inscrits à ce cours.</p>
+                    </div>
+                {% endif %}
+            </div>
+
         </div>
     </div>
+</div>
 {% endblock %}

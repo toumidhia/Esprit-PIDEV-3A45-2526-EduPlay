@@ -7,12 +7,29 @@ use App\Service\StripePaymentService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_USER')]
 class PaiementController extends AbstractController
 {
+    #[Route('/paiement', name: 'app_paiement_index')] // Renamed route to avoid conflict
+    public function index(): Response
+    {
+        if ($this->isGranted('ROLE_ENFANT')) {
+            throw $this->createAccessDeniedException('Les enfants ne peuvent pas effectuer de paiement.');
+        }
+        // This method could potentially render a payment overview or redirect
+        // For now, it just acts as a guard.
+        return $this->json(['message' => 'Access granted to payment section.']);
+    }
+
     #[Route('/paiement/{id}', name: 'app_paiement', methods: ['POST'])]
     public function processPaiement(Commande $commande, StripePaymentService $stripePaymentService): Response
     {
+        if ($this->isGranted('ROLE_ENFANT')) {
+            throw $this->createAccessDeniedException('Les enfants ne peuvent pas effectuer de paiement.');
+        }
+
         // Ensure the user is the owner of the commande
         /** @var User $user */
         $user = $this->getUser();

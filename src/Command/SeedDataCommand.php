@@ -99,7 +99,7 @@ class SeedDataCommand extends Command
             $course->setTitle($data['title']);
             $course->setDescription($data['description']);
             $course->setLevel($data['level']);
-            $course->setDurationTraining($data['duration']);
+            $course->setDurationTraining((string) $data['duration']);
             $course->setStatus($data['status']);
             $course->setTeacherId($teachers[$teacherIndex % count($teachers)]);
             $course->setCreatedAt(new \DateTime('-' . rand(1, 60) . ' days'));

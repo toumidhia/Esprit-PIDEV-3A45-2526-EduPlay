@@ -3,8 +3,8 @@
 
 namespace App\Controller;
 
+use App\Entity\User; // Import indispensable pour le @var
 use App\Service\RecommendationEventService;
-use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,8 +17,10 @@ class RecommendationEventController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         
+        /** @var User $parent */
         $parent = $this->getUser();
         
+        // Maintenant PHPStan sait que $parent est un App\Entity\User
         $recommendations = $recommendationEventService->getRecommendationsForParent($parent, 6);
         
         return $this->render('FrontOffice/Parent/event/recommendations/index.html.twig', [

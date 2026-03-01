@@ -50,6 +50,7 @@ final class CourseController extends AbstractController
     ): Response
     {
         // Check if user is authenticated
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         if (!$user) {
             $this->addFlash('warning', 'Please login to access courses.');
@@ -98,6 +99,7 @@ final class CourseController extends AbstractController
             }
         } elseif (in_array('ROLE_ENFANT', $userRoles)) {
             // Kids see courses they are subscribed to (themselves OR parent self-registered)
+            /** @var \App\Entity\User $user */
             $subscriptions = $subscriptionRepository->findActiveSubscriptionsByKidAndParent(
                 $user->getId(),
                 $user->getParent() ? $user->getParent()->getId() : null
@@ -135,6 +137,7 @@ final class CourseController extends AbstractController
         $subscriptionMap = [];
         if (in_array('ROLE_PARENT', $userRoles) && !empty($kids)) {
             // Get all active subscriptions for this parent
+            /** @var \App\Entity\User $user */
             $activeSubscriptions = $subscriptionRepository->findActiveSubscriptionsByParent($user->getId());
 
             foreach ($activeSubscriptions as $subscription) {
@@ -145,6 +148,7 @@ final class CourseController extends AbstractController
         // Get all teachers for filter dropdown
         $teachers = $userRepository->findBy(['type' => 'teacher']);
 
+        /** @var \App\Entity\User $user */
         return $this->render($template, [
             'courses' => $courses,
             'userRole' => $this->getMainRole($userRoles),
@@ -169,7 +173,9 @@ final class CourseController extends AbstractController
 
         $course = new Course();
         $course->setStatus('pending');
-        $course->setTeacherId($this->getUser());
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $course->setTeacherId($user);
 
         $form = $this->createForm(CourseType::class, $course, [
             'is_teacher' => true,
@@ -274,6 +280,7 @@ final class CourseController extends AbstractController
     #[Route('/course/{id}', name: 'app_course_show', methods: ['GET'])]
     public function show(Course $course, SubscriptionRepository $subscriptionRepository): Response
     {
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
@@ -296,6 +303,7 @@ final class CourseController extends AbstractController
             }
         } elseif (in_array('ROLE_ENFANT', $userRoles)) {
             // Kids can see courses they are subscribed to (self OR parent self-registered)
+            /** @var \App\Entity\User $user */
             $parentId = $user->getParent() ? $user->getParent()->getId() : null;
             $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse($user->getId(), $course->getId());
             
@@ -323,7 +331,8 @@ final class CourseController extends AbstractController
             ];
             
             if (in_array('ROLE_PARENT', $userRoles)) {
-                $params['kids'] = $userRepository->findBy(['parent' => $user, 'type' => 'kid']);
+                /** @var \App\Entity\User $user */
+                $params['kids'] = $this->userRepository->findBy(['parent' => $user, 'type' => 'kid']);
             }
         }
 
@@ -344,6 +353,7 @@ final class CourseController extends AbstractController
         $userRoles = $user->getRoles();
         if (in_array('ROLE_ENFANT', $userRoles)) {
             // Kids can only download PDFs of courses they're subscribed to
+            /** @var \App\Entity\User $user */
             $parentId = $user->getParent() ? $user->getParent()->getId() : null;
             $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse($user->getId(), $course->getId());
             
@@ -520,6 +530,7 @@ final class CourseController extends AbstractController
                 return $this->redirectToRoute('app_course_index');
             }
 
+            /** @var \App\Entity\User $parent */
             $parent = $this->getUser();
 
             // Check if already subscribed
@@ -531,12 +542,14 @@ final class CourseController extends AbstractController
             ]);
 
             if ($existingSubscription) {
+                /** @var \App\Entity\User $kid */
                 $this->addFlash('warning', $kid->getFirstName() . ' est déjà inscrit à ce cours.');
                 return $this->redirectToRoute('app_course_index');
             }
 
             $subscription = new Subscription();
             $subscription->setParent($parent);
+            /** @var \App\Entity\User $kid */
             $subscription->setKid($kid);
             $subscription->setCourse($course);
             $subscription->setActive(true);
@@ -546,6 +559,7 @@ final class CourseController extends AbstractController
             $entityManager->persist($subscription);
             $entityManager->flush();
 
+            /** @var \App\Entity\User $kid */
             $targetName = ($kid === $parent) ? "vous-même" : $kid->getFirstName();
             $this->addFlash('success', $targetName . ' a été inscrit avec succès à ' . $course->getTitle() . '!');
         }
@@ -565,6 +579,7 @@ final class CourseController extends AbstractController
     {
         if ($this->isCsrfTokenValid('unsubscribe'.$course->getId(), $request->request->get('_token'))) {
             $kidId = $request->request->get('kid_id');
+            /** @var \App\Entity\User $parent */
             $parent = $this->getUser();
             
             // Si l'id de l'enfant n'est pas fourni, cela signifie que le parent se désinscrit lui-même
@@ -711,12 +726,14 @@ final class CourseController extends AbstractController
             throw $this->createNotFoundException('Cours non trouvé');
         }
 
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         $userRoles = $user ? $user->getRoles() : [];
 
         // Check permissions
         if (in_array('ROLE_ENFANT', $userRoles)) {
             // Kids can only see courses they are subscribed to (self OR parent self-registered)
+            /** @var \App\Entity\User $user */
             $parentId = $user->getParent() ? $user->getParent()->getId() : null;
             $isSubscribed = $subscriptionRepository->isKidSubscribedToCourse(
                 $user->getId(),

@@ -6,6 +6,7 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
@@ -26,6 +27,7 @@ class CreateAdminUserCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
 
         $output->writeln([
@@ -34,15 +36,19 @@ class CreateAdminUserCommand extends Command
             '',
         ]);
 
+        // Ask for email
         $question = new Question('Enter email: ');
         $email = $helper->ask($input, $output, $question);
 
+        // Ask for first name
         $question = new Question('Enter first name: ');
         $firstName = $helper->ask($input, $output, $question);
 
+        // Ask for last name
         $question = new Question('Enter last name: ');
         $lastName = $helper->ask($input, $output, $question);
 
+        // Ask for password (hidden)
         $question = new Question('Enter password: ');
         $question->setHidden(true);
         $question->setHiddenFallback(false);

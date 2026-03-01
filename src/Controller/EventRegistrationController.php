@@ -183,7 +183,7 @@ class EventRegistrationController extends AbstractController
         $fake->setEmail($email);
         $fake->setPassword('test');
         $fake->setType('PARENT');
-        $fake->setRole(['ROLE_PARENT']);
+        $fake->setRoles(['ROLE_PARENT']);
         $fake->setActive(true);
         $fake->setBirthDate(new \DateTime('2000-01-01'));
 

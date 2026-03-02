@@ -232,31 +232,28 @@
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
     },
-<<<<<<< HEAD
     "symfony/messenger": {
-=======
-    "symfony/phpunit-bridge": {
->>>>>>> main
         "version": "6.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-<<<<<<< HEAD
-            "version": "6.0",
-            "ref": "d8936e2e2230637ef97e5eecc0eea074eecae58b"
-        },
-        "files": [
-            "./config/packages/messenger.yaml"
-=======
             "version": "6.3",
             "ref": "a411a0480041243d97382cac7984f7dce7813c08"
         },
         "files": [
-            "./.env.test",
+            "./config/packages/messenger.yaml"
+        ]
+    },
+    "symfony/phpunit-bridge": {
+        "version": "6.0",
+        "recipe": {
+            "ref": "d8936e2e2230637ef97e5eecceeea074eecea58b"
+        },
+        "files": [
+            "./env.test",
             "./bin/phpunit",
             "./phpunit.xml.dist",
             "./tests/bootstrap.php"
->>>>>>> main
         ]
     },
     "symfony/routing": {

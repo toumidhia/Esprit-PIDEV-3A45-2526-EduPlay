@@ -1,5 +1,5 @@
 <?php
-// src/Entity/Resource.php
+
 
 namespace App\Entity;
 

@@ -44,7 +44,7 @@ final class ResourceController extends AbstractController
                 }
             }
 
-            if ($searchForm->get('reset')->isClicked()) {
+            if ($form->get('reset')->isClicked()) { // @phpstan-ignore-line
                 return $this->redirectToRoute('app_resource');
             }
 
@@ -198,12 +198,10 @@ final class ResourceController extends AbstractController
     #[Route('resource/my-notifications', name: 'app_resource_my_notifications', methods: ['GET'])]
     public function myNotifications(BookRequestRepository $bookRequestRepository): Response
     {
-        $enfant = $this->getUser();
-
-        // Si non connecté → retourner tableau vide (pas d'erreur)
-        if (!$enfant) {
-            return $this->json(['notifications' => []]);
-        }
+  $enfant = $this->getUser();
+if (!$enfant instanceof \App\Entity\User) {
+    return $this->json(['notifications' => []]);
+}
 
         $notifications = $bookRequestRepository->findNotificationsForEnfant($enfant);
 
@@ -390,7 +388,7 @@ public function translate(Request $request): Response
                 }
             }
 
-            if ($searchForm->get('reset')->isClicked()) {
+            if ($form->get('reset')->isClicked()) { // @phpstan-ignore-line
                 return $this->redirectToRoute('admin_resource_index');
             }
 

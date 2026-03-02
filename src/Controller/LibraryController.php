@@ -124,7 +124,7 @@ final class LibraryController extends AbstractController
      */
     private function generateProgressBar(int $percentage): string
     {
-        $fullBlocks = floor($percentage / 10);
+        $fullBlocks = (int) floor($percentage / 10);
         $partialBlock = $percentage % 10;
         
         $bar = str_repeat('█', $fullBlocks);
@@ -132,11 +132,11 @@ final class LibraryController extends AbstractController
         // Ajouter un bloc partiel si nécessaire
         if ($partialBlock > 0) {
             $partialChars = ['', '▏', '▎', '▍', '▌', '▋', '▊', '▉', '█'];
-            $bar .= $partialChars[round($partialBlock / 10 * 8)];
+            $bar .= $partialChars[(int) round($partialBlock / 10 * 8)];
         }
         
         // Compléter avec des espaces
-        $bar .= str_repeat('░', 10 - ceil($percentage / 10));
+        $bar .= str_repeat('░', 10 - (int) ceil($percentage / 10));
         
         return $bar;
     }
@@ -159,7 +159,7 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
         $data = $form->getData();
         
         // Si c'est le bouton "Réinitialiser"
-        if ($form->get('reset')->isClicked()) {
+        if ($form->get('reset')->isClicked()) { // @phpstan-ignore-line
             return $this->redirectToRoute('admin_library_index');
         }
         

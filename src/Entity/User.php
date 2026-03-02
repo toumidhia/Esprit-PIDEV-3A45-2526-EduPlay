@@ -11,6 +11,8 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use SensitiveParameter;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(
@@ -61,6 +63,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
+    #[Ignore]
     private string $password = '';
 
     #[ORM\Column(length: 255)]
@@ -200,7 +203,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(#[SensitiveParameter] string $password): static
     {
         $this->password = $password;
         return $this;

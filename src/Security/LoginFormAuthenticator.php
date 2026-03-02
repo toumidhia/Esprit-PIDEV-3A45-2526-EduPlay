@@ -34,13 +34,15 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        $login = $request->request->get('login', '');
-        $password = $request->request->get('password', '');
+        $login = (string) $request->request->get('login', '');
+        $password = (string) $request->request->get('password', '');
+        $csrfToken = $request->request->get('_csrf_token');
+        $csrfToken = $csrfToken !== null ? (string) $csrfToken : null;
 
         $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $login);
 
         return new Passport(
-            new UserBadge($login, function ($userIdentifier) {
+            new UserBadge($login, function (string $userIdentifier) {
                 $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userIdentifier]);
 
                 if (!$user) {
@@ -61,7 +63,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             }),
             new PasswordCredentials($password),
             [
-                new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),
+                new CsrfTokenBadge('authenticate', $csrfToken),
                 new RememberMeBadge(),
             ]
         );

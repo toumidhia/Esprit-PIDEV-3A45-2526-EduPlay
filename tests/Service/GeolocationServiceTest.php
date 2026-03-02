@@ -13,7 +13,11 @@ class GeolocationServiceTest extends KernelTestCase
     {
         self::bootKernel();
         $container = static::getContainer();
-        $this->service = $container->get(GeolocationService::class);
+
+        /** @var GeolocationService $service */
+        $service = $container->get(GeolocationService::class);
+
+        $this->service = $service;
     }
 
     public function testGetLocationReturnsStructuredData(): void

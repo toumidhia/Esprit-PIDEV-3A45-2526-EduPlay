@@ -21,16 +21,27 @@ class EmailVerifier
 
     public function sendEmailConfirmation(string $routeName, User $user): void
     {
+        $email = $user->getEmail();
+
+        if ($email === null) {
+            throw new \LogicException('User email cannot be null for email verification.');
+        }
+
+        $userId = $user->getId();
+        if ($userId === null) {
+            throw new \LogicException('User ID cannot be null for email verification.');
+        }
+
         $signatureComponents = $this->verifyEmailHelper->generateSignature(
             $routeName,
-            (string) $user->getId(),
-            $user->getEmail(),
-            ['id' => $user->getId()] // Ajoutez ce paramètre pour avoir l'id dans l'URL
+            (string) $userId,
+            $email,
+            ['id' => $userId]
         );
 
-        $email = (new TemplatedEmail())
+        $emailMessage = (new TemplatedEmail())
             ->from(new Address('noreply@eduplay.com', 'EduPlay'))
-            ->to($user->getEmail())
+            ->to($email)
             ->subject('✅ Confirmez votre email - EduPlay')
             ->htmlTemplate('FrontOffice/security/confirmation_email.html.twig')
             ->context([
@@ -38,40 +49,51 @@ class EmailVerifier
                 'user' => $user,
             ]);
 
-        $this->mailer->send($email);
+        $this->mailer->send($emailMessage);
     }
 
     /**
      * Valide le lien de confirmation et active l'utilisateur
-     * Retourne l'utilisateur validé
      */
     public function handleEmailConfirmation(Request $request): User
     {
-        // Le bundle va valider le token et nous donner l'utilisateur
-        // Mais pour ça, on a besoin de récupérer l'utilisateur d'abord
         $id = $request->query->get('id');
-        
-        if (!$id) {
+
+        if ($id === null || $id === '') {
             throw new \Exception('ID utilisateur manquant dans l\'URL');
         }
-        
-        $user = $this->entityManager->getRepository(User::class)->find($id);
-        
-        if (!$user) {
+
+        $user = $this->entityManager
+            ->getRepository(User::class)
+            ->find($id);
+
+        if (!$user instanceof User) {
             throw new \Exception('Utilisateur non trouvé');
         }
-        
-        // Valide que le token correspond bien à cet utilisateur
-        $this->verifyEmailHelper->validateEmailConfirmationFromRequest(
-            $request,
-            (string) $user->getId(),
-            $user->getEmail()
-        );
-        
-        // Active l'utilisateur
+
+        $email = $user->getEmail();
+        if ($email === null) {
+            throw new \LogicException('User email cannot be null during email verification.');
+        }
+
+        $userId = $user->getId();
+        if ($userId === null) {
+            throw new \LogicException('User ID cannot be null during email verification.');
+        }
+
+        try {
+            $this->verifyEmailHelper->validateEmailConfirmationFromRequest(
+                $request,
+                (string) $userId,
+                $email
+            );
+        } catch (VerifyEmailExceptionInterface $e) {
+            throw $e;
+        }
+
         $user->setActive(true);
         $this->entityManager->flush();
-        
+
         return $user;
     }
 }

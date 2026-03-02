@@ -111,4 +111,10 @@
 {% endblock %}
 </div>
     {% block javascripts %}{% endblock %}
+    
+    {# ✅ FORCER LE PROFILER À S'AFFICHER #}
+    {% if app.environment == 'dev' %}
+        <div id="sfwdt"></div>
+        <div id="sfwdtBottom"></div>
+    {% endif %}
 </body></html>

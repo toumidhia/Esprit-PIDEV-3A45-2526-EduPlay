@@ -198,10 +198,10 @@ final class ResourceController extends AbstractController
     #[Route('resource/my-notifications', name: 'app_resource_my_notifications', methods: ['GET'])]
     public function myNotifications(BookRequestRepository $bookRequestRepository): Response
     {
-  $enfant = $this->getUser();
-if (!$enfant instanceof \App\Entity\User) {
-    return $this->json(['notifications' => []]);
-}
+        $enfant = $this->getUser();
+             if (!$enfant instanceof \App\Entity\User) {
+            return $this->json(['notifications' => []]);
+            }
 
         $notifications = $bookRequestRepository->findNotificationsForEnfant($enfant);
 

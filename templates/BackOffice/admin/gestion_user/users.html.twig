@@ -19,7 +19,7 @@
         </div>
 
         <ol class="breadcrumb mb-4">
-            <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
             <li class="breadcrumb-item active">Utilisateurs</li>
         </ol>
 
@@ -218,6 +218,16 @@
                                             <span class="badge bg-success">Actif</span>
                                         {% else %}
                                             <span class="badge bg-secondary">Inactif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-envelope"></i> {{ user.email }}
+                                        {% if user.telephone %}
+                                            <br><i class="bi bi-telephone"></i> {{ user.telephone }}
+                                        {% endif %}
+                                        {% if user.lastLoginCountry %}
+                                            <br><i class="bi bi-geo-alt"></i> {{ user.lastLoginCity }}, {{ user.lastLoginCountry }}
+                                            <small class="text-muted">({{ user.lastLoginAt|date('d/m/Y H:i') }})</small>
                                         {% endif %}
                                     </td>
                                     <td>

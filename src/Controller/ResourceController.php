@@ -42,7 +42,7 @@ final class ResourceController extends AbstractController
                 }
             }
 
-            if ($searchForm->get('reset')->isClicked()) {
+            if ($searchForm->get('reset') instanceof \Symfony\Component\Form\SubmitButton && $searchForm->get('reset')->isClicked()) {
                 return $this->redirectToRoute('app_resource');
             }
 
@@ -128,6 +128,7 @@ final class ResourceController extends AbstractController
         // Créer la demande liée à l'enfant connecté (pas besoin de saisir son nom)
         $bookRequest = new \App\Entity\BookRequest();
         $bookRequest->setBookTitle($bookTitle);
+        /** @var \App\Entity\User $enfant */
         $bookRequest->setEnfant($enfant);
 
         $em->persist($bookRequest);
@@ -152,6 +153,7 @@ final class ResourceController extends AbstractController
             return $this->json(['notifications' => []]);
         }
 
+        /** @var \App\Entity\User $enfant */
         $notifications = $bookRequestRepository->findNotificationsForEnfant($enfant);
 
         return $this->json([
@@ -219,7 +221,8 @@ final class ResourceController extends AbstractController
                 }
             }
 
-            if ($searchForm->get('reset')->isClicked()) {
+            $resetButton = $searchForm->get('reset');
+            if ($resetButton instanceof \Symfony\Component\Form\SubmitButton && $resetButton->isClicked()) {
                 return $this->redirectToRoute('admin_resource_index');
             }
 

@@ -1,0 +1,16 @@
+<turbo-frame id="favorite_{{ game.id }}">
+    <form method="post"
+          action="{{ path('game_favorite_toggle', {id: game.id}) }}">
+
+        <button type="submit"
+                class="px-3 py-1 rounded-full border transition
+                       {{ isFavorite
+                          ? 'bg-red-500 text-white border-red-500'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-red-500 hover:text-white' }}">
+
+            {{ isFavorite ? '❤️ Favori' : '🤍 Favori' }}
+
+        </button>
+
+    </form>
+</turbo-frame>

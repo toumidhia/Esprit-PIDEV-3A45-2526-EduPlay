@@ -27,6 +27,12 @@ class SubscriptionController extends AbstractController
             return $this->redirectToRoute('app_course_index');
         }
 
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return $this->redirectToRoute('app_login');
+        }
+
         // Get the course
         $course = $entityManager->getRepository(Course::class)->find($courseId);
         if (!$course) {
@@ -35,14 +41,14 @@ class SubscriptionController extends AbstractController
         }
 
         // Get the kid (user with type 'kid')
+        /** @var User|null $kid */
         $kid = $entityManager->getRepository(User::class)->find($kidId);
         if (!$kid || $kid->getType() !== 'kid') {
             $this->addFlash('error', 'Enfant non trouvé.');
             return $this->redirectToRoute('app_course_index');
         }
 
-        // Check if parent owns this kid
-        $currentUser = $this->getUser();
+        // Check if parent owns this kid - Correction PHPStan : getId() est maintenant reconnu
         if (!$kid->getParent() || $kid->getParent()->getId() !== $currentUser->getId()) {
             $this->addFlash('error', 'Cet enfant ne vous appartient pas.');
             return $this->redirectToRoute('app_course_index');
@@ -85,6 +91,12 @@ class SubscriptionController extends AbstractController
             return $this->redirectToRoute('app_course_index');
         }
 
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return $this->redirectToRoute('app_login');
+        }
+
         // Get the course
         $course = $entityManager->getRepository(Course::class)->find($courseId);
         if (!$course) {
@@ -93,6 +105,7 @@ class SubscriptionController extends AbstractController
         }
 
         // Get the kid
+        /** @var User|null $kid */
         $kid = $entityManager->getRepository(User::class)->find($kidId);
         if (!$kid || $kid->getType() !== 'kid') {
             $this->addFlash('error', 'Enfant non trouvé.');
@@ -100,7 +113,6 @@ class SubscriptionController extends AbstractController
         }
 
         // Check if parent owns this kid
-        $currentUser = $this->getUser();
         if (!$kid->getParent() || $kid->getParent()->getId() !== $currentUser->getId()) {
             $this->addFlash('error', 'Cet enfant ne vous appartient pas.');
             return $this->redirectToRoute('app_course_index');
@@ -129,6 +141,7 @@ class SubscriptionController extends AbstractController
     #[Route('/list', name: 'app_subscription_list', methods: ['GET'])]
     public function list(EntityManagerInterface $entityManager): Response
     {
+        /** @var User|null $user */
         $user = $this->getUser();
 
         if (!$user) {

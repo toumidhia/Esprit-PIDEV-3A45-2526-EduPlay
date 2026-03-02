@@ -58,32 +58,7 @@
     
     <div class="layout-container flex h-full grow flex-col">
         <!-- Navigation supérieure -->
-        <header class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 px-6 py-4 lg:px-20">
-            <div class="max-w-7xl mx-auto flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="size-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                        <span class="material-symbols-outlined text-2xl">auto_stories</span>
-                    </div>
-                    <h2 class="text-[#111418] dark:text-white text-2xl font-extrabold tracking-tight">EduPlay</h2>
-                </div>
-                <nav class="hidden md:flex items-center gap-2">
-                    <a class="px-6 py-2 rounded-full bg-primary text-white font-semibold text-sm transition-all" href="{{ path('app_library') }}">Accueil</a>
-                    <a class="px-6 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold text-sm transition-all" href="#">Mes Livres</a>
-                    <a class="px-6 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold text-sm transition-all" href="#">Aide</a>
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <a class="px-6 py-2 rounded-full bg-green-500 text-white font-semibold text-sm transition-all" href="{{ path('app_admin') }}">Admin</a>
-                    {% endif %}
-                </nav>
-                <div class="flex items-center gap-4">
-                    <button class="size-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-                        <span class="material-symbols-outlined">settings</span>
-                    </button>
-                    <div class="size-10 rounded-full border-2 border-primary overflow-hidden shadow-md">
-                        <img class="w-full h-full object-cover" alt="Avatar cartoon d'un enfant souriant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbRYuXbiGWzBqkPT0_kb-B6VeCv6_MOWoWpAa8-3qHfL1hBuOPosP29T00LH9JH4F-jsIh8oQgwz-1-C_vRRki-AKXIgs-kCRqumvMEbsAfzSbNoRB1vRtUOnDfgcFRiYt-9vSnd-uZlLntqtZrJQiYxjj2MDdQ6qG2OqB1nOZtscihZ7oTI_wV0sWCGn9CHDrmo7uuD7kuucqy-27Yvm326XTTgdqjCFQm92M9AsZ5FpAvuDqaFR7OT1_cN9BFJYLUyseed_ombI"/>
-                    </div>
-                </div>
-            </div>
-        </header>
+        {% include 'Partials/_navbar.html.twig' %}
         
         <main class="max-w-7xl mx-auto px-6 lg:px-20 py-10 w-full">
             <!-- Section Héros -->

@@ -92,3 +92,7 @@ services:
     App\Service\QrCodeService:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Service\GeolocationService:
+        arguments:
+            $abstractApiKey: '%env(ABSTRACT_API_KEY)%'

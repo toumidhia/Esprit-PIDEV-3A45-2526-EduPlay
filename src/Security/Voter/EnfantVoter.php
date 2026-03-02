@@ -7,6 +7,9 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/**
+ * @extends Voter<string, User>
+ */
 class EnfantVoter extends Voter
 {
     public const EDIT = 'EDIT_ENFANT';

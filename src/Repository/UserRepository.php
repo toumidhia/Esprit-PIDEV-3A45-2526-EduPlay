@@ -20,7 +20,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * @return User[] Parents (type = 'parent')
+     * @return array<User>
      */
     public function findParents(): array
     {
@@ -33,9 +33,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getResult();
     }
 
-    /**
-     * Used to upgrade (rehash) the user's password automatically over time.
-     */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
         if (!$user instanceof User) {
@@ -47,10 +44,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    /**
-     * Trouve un utilisateur par email OU username
-     * Utilisé pour la connexion (parents utilisent email, enfants utilisent username)
-     */
     public function findByEmailOrUsername(string $identifier): ?User
     {
         return $this->createQueryBuilder('u')
@@ -61,7 +54,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Trouve tous les utilisateurs d'un type spécifique
+     * @return array<User>
      */
     public function findByType(string $type): array
     {
@@ -74,7 +67,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Trouve tous les enfants d'un parent
+     * @return array<User>
      */
     public function findEnfantsByParent(User $parent): array
     {
@@ -89,9 +82,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Récupère tous les parents (avec rôle ROLE_PARENT)
-     *
-     * @return User[]
+     * @return array<User>
      */
     public function findAllParents(): array
     {
@@ -104,9 +95,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Récupère tous les professeurs (avec rôle ROLE_ENSEIGNANT)
-     *
-     * @return User[]
+     * @return array<User>
      */
     public function findAllTeachers(): array
     {
@@ -118,9 +107,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getResult();
     }
 
-
     /**
-     * Récupère les parents avec pagination
+     * @return array{items: array<User>, total: int, pages: float}
      */
     public function findParentsPaginated(int $page = 1, int $limit = 20): array
     {
@@ -141,26 +129,25 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ];
     }
 
-    /**
-     * Compte le nombre total de parents
-     */
     public function countParents(): int
     {
-        return $this->createQueryBuilder('u')
+        $result = $this->createQueryBuilder('u')
             ->select('COUNT(u.id)')
             ->where('u.roles LIKE :role')
             ->setParameter('role', '%ROLE_PARENT%')
             ->getQuery()
             ->getSingleScalarResult();
+        
+        return (int) $result;
     }
 
     /**
-     * Récupère les parents qui ont des enfants inscrits à des cours
+     * @return array<User>
      */
     public function findParentsWithSubscriptions(): array
     {
         return $this->createQueryBuilder('u')
-            ->leftJoin('u.kids', 'k')
+            ->leftJoin('u.enfants', 'k')
             ->leftJoin('k.subscriptions', 's')
             ->where('u.roles LIKE :role')
             ->andWhere('s.id IS NOT NULL')
@@ -171,7 +158,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Recherche de parents par critères
+     * @return array<User>
      */
     public function searchParents(string $searchTerm = ''): array
     {
@@ -188,6 +175,4 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult();
     }
-
-
 }

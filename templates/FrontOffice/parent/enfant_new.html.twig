@@ -17,7 +17,7 @@
 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                     <p class="text-sm text-gray-700">
-                        ℹ Créez un compte pour votre enfant. Il pourra se connecter avec l'identifiant et le mot de passe que vous allez définir.
+                        ℹCréez un compte pour votre enfant. Il pourra se connecter avec l'identifiant et le mot de passe que vous allez définir.
                     </p>
                 </div>
 
@@ -37,7 +37,7 @@
 
                     <div class="mb-4">
                         {{ form_label(form.username, 'Identifiant de connexion', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
-                        {{ form_widget(form.username, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500', 'placeholder': 'Ex: alice_wonderland'}}) }}
+                        {{ form_widget(form.username, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500', 'placeholder': 'Ex: alice2024'}}) }}
                         <p class="text-sm text-gray-500 mt-1">{{ form_help(form.username) }}</p>
                         {{ form_errors(form.username) }}
                     </div>
@@ -58,17 +58,17 @@
                     <hr class="my-6 border-gray-300">
                     <h3 class="text-xl font-bold mb-4">Définir le mot de passe de connexion</h3>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div>
-                            {{ form_label(form.password.first, 'Mot de passe', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
-                            {{ form_widget(form.password.first, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500'}}) }}
-                            {{ form_errors(form.password.first) }}
-                        </div>
-                        <div>
-                            {{ form_label(form.password.second, 'Confirmer', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
-                            {{ form_widget(form.password.second, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500'}}) }}
-                            {{ form_errors(form.password.second) }}
-                        </div>
+                    <div class="mb-4">
+                        {{ form_label(form.password.first, 'Mot de passe', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
+                        {{ form_widget(form.password.first, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500'}}) }}
+                        <p class="text-sm text-gray-500 mt-1">{{ form_help(form.password) }}</p>
+                        {{ form_errors(form.password.first) }}
+                    </div>
+
+                    <div class="mb-6">
+                        {{ form_label(form.password.second, 'Confirmer le mot de passe', {'label_attr': {'class': 'block text-gray-700 font-bold mb-2'}}) }}
+                        {{ form_widget(form.password.second, {'attr': {'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500'}}) }}
+                        {{ form_errors(form.password.second) }}
                     </div>
 
                     <div class="space-y-3">
@@ -83,4 +83,5 @@
             </div>
         </div>
     </div>
-{% endblock %}
+</body>
+</html>

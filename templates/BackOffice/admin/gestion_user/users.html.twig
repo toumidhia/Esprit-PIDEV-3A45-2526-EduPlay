@@ -221,6 +221,16 @@
                                         {% endif %}
                                     </td>
                                     <td>
+                                        <i class="bi bi-envelope"></i> {{ user.email }}
+                                        {% if user.telephone %}
+                                            <br><i class="bi bi-telephone"></i> {{ user.telephone }}
+                                        {% endif %}
+                                        {% if user.lastLoginCountry %}
+                                            <br><i class="bi bi-geo-alt"></i> {{ user.lastLoginCity }}, {{ user.lastLoginCountry }}
+                                            <small class="text-muted">({{ user.lastLoginAt|date('d/m/Y H:i') }})</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
                                         <div class="btn-group" role="group">
                                             {% if user != app.user %}
                                                 <form method="post" action="{{ path('app_admin_user_toggle', {'id': user.id}) }}" style="display: inline-block;">

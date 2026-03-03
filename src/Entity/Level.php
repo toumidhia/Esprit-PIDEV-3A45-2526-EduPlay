@@ -16,7 +16,7 @@ class Level
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255 , nullable: true)]
     #[Assert\NotBlank(message: 'Level name is required.')]
     #[Assert\Regex(
         pattern: '/^[\p{L}\s]+$/u',
@@ -41,7 +41,7 @@ class Level
     )]
     private ?string $description = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     #[Assert\NotNull(message: 'Difficulty is required.')]
     #[Assert\Range(
         min: 1,
@@ -50,7 +50,7 @@ class Level
     )]
     private ?int $difficulty = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     #[Assert\NotNull(message: 'Minimum age is required.')]
     #[Assert\Range(
         min: 1,
@@ -59,7 +59,7 @@ class Level
     )]
     private ?int $minAge = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     #[Assert\NotNull(message: 'Maximum age is required.')]
     #[Assert\Range(
         min: 3,
@@ -68,7 +68,7 @@ class Level
     )]
     private ?int $maxAge = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255,nullable: true)]
     #[Assert\NotBlank(message: 'Educational goal is required.')]
     #[Assert\Regex(
         pattern: '/^[\p{L}\s]+$/u',
@@ -81,10 +81,10 @@ class Level
     )]
     private ?string $pedagGoal = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
     // ✅ Règle métier au niveau Entity : maxAge > minAge

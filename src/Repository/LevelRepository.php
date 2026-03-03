@@ -5,7 +5,9 @@ namespace App\Repository;
 use App\Entity\Level;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-
+/**
+ * @extends ServiceEntityRepository<Level>
+ */
 class LevelRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -13,9 +15,9 @@ class LevelRepository extends ServiceEntityRepository
         parent::__construct($registry, Level::class);
     }
 
-    /**
-     * STATISTIQUES Level (style GameStatistics)
-     */
+     /**
+  * @return array<string, mixed>
+  */
     public function getLevelStatistics(): array
     {
         // total levels
@@ -59,7 +61,7 @@ class LevelRepository extends ServiceEntityRepository
             'withoutGames' => $withoutGames,
             'withGames' => $total - $withoutGames,
 
-            'topLevel' => $topLevelRow['levelName'] ?? '—',
+            'topLevel' => (string) ($topLevelRow['levelName'] ?? '—'),
             'topLevelCount' => isset($topLevelRow['cnt']) ? (int) $topLevelRow['cnt'] : 0,
 
             'avgDifficulty' => isset($avgDifficulty['avgDiff']) ? (float) $avgDifficulty['avgDiff'] : 0.0,
@@ -69,18 +71,13 @@ class LevelRepository extends ServiceEntityRepository
         ];
     }
 
-    /**
-     * FILTRES Level (comme findWithFilters de Game)
-     *
-     * filters possibles:
-     * - search (string): name/description/pedagGoal
-     * - difficulty (int)
-     * - minAge (int)
-     * - maxAge (int)
-     * - hasGames (0|1)
-     *
-     * sortBy possibles: id, name, difficulty, minAge, maxAge, createdAt
-     */
+   
+ /**
+  * @param array<string, mixed> $filters
+  * @param string $sortBy
+  * @param string $sortOrder
+  * @return Level[]
+  */
     public function findWithFilters(array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC'): array
     {
         $qb = $this->createQueryBuilder('l');
@@ -131,6 +128,16 @@ class LevelRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+
+
+    
+ /**
+  * @param array<string, mixed> $filters
+  * @param string $sortBy
+  * @param string $sortOrder
+  * @return Level[]
+ */
     public function findByFiltersFront(array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC'): array
 {
     $qb = $this->createQueryBuilder('g')

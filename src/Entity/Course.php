@@ -86,7 +86,7 @@ class Course
     /**
      * @var Collection<int, Seance>
      */
-    #[ORM\OneToMany(targetEntity: Seance::class, mappedBy: 'course', cascade: ['remove'])]
+    #[ORM\OneToMany(targetEntity: Seance::class, mappedBy: 'course', cascade: ['remove'], orphanRemoval: true)]
     private Collection $seances;
 
     /**

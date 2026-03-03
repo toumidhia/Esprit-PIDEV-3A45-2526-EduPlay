@@ -19,11 +19,11 @@ class Product
     #[Assert\Length(min: 2, max: 255, minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.', maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $name = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
     #[Assert\NotNull(message: 'Le prix est obligatoire.')]
-    #[Assert\Type(type: 'float', message: 'Le prix doit être un nombre.')]
+    #[Assert\Type(type: 'numeric', message: 'Le prix doit être un nombre.')]
     #[Assert\PositiveOrZero(message: 'Le prix doit être positif ou nul.')]
-    private ?float $price = null;
+    private ?string $price = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'La description est obligatoire.')]
@@ -54,12 +54,12 @@ class Product
         return $this;
     }
 
-    public function getPrice(): ?float
+    public function getPrice(): ?string
     {
         return $this->price;
     }
 
-    public function setPrice(float $price): static
+    public function setPrice(string $price): static
     {
         $this->price = $price;
 

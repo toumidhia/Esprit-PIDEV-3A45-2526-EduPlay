@@ -26,8 +26,8 @@ class Commande
     #[ORM\Column(name: 'date_commande', type: 'datetime')]
     private ?\DateTimeInterface $dateCommande = null;
 
-    #[ORM\Column(name: 'total_amount', type: 'float')]
-    private ?float $totalAmount = null;
+    #[ORM\Column(name: 'total_amount', type: 'decimal', precision: 10, scale: 2)]
+    private ?string $totalAmount = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $stripePaymentId = null;
@@ -74,12 +74,12 @@ class Commande
         return $this;
     }
 
-    public function getTotalAmount(): ?float
+    public function getTotalAmount(): ?string
     {
         return $this->totalAmount;
     }
 
-    public function setTotalAmount(float $totalAmount): static
+    public function setTotalAmount(string $totalAmount): static
     {
         $this->totalAmount = $totalAmount;
         return $this;

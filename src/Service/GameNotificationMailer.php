@@ -9,7 +9,9 @@ use Symfony\Component\Mime\Email;
 class GameNotificationMailer
 {
     public function __construct(private MailerInterface $mailer) {}
-
+/**
+ * @param string[] $childEmails Liste des emails des enfants
+ */
     public function sendNewGameToChildren(array $childEmails, Game $game): void
     {
         if (empty($childEmails)) {
@@ -26,9 +28,9 @@ class GameNotificationMailer
                  <p><strong>%s</strong></p>
                  <p>Type: %s</p>
                  <p>%s</p>',
-                htmlspecialchars($game->getName()),
-                htmlspecialchars($game->getType()),
-                nl2br(htmlspecialchars($game->getDescription()))
+                htmlspecialchars($game->getName()?? ''),
+                htmlspecialchars($game->getType()?? ''),
+                nl2br(htmlspecialchars($game->getDescription()?? ''))
             ));
 
         $this->mailer->send($email);

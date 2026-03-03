@@ -19,16 +19,10 @@ class GameRepository extends ServiceEntityRepository
         parent::__construct($registry, Game::class);
     }
 
-    /**
-     * Advanced search with filters
-     *
-     * filters possibles:
-     * - search (string) : name ou description
-     * - type (string)
-     * - level (Level|int) : objet Level ou id
-     *
-     * sortBy possibles: id, name, type
-     */
+   /**
+ * @return array<int|string, mixed>
+ */
+    
     public function getGameStatistics(): array
 {
     $qb = $this->createQueryBuilder('g');
@@ -62,9 +56,9 @@ class GameRepository extends ServiceEntityRepository
         ->getQuery()
         ->getOneOrNullResult(),
 
-        'topLevel' => $topLevelRow['levelName'] ?? '—',
-        'top_type' => $topTypeRow['type'] ?? '-',
-        
+        'topLevel' => (string) ($topLevelRow['levelName'] ?? '—'),
+
+        'top_type' => (string) ($topTypeRow['type'] ?? '-'),
        
         
         
@@ -73,6 +67,11 @@ class GameRepository extends ServiceEntityRepository
     ];
 }
 
+
+/**
+ * @param array<string, mixed> $filters
+ * @return Game[]               # retourne un tableau d’objets Game
+ */
     public function findWithFilters(array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC'): array
     {
         $qb = $this->createQueryBuilder('g')
@@ -118,43 +117,10 @@ class GameRepository extends ServiceEntityRepository
 
 
 
-    public function findWithFrontFilters(array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC'): array
-{
-    $qb = $this->createQueryBuilder('g')
-        ->leftJoin('g.idLevel', 'l')
-        ->addSelect('l');
-
-    // search (name/description)
-    if (!empty($filters['search'])) {
-        $qb->andWhere('g.name LIKE :q OR g.description LIKE :q')
-           ->setParameter('q', '%'.$filters['search'].'%');
-    }
-
-    // type
-    if (!empty($filters['type'])) {
-        $qb->andWhere('g.type LIKE :type')
-           ->setParameter('type', '%'.$filters['type'].'%');
-    }
-
-    // difficulty (1..5) via Level
-    if (!empty($filters['difficulty'])) {
-        $qb->andWhere('l.difficulty = :diff')
-           ->setParameter('diff', (int) $filters['difficulty']);
-    }
-
-    // sorting autorisé
-    $allowedSort = ['id', 'name', 'type'];
-    $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
-
-    if (in_array($sortBy, $allowedSort, true)) {
-        $qb->orderBy('g.' . $sortBy, $sortOrder);
-    } else {
-        $qb->orderBy('g.id', 'DESC');
-    }
-
-    return $qb->getQuery()->getResult();
-}
-
+   
+/**
+ * @return string[]
+ */
 public function findChildEmails(): array
 {
     $conn = $this->getEntityManager()->getConnection();
@@ -174,63 +140,14 @@ public function findChildEmails(): array
 
 
 
-
-
-public function findPlayableForAge(?int $age, array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC',$user = null): array
-{
-    $qb = $this->createQueryBuilder('g')
-        ->leftJoin('g.idLevel', 'l')
-        ->addSelect('l');
-
-    // Filtre âge
-    if ($age !== null) {
-        $qb->andWhere(':age BETWEEN l.minAge AND l.maxAge')
-           ->setParameter('age', $age);
-    }
-
-    // Filtres existants (search/type/difficulty)
-    if (!empty($filters['search'])) {
-        $qb->andWhere('g.name LIKE :q OR g.description LIKE :q')
-           ->setParameter('q', '%'.$filters['search'].'%');
-    }
-
-    if (!empty($filters['type'])) {
-        $qb->andWhere('g.type LIKE :type')
-           ->setParameter('type', '%'.$filters['type'].'%');
-    }
-
-    if (!empty($filters['difficulty'])) {
-        $qb->andWhere('l.difficulty = :diff')
-           ->setParameter('diff', (int) $filters['difficulty']);
-    }
-// ✅ Filtre "Favoris seulement"
-if (!empty($filters['favoritesOnly']) && $user) {
-    $qb->innerJoin(Favorite::class, 'f', 'WITH', 'f.game = g')
-       ->andWhere('f.user = :favUser')
-       ->setParameter('favUser', $user);
-}
-    // Tri
-    $allowedSort = ['id', 'name', 'type'];
-    $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
-
-    if (in_array($sortBy, $allowedSort, true)) {
-        $qb->orderBy('g.' . $sortBy, $sortOrder);
-    } else {
-        $qb->orderBy('g.id', 'DESC');
-    }
-
-    return $qb->getQuery()->getResult();
-}
-
-
-
-
-
-
-
-
-
-public function findPlayableForAgeQB(?int $age, array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC',$user = null): QueryBuilder
+/**
+ * @param int|null $age
+ * @param array<string, mixed> $filters
+ * @param string $sortBy
+ * @param string $sortOrder
+ * @param object|null $user
+ */
+public function findPlayableForAgeQB(?int $age, array $filters = [], string $sortBy = 'id', string $sortOrder = 'DESC', $user = null): QueryBuilder
 {
     $qb = $this->createQueryBuilder('g')
         ->leftJoin('g.idLevel', 'l')

@@ -85,8 +85,15 @@ public function new(Request $request, EntityManagerInterface $em, SluggerInterfa
             $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
             $safeFilename = $slugger->slug($originalFilename);
             $tempFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+            
+            /** @var string $uploadDir */
+$uploadDir = $this->getParameter('upload_tmp_directory_games');
 
-            $imageFile->move($this->getParameter('upload_tmp_directory_games'), $tempFilename);
+if (empty($uploadDir)) {
+    throw new \LogicException('Le paramètre "upload_tmp_directory_games" doit être une chaîne non vide.');
+}
+
+$imageFile->move($uploadDir, $tempFilename);
 
             $postData['imageTemp'] = $tempFilename;
             $request->request->set('game', $postData);
@@ -112,8 +119,12 @@ public function new(Request $request, EntityManagerInterface $em, SluggerInterfa
 
         // ✅ si l'utilisateur n’a pas re-upload -> on prend temp
         if ($tempFilename) {
-            $tmpPath   = $this->getParameter('upload_tmp_directory_games').'/'.$tempFilename;
-            $finalPath = $this->getParameter('upload_directory').'/'.$tempFilename;
+            /** @var string $uploadTmpDir */
+            $uploadTmpDir = $this->getParameter('upload_tmp_directory_games');
+            /** @var string $uploadDir */
+            $uploadDir = $this->getParameter('upload_directory');
+            $tmpPath   = $uploadTmpDir.'/'.$tempFilename;
+            $finalPath = $uploadDir.'/'.$tempFilename;
 
             if (file_exists($tmpPath)) {
                 @rename($tmpPath, $finalPath);
@@ -161,20 +172,27 @@ public function edit(Request $request, Game $game, EntityManagerInterface $em, S
             $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
             $safeFilename = $slugger->slug($originalFilename);
             $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+            
+            /** @var string $uploadDir */
+$uploadDir = $this->getParameter('upload_directory');
+if (empty($uploadDir)) {
+    throw new \LogicException('Le paramètre "upload_directory" doit être une chaîne non vide.');
+}
 
-            $imageFile->move($this->getParameter('upload_directory'), $newFilename);
+            $imageFile->move($uploadDir, $newFilename);
             $game->setImage($newFilename);
 
             // supprimer l'ancienne image (si existe)
             if ($oldImage) {
-                $oldPath = $this->getParameter('upload_directory').'/'.$oldImage;
+                
+                $oldPath =$uploadDir.'/'.$oldImage;
                 if (file_exists($oldPath)) {
                     @unlink($oldPath);
                 }
             }
         } else {
             // si pas de nouvelle image uploadée, garder l'ancienne
-            $game->setImage($oldImage);
+            $game->setImage($oldImage ?? '');
         }
 
         $em->flush();
@@ -252,7 +270,10 @@ $age = $birthDate ? $birthDate->diff(new \DateTimeImmutable())->y : null;
     $favoriteIds = [];
 if ($this->getUser()) {
     $favorites = $favoriteRepository->findBy(['user' => $this->getUser()]);
-    $favoriteIds = array_map(fn($f) => $f->getGame()->getId(), $favorites);
+    $favoriteIds = array_map(
+    fn($f) => $f->getGame()?->getId(), // l'opérateur "?->" retourne null si getGame() est null
+    $favorites
+);
 }
 
     if ($request->isXmlHttpRequest()) {

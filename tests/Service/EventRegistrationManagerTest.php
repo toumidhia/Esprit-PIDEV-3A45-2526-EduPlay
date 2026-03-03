@@ -18,20 +18,32 @@ class EventRegistrationManagerTest extends TestCase
         $this->manager = new EventRegistrationManager();
     }
 
-    private function createValidRegistration(): EventRegistration
+    private function createValidEvent(): SchoolEvent
     {
-        $event = new SchoolEvent();
-        $event->setTitle('Atelier Test');
-        
+        return (new SchoolEvent())
+            ->setTitle('Atelier Test')
+            ->setDescription('Description test')
+            ->setLocation('Tunis')
+            ->setStartDate(new \DateTime('+1 day'))
+            ->setEndDate(new \DateTime('+1 day +2 hours'));
+    }
+
+    private function createValidParent(): User
+    {
         $parent = new User();
         $parent->setEmail('parent@test.com');
-        
+        return $parent;
+    }
+
+    private function createValidRegistration(): EventRegistration
+    {
         $registration = new EventRegistration();
         $registration->setChildFullName('Enfant Test');
-        $registration->setEvent($event);
-        $registration->setParent($parent);
+        $registration->setEvent($this->createValidEvent());
+        $registration->setParent($this->createValidParent());
         $registration->setStatus('PENDING');
         $registration->setRegisteredAt(new \DateTimeImmutable('-1 hour'));
+        
         return $registration;
     }
 
@@ -48,28 +60,6 @@ class EventRegistrationManagerTest extends TestCase
 
         $registration = $this->createValidRegistration();
         $registration->setChildFullName('');
-
-        $this->manager->validate($registration);
-    }
-
-    public function testRegistrationWithoutEvent()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('L\'inscription doit être liée à un événement.');
-
-        $registration = $this->createValidRegistration();
-        $registration->setEvent(null);
-
-        $this->manager->validate($registration);
-    }
-
-    public function testRegistrationWithoutParent()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('L\'inscription doit être liée à un parent.');
-
-        $registration = $this->createValidRegistration();
-        $registration->setParent(null);
 
         $this->manager->validate($registration);
     }

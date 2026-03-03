@@ -37,7 +37,7 @@ class CalendarExportController extends AbstractController
             'text' => $event->getTitle(),
             'dates' => $start . '/' . $end,
             'details' => $event->getDescription(),
-            'location' => $event->getLocation() ?? '',
+            'location' => $event->getLocation(),
             'sf' => 'true',
             'output' => 'xml',
         ];
@@ -60,7 +60,7 @@ class CalendarExportController extends AbstractController
             'enddt' => $end,
             'subject' => $event->getTitle(),
             'body' => $event->getDescription(),
-            'location' => $event->getLocation() ?? '',
+            'location' => $event->getLocation(),
         ];
         
         $url = 'https://outlook.live.com/calendar/0/deeplink/compose?' . http_build_query($params);
@@ -78,7 +78,7 @@ class CalendarExportController extends AbstractController
         
         $title = $this->escapeIcsText($event->getTitle());
         $description = $this->escapeIcsText($event->getDescription());
-        $location = $this->escapeIcsText($event->getLocation() ?? '');
+        $location = $this->escapeIcsText($event->getLocation());
         
         $ics = [];
         $ics[] = 'BEGIN:VCALENDAR';
@@ -120,7 +120,13 @@ class CalendarExportController extends AbstractController
     private function sanitizeFilename(string $filename): string
     {
         $filename = preg_replace('/[^a-z0-9_-]/i', '_', $filename);
+        if (!is_string($filename)) {
+            $filename = 'event';
+        }
         $filename = preg_replace('/_+/', '_', $filename);
+        if (!is_string($filename)) {
+            $filename = 'event';
+        }
         
         return trim($filename, '_');
     }

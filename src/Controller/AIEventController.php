@@ -1,4 +1,5 @@
 <?php
+// src/Controller/AIEventController.php
 
 namespace App\Controller;
 
@@ -26,7 +27,8 @@ class AIEventController extends AbstractController
         Request $request
     ): Response {
         // Vérification du token CSRF
-        if (!$this->isCsrfTokenValid('generate_ai_' . $event->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token) || !$this->isCsrfTokenValid('generate_ai_' . $event->getId(), $token)) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('admin_event_show', ['id' => $event->getId()]);
         }
@@ -61,7 +63,8 @@ class AIEventController extends AbstractController
         Request $request
     ): Response {
         // Vérification du token CSRF
-        if (!$this->isCsrfTokenValid('generate_ai_' . $event->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token) || !$this->isCsrfTokenValid('generate_ai_' . $event->getId(), $token)) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('admin_event_show', ['id' => $event->getId()]);
         }

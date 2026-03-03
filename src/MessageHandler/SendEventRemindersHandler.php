@@ -3,6 +3,7 @@
 
 namespace App\MessageHandler;
 
+use App\Entity\EventRegistration;
 use App\Message\SendEventRemindersMessage;
 use App\Repository\EventRegistrationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -48,10 +49,21 @@ class SendEventRemindersHandler
         $this->em->flush();
     }
     
-    private function sendReminder($registration): void
+    /**
+     * @param EventRegistration $registration
+     */
+    private function sendReminder(EventRegistration $registration): void
     {
         $parent = $registration->getParent();
         $event = $registration->getEvent();
+        
+        if (!$parent || !$parent->getEmail()) {
+            throw new \RuntimeException('Parent sans email pour l\'inscription #' . $registration->getId());
+        }
+        
+        if (!$event) {
+            throw new \RuntimeException('Événement manquant pour l\'inscription #' . $registration->getId());
+        }
         
         $htmlContent = $this->twig->render('emails/event_reminder.html.twig', [
             'parent' => $parent,

@@ -7,10 +7,10 @@ use Psr\Log\LoggerInterface;
 
 class GeminiClient
 {
-    private $logger;
-    private $apiKey;
+    private ?LoggerInterface $logger;
+    private string $apiKey;
 
-    public function __construct(string $apiKey, LoggerInterface $logger = null)
+    public function __construct(string $apiKey, ?LoggerInterface $logger = null)
     {
         $this->apiKey = $apiKey;
         $this->logger = $logger;
@@ -63,13 +63,18 @@ Le prompt suivant contient la demande spécifique. Réponds UNIQUEMENT avec le c
             // Initialiser cURL
             $ch = curl_init($url);
             
+            $jsonData = json_encode($data);
+            if ($jsonData === false) {
+                throw new \Exception("Erreur d'encodage JSON des données");
+            }
+            
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_POST => true,
                 CURLOPT_HTTPHEADER => [
                     'Content-Type: application/json'
                 ],
-                CURLOPT_POSTFIELDS => json_encode($data),
+                CURLOPT_POSTFIELDS => $jsonData,
                 CURLOPT_TIMEOUT => 30,
                 CURLOPT_SSL_VERIFYPEER => true
             ]);
@@ -87,7 +92,7 @@ Le prompt suivant contient la demande spécifique. Réponds UNIQUEMENT avec le c
             }
             
             if ($httpCode !== 200) {
-                $this->log('Réponse erreur: ' . $response);
+                $this->log('Réponse erreur: ' . ($response ?: 'vide'));
                 
                 // Messages d'erreur plus explicites
                 if ($httpCode === 403) {
@@ -101,7 +106,15 @@ Le prompt suivant contient la demande spécifique. Réponds UNIQUEMENT avec le c
                 }
             }
             
+            if (!is_string($response)) {
+                throw new \Exception("Réponse invalide de l'API");
+            }
+            
             $result = json_decode($response, true);
+            
+            if (!is_array($result)) {
+                throw new \Exception("Réponse JSON invalide de l'API");
+            }
             
             if (isset($result['error'])) {
                 throw new \Exception("API Error: " . ($result['error']['message'] ?? 'Erreur inconnue'));

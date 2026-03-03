@@ -4,20 +4,19 @@
 namespace App\Controller;
 
 use App\Entity\SchoolEvent;
-use App\Service\RecommendationEventService; // 👈 AJOUTE CET IMPORT
+use App\Service\RecommendationEventService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_USER')]
 class EventController extends AbstractController
 {
     #[Route('/events', name: 'front_event_index', methods: ['GET'])]
-    public function index(Request $request, EntityManagerInterface $em, RecommendationEventService $recommendationEventService): Response // 👈 AJOUTE LE SERVICE
+    public function index(Request $request, EntityManagerInterface $em, RecommendationEventService $recommendationEventService): Response
     {
         $q = trim((string) $request->query->get('q', ''));
         $sort = (string) $request->query->get('sort', 'start');
@@ -34,7 +33,7 @@ class EventController extends AbstractController
                     ->setParameter('q', '%' . mb_strtolower($q) . '%');
         }
 
-        $total = $countQb->getQuery()->getSingleScalarResult();
+        $total = (int) $countQb->getQuery()->getSingleScalarResult();
 
         // Récupérer les événements
         $qb = $em->getRepository(SchoolEvent::class)->createQueryBuilder('e');
@@ -56,14 +55,12 @@ class EventController extends AbstractController
            ->setMaxResults($limit);
 
         $events = $qb->getQuery()->getResult();
-        $totalPages = ceil($total / $limit);
+        $totalPages = (int) ceil($total / $limit);
 
         // ✅ RÉCUPÉRER LES RECOMMANDATIONS
         $recommendations = [];
-        if ($this->getUser()) {
-            // 3 recommandations maximum en haut de page
-            /** @var \App\Entity\User $user */
-            $user = $this->getUser();
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
             $recommendations = $recommendationEventService->getRecommendationsForParent($user, 3);
         }
 
@@ -76,7 +73,7 @@ class EventController extends AbstractController
 
         return $this->render('FrontOffice/Parent/event/index.html.twig', [
             'events' => $events,
-            'recommendations' => $recommendations, // 👈 PASSE LES RECOS À LA VUE
+            'recommendations' => $recommendations,
             'q' => $q,
             'sort' => $sort,
             'order' => strtolower($order),
@@ -93,8 +90,8 @@ class EventController extends AbstractController
         $resources = $event->getResources()->toArray();
 
         usort($resources, function ($a, $b) {
-            $tb = $b->getCreatedAt()?->getTimestamp() ?? 0;
-            $ta = $a->getCreatedAt()?->getTimestamp() ?? 0;
+            $tb = $b->getCreatedAt()->getTimestamp();
+            $ta = $a->getCreatedAt()->getTimestamp();
             return $tb <=> $ta;
         });
 

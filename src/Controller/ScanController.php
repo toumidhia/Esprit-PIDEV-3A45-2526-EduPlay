@@ -44,9 +44,11 @@ class ScanController extends AbstractController
         }
         
         if ($registration->isScanned()) {
+            $scannedAt = $registration->getScannedAt();
+            $dateMessage = $scannedAt ? $scannedAt->format('d/m/Y H:i') : 'date inconnue';
+            
             $this->addFlash('warning', 
-                'Ce ticket a déjà été scanné le ' . 
-                $registration->getScannedAt()->format('d/m/Y H:i')
+                'Ce ticket a déjà été scanné le ' . $dateMessage
             );
             return $this->redirectToRoute('admin_scan_index');
         }
@@ -70,9 +72,11 @@ class ScanController extends AbstractController
         }
         
         if ($registration->isScanned()) {
+            $scannedAt = $registration->getScannedAt();
+            $dateMessage = $scannedAt ? $scannedAt->format('d/m/Y H:i') : 'date inconnue';
+            
             $this->addFlash('warning', 
-                'Ce ticket a déjà été scanné le ' . 
-                $registration->getScannedAt()->format('d/m/Y H:i')
+                'Ce ticket a déjà été scanné le ' . $dateMessage
             );
             return $this->redirectToRoute('admin_scan_index');
         }

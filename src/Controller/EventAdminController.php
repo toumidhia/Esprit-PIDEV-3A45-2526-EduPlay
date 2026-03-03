@@ -6,7 +6,7 @@ namespace App\Controller;
 use App\Entity\SchoolEvent;
 use App\Form\SchoolEventType;
 use Doctrine\ORM\EntityManagerInterface;
-use Knp\Component\Pager\PaginatorInterface; // 👈 AJOUTÉ
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
@@ -57,7 +57,7 @@ class EventAdminController extends AbstractController
                     ->setParameter('q', '%'.mb_strtolower($q).'%');
         }
 
-        $total = $countQb->getQuery()->getSingleScalarResult();
+        $total = (int) $countQb->getQuery()->getSingleScalarResult();
 
         // ✅ Récupérer les événements avec pagination manuelle
         $qb = $em->getRepository(SchoolEvent::class)->createQueryBuilder('e');
@@ -74,7 +74,7 @@ class EventAdminController extends AbstractController
         $events = $qb->getQuery()->getResult();
 
         // ✅ Calculer les infos de pagination
-        $totalPages = ceil($total / $limit);
+        $totalPages = (int) ceil($total / $limit);
 
         // ✅ si requête AJAX
         $isAjax = $request->headers->get('X-Requested-With') === 'XMLHttpRequest';
@@ -158,8 +158,11 @@ class EventAdminController extends AbstractController
     public function calendarLoad(Request $request, EntityManagerInterface $em): Response
     {
         // Récupérer les paramètres de début et fin envoyés par FullCalendar
-        $start = new \DateTime($request->query->get('start'));
-        $end = new \DateTime($request->query->get('end'));
+        $startParam = $request->query->get('start');
+        $endParam = $request->query->get('end');
+        
+        $start = new \DateTime(is_string($startParam) ? $startParam : 'now');
+        $end = new \DateTime(is_string($endParam) ? $endParam : 'now');
 
         $events = $em->getRepository(SchoolEvent::class)->createQueryBuilder('e')
             ->where('e.startDate BETWEEN :start AND :end')
@@ -228,7 +231,8 @@ class EventAdminController extends AbstractController
     #[Route('/admin/events/{id}', name: 'admin_event_delete', methods: ['POST'])]
     public function delete(SchoolEvent $event, Request $request, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('delete_event_'.$event->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (is_string($token) && $this->isCsrfTokenValid('delete_event_'.$event->getId(), $token)) {
             $em->remove($event);
             $em->flush();
             $this->addFlash('success', 'Événement supprimé.');

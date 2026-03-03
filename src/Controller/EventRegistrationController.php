@@ -16,7 +16,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_USER')]
@@ -26,27 +25,6 @@ class EventRegistrationController extends AbstractController
     public function register(SchoolEvent $event, Request $request, EntityManagerInterface $em, QrCodeService $qrCodeService): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        if ($this->isGranted('ROLE_PARENT')) {
-            // This method is for parents to register their children.
-            // If the instruction means to block parents from registering *themselves* for an event,
-            // and this method is specifically for children, then this check might be redundant or
-            // needs clarification.
-            // However, based on the provided snippet, if a parent tries to access a generic 'event registration'
-            // route that is not for children, they should be blocked.
-            // The existing code already ensures only ROLE_PARENT can proceed to register a child.
-            // The instruction's snippet for the `register` method seems to be a copy of the existing check.
-            // I will add the check as it appears in the instruction's snippet, assuming it's meant to be a
-            // general block for parents on a different, hypothetical 'self-registration' route,
-            // or a re-emphasis of the existing logic.
-            // Given the context of the original code, the line `if (!$this->isGranted('ROLE_PARENT'))`
-            // already ensures only parents can register children.
-            // The instruction's snippet for the `register` method is:
-            // if (!$this->isGranted('ROLE_PARENT')) { throw $this->createAccessDeniedException("Seuls les parents peuvent inscrire un enfant."); }
-            // This is already present. I will not duplicate it.
-            // The instruction also includes a new `index` method with a block for parents.
-            // Since the `index` method is not in the original code, I will add it as requested.
-        }
 
         if (!$this->isGranted('ROLE_PARENT')) {
             throw $this->createAccessDeniedException("Seuls les parents peuvent inscrire un enfant.");
@@ -144,11 +122,12 @@ class EventRegistrationController extends AbstractController
 
         $parentEntity = $this->getOrCreateParentEntity($em);
 
-        if ($registration->getParent()?->getId() !== $parentEntity->getId()) {
+        if ($registration->getParent()->getId() !== $parentEntity->getId()) {
             throw $this->createAccessDeniedException("Action non autorisée.");
         }
 
-        if ($this->isCsrfTokenValid('cancel_registration_' . $registration->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (is_string($token) && $this->isCsrfTokenValid('cancel_registration_' . $registration->getId(), $token)) {
             $em->remove($registration);
             $em->flush();
             $this->addFlash('success', 'Inscription annulée ✅');

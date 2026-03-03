@@ -5,6 +5,7 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Entity\SchoolEvent;
+use App\Entity\EventRegistration;
 use App\Repository\EventRegistrationRepository;
 use App\Repository\SchoolEventRepository;
 
@@ -15,25 +16,29 @@ class RecommendationEventService
         private SchoolEventRepository $eventRepo,
     ) {}
 
+    /**
+     * @param User $parent
+     * @param int $limit
+     * @return array<array{event: SchoolEvent, score: int, reasons: array<string>}>
+     */
     public function getRecommendationsForParent(User $parent, int $limit = 3): array
     {
-        // 1. Récupérer toutes les inscriptions du parent
         $registrations = $this->registrationRepo->findBy([
             'parent' => $parent
         ]);
 
         if (empty($registrations)) {
-            // Pas d'historique → recommandations populaires
             return $this->getPopularEvents($limit);
         }
 
-        // 2. Analyser les préférences
         $preferences = $this->analyzePreferences($registrations);
-
-        // 3. Trouver des événements correspondants
         return $this->findMatchingEvents($preferences, $limit);
     }
 
+    /**
+     * @param array<EventRegistration> $registrations
+     * @return array{eventTypes: array<string,int>, locations: array<string,int>, childAges: array<string,int>, total: int}
+     */
     private function analyzePreferences(array $registrations): array
     {
         $preferences = [
@@ -47,20 +52,12 @@ class RecommendationEventService
             $event = $reg->getEvent();
             if (!$event) continue;
             
-            // Analyser les types
             $type = $this->categorizeEvent($event);
-            if (!isset($preferences['eventTypes'][$type])) {
-                $preferences['eventTypes'][$type] = 0;
-            }
-            $preferences['eventTypes'][$type]++;
+            $preferences['eventTypes'][$type] = ($preferences['eventTypes'][$type] ?? 0) + 1;
 
-            // Analyser les lieux
             if ($event->getLocation()) {
                 $city = $this->extractCity($event->getLocation());
-                if (!isset($preferences['locations'][$city])) {
-                    $preferences['locations'][$city] = 0;
-                }
-                $preferences['locations'][$city]++;
+                $preferences['locations'][$city] = ($preferences['locations'][$city] ?? 0) + 1;
             }
         }
 
@@ -70,6 +67,11 @@ class RecommendationEventService
         return $preferences;
     }
 
+    /**
+     * @param array{eventTypes: array<string,int>, locations: array<string,int>, childAges: array<string,int>, total: int} $preferences
+     * @param int $limit
+     * @return array<array{event: SchoolEvent, score: int, reasons: array<string>}>
+     */
     private function findMatchingEvents(array $preferences, int $limit): array
     {
         $qb = $this->eventRepo->createQueryBuilder('e')
@@ -83,8 +85,8 @@ class RecommendationEventService
 
         foreach ($events as $event) {
             $score = 0;
-            
             $eventType = $this->categorizeEvent($event);
+            
             if (isset($preferences['eventTypes'][$eventType])) {
                 $score += $preferences['eventTypes'][$eventType] * 3;
             }
@@ -110,6 +112,10 @@ class RecommendationEventService
         return array_slice($scoredEvents, 0, $limit);
     }
 
+    /**
+     * @param int $limit
+     * @return array<array{event: SchoolEvent, score: int, reasons: array<string>}>
+     */
     private function getPopularEvents(int $limit): array
     {
         $qb = $this->eventRepo->createQueryBuilder('e')
@@ -125,8 +131,10 @@ class RecommendationEventService
         
         $popularEvents = [];
         foreach ($results as $result) {
+            /** @var SchoolEvent $event */
+            $event = $result[0];
             $popularEvents[] = [
-                'event' => $result[0],
+                'event' => $event,
                 'score' => (int)$result['registrationCount'],
                 'reasons' => ['Populaire auprès des familles']
             ];
@@ -157,12 +165,16 @@ class RecommendationEventService
         return $parts[0] ?? 'inconnu';
     }
 
-
     private function getPopularityScore(SchoolEvent $event): int
     {
         return count($event->getRegistrations()) * 2;
     }
 
+    /**
+     * @param SchoolEvent $event
+     * @param array{eventTypes: array<string,int>, locations: array<string,int>, childAges: array<string,int>, total: int} $preferences
+     * @return array<string>
+     */
     private function getRecommendationReasons(SchoolEvent $event, array $preferences): array
     {
         $reasons = [];
@@ -179,6 +191,11 @@ class RecommendationEventService
             }
         }
 
-        return !empty($reasons) ? $reasons : ["Populaire auprès des familles"];
+        // ✅ Version qui ne déclenche PAS l'erreur PHPStan
+        if ($reasons !== []) {
+            return $reasons;
+        }
+        
+        return ["Populaire auprès des familles"];
     }
 }

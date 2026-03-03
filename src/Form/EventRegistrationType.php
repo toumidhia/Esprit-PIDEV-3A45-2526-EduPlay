@@ -1,4 +1,5 @@
 <?php
+// src/Form/EventRegistrationType.php
 
 namespace App\Form;
 
@@ -14,6 +15,9 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * @extends AbstractType<EventRegistration>
+ */
 class EventRegistrationType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void

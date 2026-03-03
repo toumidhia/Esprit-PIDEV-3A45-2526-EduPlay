@@ -35,7 +35,7 @@ class AdminEventRegistrationController extends AbstractController
                     ->setParameter('q', '%' . mb_strtolower($q) . '%');
         }
 
-        $total = $countQb->getQuery()->getSingleScalarResult();
+        $total = (int) $countQb->getQuery()->getSingleScalarResult();
 
         // ✅ Récupérer les événements avec pagination manuelle
         $qb = $em->createQueryBuilder()
@@ -63,7 +63,7 @@ class AdminEventRegistrationController extends AbstractController
            ->setMaxResults($limit);
 
         $rows = $qb->getQuery()->getResult();
-        $totalPages = ceil($total / $limit);
+        $totalPages = (int) ceil($total / $limit);
 
         // ✅ Si requête AJAX
         $isAjax = $request->headers->get('X-Requested-With') === 'XMLHttpRequest';
@@ -103,7 +103,7 @@ class AdminEventRegistrationController extends AbstractController
                     ->setParameter('q', '%' . mb_strtolower($q) . '%');
         }
 
-        $total = $countQb->getQuery()->getSingleScalarResult();
+        $total = (int) $countQb->getQuery()->getSingleScalarResult();
 
         // ✅ Récupérer les inscriptions avec pagination
         $qb = $em->getRepository(EventRegistration::class)->createQueryBuilder('r')
@@ -120,7 +120,7 @@ class AdminEventRegistrationController extends AbstractController
            ->setMaxResults($limit);
 
         $registrations = $qb->getQuery()->getResult();
-        $totalPages = ceil($total / $limit);
+        $totalPages = (int) ceil($total / $limit);
 
         // ✅ Si requête AJAX
         $isAjax = $request->headers->get('X-Requested-With') === 'XMLHttpRequest';
@@ -148,7 +148,8 @@ class AdminEventRegistrationController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
-        if ($this->isCsrfTokenValid('approve' . $registration->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (is_string($token) && $this->isCsrfTokenValid('approve' . $registration->getId(), $token)) {
             $registration->setStatus('APPROVED');
             $em->flush();
             $this->addFlash('success', '✅ Inscription approuvée avec succès');
@@ -162,7 +163,8 @@ class AdminEventRegistrationController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
-        if ($this->isCsrfTokenValid('reject' . $registration->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (is_string($token) && $this->isCsrfTokenValid('reject' . $registration->getId(), $token)) {
             $registration->setStatus('REJECTED');
             $em->flush();
             $this->addFlash('success', '❌ Inscription refusée');
@@ -176,7 +178,8 @@ class AdminEventRegistrationController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
-        if ($this->isCsrfTokenValid('reset' . $registration->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (is_string($token) && $this->isCsrfTokenValid('reset' . $registration->getId(), $token)) {
             $registration->setStatus('PENDING');
             $em->flush();
             $this->addFlash('success', '↩️ Statut réinitialisé (en attente)');

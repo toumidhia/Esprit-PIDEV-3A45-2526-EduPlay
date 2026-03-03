@@ -19,5 +19,6 @@
         <env name="ABSTRACT_API_KEY" value="test_api_key_12345"/>  <!-- Ajouté -->
         <server name="SHELL_VERBOSITY" value="-1"/>  <!-- Ajouté pour réduire les logs -->
     </php>
+
  
 </phpunit>

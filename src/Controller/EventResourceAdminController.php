@@ -1,4 +1,5 @@
 <?php
+// src/Controller/EventResourceAdminController.php
 
 namespace App\Controller;
 
@@ -19,14 +20,13 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class EventResourceAdminController extends AbstractController
 {
-    // ✅ Limite (PDF/LINK) par événement
     private const MAX_MAIN_RESOURCES = 10;
 
     #[Route('/admin/events/{id}/resources', name: 'admin_event_resource_index', methods: ['GET'])]
     public function index(SchoolEvent $event, Request $request, EntityManagerInterface $em): Response
     {
-        $type = $request->query->get('type'); // PDF|LINK|CHECKLIST|PLANNING|...
-        $sort = $request->query->get('sort', 'date'); // date|type
+        $type = $request->query->get('type');
+        $sort = $request->query->get('sort', 'date');
         $order = strtolower((string) $request->query->get('order', 'desc')) === 'asc' ? 'ASC' : 'DESC';
 
         $criteria = ['event' => $event];
@@ -34,7 +34,6 @@ class EventResourceAdminController extends AbstractController
             $criteria['type'] = $type;
         }
 
-        // tri
         $orderBy = ['createdAt' => 'DESC'];
         if ($sort === 'type') {
             $orderBy = ['type' => $order, 'createdAt' => 'DESC'];
@@ -61,7 +60,6 @@ class EventResourceAdminController extends AbstractController
         $resource->setEvent($event);
         $resource->setCreatedAt(new \DateTimeImmutable());
 
-        // ✅ vérifier si checklist + planning existent déjà
         $existingChecklist = $em->getRepository(EventResource::class)->findOneBy([
             'event' => $event,
             'type' => 'CHECKLIST'
@@ -71,8 +69,6 @@ class EventResourceAdminController extends AbstractController
             'type' => 'PLANNING'
         ]);
 
-        // ✅ si checklist ET planning existent -> form simple (sans checklist/planning)
-        // sinon -> form complet (avec checklist/planning)
         $useSimpleForm = ($existingChecklist && $existingPlanning);
 
         $form = $useSimpleForm
@@ -85,7 +81,6 @@ class EventResourceAdminController extends AbstractController
             $type = (string) $resource->getType();
             $pdf  = $form->has('pdfFile') ? $form->get('pdfFile')->getData() : null;
 
-            // ✅ Max 10 ressources (PDF/LINK)
             if (in_array($type, ['PDF', 'LINK'], true)) {
                 $countMain = (int) $em->createQueryBuilder()
                     ->select('COUNT(r.id)')
@@ -102,7 +97,6 @@ class EventResourceAdminController extends AbstractController
                 }
             }
 
-            // ✅ validations dépendantes du type
             if ($type === 'PDF' && !$pdf) {
                 $form->addError(new FormError("Pour une ressource de type PDF, le fichier est obligatoire."));
             }
@@ -127,7 +121,6 @@ class EventResourceAdminController extends AbstractController
                 }
             }
 
-            // ✅ Checklist/Planning : seulement si le form complet est utilisé
             if (!$useSimpleForm && $form->has('checklistText') && $form->has('planningText')) {
                 $checklistText = trim((string) $form->get('checklistText')->getData());
                 $planningText  = trim((string) $form->get('planningText')->getData());
@@ -145,7 +138,6 @@ class EventResourceAdminController extends AbstractController
             $type = (string) $resource->getType();
             $pdf  = $form->has('pdfFile') ? $form->get('pdfFile')->getData() : null;
 
-            // ✅ Nettoyage : garder cohérence selon type
             if ($type === 'PDF') {
                 $resource->setUrl(null);
             }
@@ -153,7 +145,6 @@ class EventResourceAdminController extends AbstractController
                 $resource->setFilePath(null);
             }
 
-            // ✅ Upload PDF + anti-doublon strict par nom (par event)
             if ($pdf) {
                 $originalName = pathinfo($pdf->getClientOriginalName(), PATHINFO_FILENAME);
                 $safe = (string) $slugger->slug($originalName);
@@ -190,7 +181,6 @@ class EventResourceAdminController extends AbstractController
 
             $em->persist($resource);
 
-            // ✅ Auto create checklist/planning UNIQUEMENT si on est en form complet (donc première fois)
             if (!$useSimpleForm && $form->has('checklistText') && $form->has('planningText')) {
                 $checklist = trim((string) $form->get('checklistText')->getData());
                 $planning  = trim((string) $form->get('planningText')->getData());
@@ -200,7 +190,7 @@ class EventResourceAdminController extends AbstractController
                     $r->setEvent($event);
                     $r->setCreatedAt(new \DateTimeImmutable());
                     $r->setType('CHECKLIST');
-                    $r->setTitle('Checklist - ' . ($event->getTitle()));
+                    $r->setTitle('Checklist - ' . $event->getTitle());
                     $r->setContext($checklist);
                     $em->persist($r);
                 }
@@ -210,7 +200,7 @@ class EventResourceAdminController extends AbstractController
                     $r->setEvent($event);
                     $r->setCreatedAt(new \DateTimeImmutable());
                     $r->setType('PLANNING');
-                    $r->setTitle('Planning - ' . ($event->getTitle()));
+                    $r->setTitle('Planning - ' . $event->getTitle());
                     $r->setContext($planning);
                     $em->persist($r);
                 }
@@ -225,7 +215,7 @@ class EventResourceAdminController extends AbstractController
         return $this->render('BackOffice/admin/event_resource/new.html.twig', [
             'event' => $event,
             'form' => $form->createView(),
-            'useSimpleForm' => $useSimpleForm, // optionnel si tu veux l’utiliser dans twig
+            'useSimpleForm' => $useSimpleForm,
         ]);
     }
 
@@ -243,11 +233,10 @@ class EventResourceAdminController extends AbstractController
         }
 
         $resource = $em->getRepository(EventResource::class)->find($resourceId);
-        if (!$resource || $resource->getEvent()?->getId() !== $event->getId()) {
+        if (!$resource || $resource->getEvent()->getId() !== $event->getId()) {
             throw $this->createNotFoundException('Ressource introuvable pour cet événement.');
         }
 
-        // ✅ checklist/planning ont leurs pages dédiées
         if ($resource->getType() === 'CHECKLIST') {
             return $this->redirectToRoute('admin_event_checklist_edit', ['eventId' => $eventId, 'resourceId' => $resourceId]);
         }
@@ -255,7 +244,6 @@ class EventResourceAdminController extends AbstractController
             return $this->redirectToRoute('admin_event_planning_edit', ['eventId' => $eventId, 'resourceId' => $resourceId]);
         }
 
-        // ✅ IMPORTANT : ici on utilise TOUJOURS le form simple (sans checklist/planning)
         $form = $this->createForm(EventResourceMainType::class, $resource);
         $form->handleRequest($request);
 
@@ -263,7 +251,6 @@ class EventResourceAdminController extends AbstractController
             $type = (string) $resource->getType();
             $pdf  = $form->get('pdfFile')->getData();
 
-            // ✅ Max 10 ressources (PDF/LINK) en edit (on exclut la ressource courante)
             if (in_array($type, ['PDF', 'LINK'], true)) {
                 $countMain = (int) $em->createQueryBuilder()
                     ->select('COUNT(r.id)')
@@ -282,7 +269,6 @@ class EventResourceAdminController extends AbstractController
                 }
             }
 
-            // LINK => url obligatoire + pas de doublon (hors current)
             if ($type === 'LINK') {
                 $url = trim((string) $resource->getUrl());
                 if ($url === '') {
@@ -309,7 +295,6 @@ class EventResourceAdminController extends AbstractController
                 }
             }
 
-            // PDF => si pas de nouveau fichier, OK si filePath existe
             if ($type === 'PDF' && !$pdf && !$resource->getFilePath()) {
                 $form->addError(new FormError("Pour une ressource de type PDF, le fichier est obligatoire."));
             }
@@ -319,7 +304,6 @@ class EventResourceAdminController extends AbstractController
             $type = (string) $resource->getType();
             $pdf  = $form->get('pdfFile')->getData();
 
-            // ✅ Nettoyage cohérent
             if ($type === 'PDF') {
                 $resource->setUrl(null);
             }
@@ -327,7 +311,6 @@ class EventResourceAdminController extends AbstractController
                 $resource->setFilePath(null);
             }
 
-            // ✅ upload nouveau PDF + anti doublon strict
             if ($pdf) {
                 $originalName = pathinfo($pdf->getClientOriginalName(), PATHINFO_FILENAME);
                 $safe = (string) $slugger->slug($originalName);
@@ -395,11 +378,12 @@ class EventResourceAdminController extends AbstractController
         }
 
         $resource = $em->getRepository(EventResource::class)->find($resourceId);
-        if (!$resource || $resource->getEvent()?->getId() !== $event->getId()) {
+        if (!$resource || $resource->getEvent()->getId() !== $event->getId()) {
             throw $this->createNotFoundException('Ressource introuvable pour cet événement.');
         }
 
-        if ($this->isCsrfTokenValid('delete_resource_' . $resource->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (is_string($token) && $this->isCsrfTokenValid('delete_resource_' . $resource->getId(), $token)) {
             $em->remove($resource);
             $em->flush();
             $this->addFlash('success', 'Ressource supprimée.');
@@ -408,15 +392,16 @@ class EventResourceAdminController extends AbstractController
         return $this->redirectToRoute('admin_event_resource_index', ['id' => $event->getId()]);
     }
 
-    // ✅ Edition checklist/planning séparées (inchangé)
     #[Route('/admin/events/{eventId}/resources/{resourceId}/checklist/edit', name: 'admin_event_checklist_edit', methods: ['GET','POST'])]
     public function editChecklist(int $eventId, int $resourceId, Request $request, EntityManagerInterface $em): Response
     {
         $event = $em->getRepository(SchoolEvent::class)->find($eventId);
-        if (!$event) throw $this->createNotFoundException('Event introuvable.');
+        if (!$event) {
+            throw $this->createNotFoundException('Event introuvable.');
+        }
 
         $resource = $em->getRepository(EventResource::class)->find($resourceId);
-        if (!$resource || $resource->getEvent()?->getId() !== $event->getId() || $resource->getType() !== 'CHECKLIST') {
+        if (!$resource || $resource->getEvent()->getId() !== $event->getId() || $resource->getType() !== 'CHECKLIST') {
             throw $this->createNotFoundException('Checklist introuvable pour cet événement.');
         }
 
@@ -448,10 +433,12 @@ class EventResourceAdminController extends AbstractController
     public function editPlanning(int $eventId, int $resourceId, Request $request, EntityManagerInterface $em): Response
     {
         $event = $em->getRepository(SchoolEvent::class)->find($eventId);
-        if (!$event) throw $this->createNotFoundException('Event introuvable.');
+        if (!$event) {
+            throw $this->createNotFoundException('Event introuvable.');
+        }
 
         $resource = $em->getRepository(EventResource::class)->find($resourceId);
-        if (!$resource || $resource->getEvent()?->getId() !== $event->getId() || $resource->getType() !== 'PLANNING') {
+        if (!$resource || $resource->getEvent()->getId() !== $event->getId() || $resource->getType() !== 'PLANNING') {
             throw $this->createNotFoundException('Planning introuvable pour cet événement.');
         }
 

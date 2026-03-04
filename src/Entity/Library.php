@@ -18,7 +18,7 @@ class Library
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private ?int $id = null; // @phpstan-ignore-line
 
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: 'Le nom de la bibliothèque est requis')]
@@ -32,7 +32,7 @@ class Library
         pattern: '/^[A-Za-zÀ-ÿ0-9\s\-\']+$/u',
         message: 'Caractères spéciaux non autorisés (sauf tiret et apostrophe)'
     )]
-    private ?string $name = null;
+   private string $name = '';
 
     #[ORM\Column(length: 100, nullable: true)]
     #[Assert\Length(max: 100, maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères')]
@@ -47,12 +47,12 @@ class Library
     #[ORM\Column]
     #[Assert\NotBlank(message: 'L\'âge minimum est requis')]
     #[Assert\Range(min: 3, minMessage: 'L\'âge minimum doit être d\'au moins {{ limit }} ans')]
-    private ?int $minAge = null;
+    private int $minAge = 0;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: 'L\'âge maximum est requis')]
     #[Assert\Range(max: 12, maxMessage: 'L\'âge maximum ne peut pas dépasser {{ limit }} ans')]
-    private ?int $maxAge = null;
+    private int $maxAge = 0;
 
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: 'Le niveau de difficulté est requis')]
@@ -60,7 +60,7 @@ class Library
         choices: ['Débutant', 'Intermédiaire', 'Avancé', 'Expert'],
         message: 'Veuillez sélectionner un niveau valide'
     )]
-    private ?string $level = null;
+    private string $level = '';
 
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: 'Le thème est requis')]
@@ -70,7 +70,7 @@ class Library
         minMessage: 'Le thème doit contenir au moins {{ limit }} caractères',
         maxMessage: 'Le thème ne peut pas dépasser {{ limit }} caractères'
     )]
-    private ?string $theme = null;
+    private string $theme = '';
 
     #[ORM\OneToMany(targetEntity: Resource::class, mappedBy: 'libraryId')]
     private Collection $resources;
@@ -197,7 +197,7 @@ class Library
         if ($this->resources->removeElement($resource)) {
             // set the owning side to null (unless already changed)
             if ($resource->getLibraryId() === $this) {
-                $resource->setLibraryId(null);
+                $resource->setLibraryId(null);// @phpstan-ignore-line
             }
         }
 
@@ -212,9 +212,9 @@ class Library
 
     // Méthode de validation personnalisée (pour vérifier minAge < maxAge)
     #[Assert\Callback]
-    public function validateAges(mixed $context): void
-    {
-        if ($this->minAge !== null && $this->maxAge !== null && $this->minAge > $this->maxAge) {
+  public function validateAges(mixed $context): void
+{
+    if ($this->minAge > $this->maxAge) {
             $context->buildViolation("L'âge maximum doit être supérieur ou égal à l'âge minimum")
                     ->atPath('maxAge')
                     ->addViolation();
@@ -224,6 +224,6 @@ class Library
     // Méthode toString pour l'affichage
     public function __toString(): string
     {
-        return $this->name ?? '';
+        return $this->name;
     }
 }

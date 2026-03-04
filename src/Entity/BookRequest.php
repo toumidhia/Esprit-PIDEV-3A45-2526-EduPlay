@@ -63,4 +63,16 @@ class BookRequest
 
     public function getResource(): ?Resource { return $this->resource; }
     public function setResource(?Resource $r): static { $this->resource = $r; return $this; }
+
+    
+    /**
+     * Mark this request as notified
+     * This should be the only way to set the notification timestamp
+     */
+    public function markAsNotified(): static
+    {
+        $this->isNotified = true;
+        $this->notifiedAt = new \DateTime();
+        return $this;
+    }
 }

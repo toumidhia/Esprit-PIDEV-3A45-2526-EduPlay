@@ -31,7 +31,7 @@ class Resource
         pattern: '/^[a-zA-Z0-9\s.,!?À-ÿ\-]+$/u',
         message: 'Le titre ne peut contenir que des lettres, chiffres, espaces et ponctuation de base'
     )]
-    private ?string $title = null;
+    private string $title;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "L'auteur est requis")]
@@ -45,7 +45,7 @@ class Resource
         pattern: '/^[a-zA-ZÀ-ÿ\s\-]+$/u',
         message: "Le nom de l'auteur ne peut contenir que des lettres, espaces et tirets"
     )]
-    private ?string $author = null;
+    private string $author;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
@@ -72,7 +72,7 @@ class Resource
         choices: ['Livre', 'Magazine', 'Journal', 'Manuel'],
         message: 'Choisissez un type valide parmi {{ choices }}'
     )]
-    private ?string $type = null;
+    private string $type;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "L'âge minimum est requis")]
@@ -81,7 +81,7 @@ class Resource
         max: 18,
         notInRangeMessage: "L'âge minimum doit être entre {{ min }} et {{ max }} ans"
     )]
-    private ?int $minAge = null;
+    private int $minAge;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: "L'âge maximum est requis")]
@@ -90,7 +90,7 @@ class Resource
         max: 18,
         notInRangeMessage: "L'âge maximum doit être entre {{ min }} et {{ max }} ans"
     )]
-    private ?int $maxAge = null;
+    private int $maxAge;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'La langue est requise')]
@@ -98,18 +98,18 @@ class Resource
         choices: ['Français', 'Anglais', 'Arabe', 'Espagnol'],
         message: 'Choisissez une langue valide parmi {{ choices }}'
     )]
-    private ?string $language = null;
+    private string $language;
 
     #[ORM\ManyToOne(targetEntity: Library::class)]
     #[ORM\JoinColumn(name: 'library_id_id', nullable: false)]
     #[Assert\NotNull(message: "La bibliothèque est requise")]
-    private ?Library $libraryId = null;
+    private Library $libraryId;
 
     // Méthodes de validation personnalisée (pour vérifier minAge < maxAge)
     #[Assert\Callback]
     public function validateAges(mixed $context): void
     {
-        if ($this->minAge !== null && $this->maxAge !== null && $this->minAge > $this->maxAge) {
+        if ($this->minAge > $this->maxAge) {
             $context->buildViolation("L'âge maximum doit être supérieur ou égal à l'âge minimum")
                     ->atPath('maxAge')
                     ->addViolation();
@@ -122,7 +122,7 @@ class Resource
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -133,7 +133,7 @@ class Resource
         return $this;
     }
 
-    public function getAuthor(): ?string
+    public function getAuthor(): string
     {
         return $this->author;
     }
@@ -199,7 +199,7 @@ class Resource
         return $this->pdfFileFile;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -210,7 +210,7 @@ class Resource
         return $this;
     }
 
-    public function getMinAge(): ?int
+    public function getMinAge(): int
     {
         return $this->minAge;
     }
@@ -221,7 +221,7 @@ class Resource
         return $this;
     }
 
-    public function getMaxAge(): ?int
+    public function getMaxAge(): int
     {
         return $this->maxAge;
     }
@@ -232,7 +232,7 @@ class Resource
         return $this;
     }
 
-    public function getLanguage(): ?string
+    public function getLanguage(): string
     {
         return $this->language;
     }
@@ -243,12 +243,12 @@ class Resource
         return $this;
     }
 
-    public function getLibraryId(): ?Library  // CHANGÉ: getLibrary -> getLibraryId
+    public function getLibraryId(): Library  // CHANGÉ: getLibrary -> getLibraryId
     {
         return $this->libraryId;
     }
 
-    public function setLibraryId(?Library $libraryId): static  // CHANGÉ: setLibrary -> setLibraryId
+    public function setLibraryId(Library $libraryId): static  // CHANGÉ: setLibrary -> setLibraryId
     {
         $this->libraryId = $libraryId;
         return $this;

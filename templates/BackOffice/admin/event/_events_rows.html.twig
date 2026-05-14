@@ -1,7 +1,6 @@
 {% for row in rows %}
   {% set e = row.event %}
-  <tr class="hover:bg-indigo-50/40 transition"
-      data-search="{{ (e.title ~ ' ' ~ (e.location ?: '') ~ ' ' ~ (e.startDate ? e.startDate|date('d/m/Y H:i') : '') ~ ' ' ~ (e.endDate ? e.endDate|date('d/m/Y H:i') : ''))|lower }}">
+  <tr class="hover:bg-indigo-50/40 transition">
     <td class="p-4 font-extrabold text-gray-900">{{ e.title }}</td>
     <td class="p-4 font-semibold text-gray-700">
       {{ e.startDate|date('d/m/Y H:i') }} → {{ e.endDate|date('d/m/Y H:i') }}
@@ -18,12 +17,6 @@
         <span class="material-symbols-outlined mr-2 text-base">group</span>
         Voir
       </a>
-    </td>
-  </tr>
-{% else %}
-  <tr>
-    <td colspan="5" class="p-6 text-center font-bold text-gray-500">
-      Aucun événement trouvé.
     </td>
   </tr>
 {% endfor %}

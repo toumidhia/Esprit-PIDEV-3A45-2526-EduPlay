@@ -8,7 +8,6 @@ require dirname(__DIR__).'/vendor/autoload.php';
 if (method_exists(Dotenv::class, 'bootEnv')) {
     // Charge le fichier .env.test
     (new Dotenv())->bootEnv(dirname(__DIR__).'/.env.test');
-  
 }
 
 // S'assurer que l'environnement est bien 'test'
@@ -25,6 +24,7 @@ if (empty($_ENV['DATABASE_URL'])) {
     $_ENV['DATABASE_URL'] = 'sqlite:///:memory:';
     $_SERVER['DATABASE_URL'] = 'sqlite:///:memory:';
 }
+
 if ($_SERVER['APP_DEBUG']) {
     umask(0000);
 }

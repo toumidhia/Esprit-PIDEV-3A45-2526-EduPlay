@@ -1,5 +1,4 @@
 <?php
-// src/Form/EventRegistrationType.php
 
 namespace App\Form;
 
@@ -9,102 +8,85 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @extends AbstractType<EventRegistration>
- */
 class EventRegistrationType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $inputClass = "mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+        $labelClass = "text-sm font-extrabold text-gray-900";
+
         $builder
             ->add('childFullName', TextType::class, [
-                'label' => "Nom complet de l'enfant",
-                'attr' => ['placeholder' => "Ex: Lina Ben Ali"],
-                'constraints' => [
-                    new Assert\NotBlank(['message' => "Le nom de l'enfant est obligatoire."]),
-                    new Assert\Length(['min' => 3, 'max' => 120]),
+                'label' => "Child full name *",
+                'label_attr' => ['class' => $labelClass],
+                'attr' => [
+                    'class' => $inputClass,
+                    'placeholder' => "e.g. Lina Ben Ali",
                 ],
-            ])
-            ->add('parentPhone', TelType::class, [
-                'label' => "Téléphone du parent",
-                'required' => false,
-                'attr' => ['placeholder' => "Ex: 22123456 ou +21622123456"],
                 'constraints' => [
-                    new Assert\Length(['max' => 30]),
-                    new Assert\Regex([
-                        'pattern' => '/^(\+?\d{1,3})?\d{8,12}$/',
-                        'message' => "Téléphone invalide. Exemple: 22123456 ou +21622123456",
-                    ]),
-                ],
-            ])
-            ->add('childClassLevel', TextType::class, [
-                'label' => "Classe / Niveau",
-                'required' => false,
-                'attr' => ['placeholder' => "Ex: 3A, CE2, 6ème..."],
-                'constraints' => [
-                    new Assert\Length(['max' => 80]),
-                ],
-            ])
-            ->add('medicalNotes', TextareaType::class, [
-                'label' => "Infos médicales (optionnel)",
-                'required' => false,
-                'attr' => ['rows' => 3, 'placeholder' => "Allergies, asthme, médicaments..."],
-                'constraints' => [
-                    new Assert\Length(['max' => 2000]),
-                ],
-            ])
-            ->add('emergencyContactName', TextType::class, [
-                'label' => "Contact d'urgence - Nom",
-                'required' => false,
-                'attr' => ['placeholder' => "Ex: Tonton Ahmed"],
-                'constraints' => [
+                    new Assert\NotBlank(['message' => "Child name is required."]),
                     new Assert\Length(['max' => 120]),
                 ],
             ])
-            ->add('emergencyContactPhone', TelType::class, [
-                'label' => "Contact d'urgence - Téléphone",
+            ->add('parentPhone', TelType::class, [
+                'label' => "Parent phone (optional)",
                 'required' => false,
-                'attr' => ['placeholder' => "Ex: 55123456 ou +21655123456"],
-                'constraints' => [
-                    new Assert\Length(['max' => 30]),
-                    new Assert\Regex([
-                        'pattern' => '/^(\+?\d{1,3})?\d{8,12}$/',
-                        'message' => "Téléphone invalide. Exemple: 55123456 ou +21655123456",
-                    ]),
+                'label_attr' => ['class' => $labelClass],
+                'attr' => [
+                    'class' => $inputClass,
+                    'placeholder' => "+216 XX XXX XXX",
+                ],
+            ])
+            ->add('childClassLevel', TextType::class, [
+                'label' => "Class level (optional)",
+                'required' => false,
+                'label_attr' => ['class' => $labelClass],
+                'attr' => [
+                    'class' => $inputClass,
+                    'placeholder' => "e.g. 3A / CE2",
+                ],
+            ])
+            ->add('emergencyContactName', TextType::class, [
+                'label' => "Emergency contact name (optional)",
+                'required' => false,
+                'label_attr' => ['class' => $labelClass],
+                'attr' => [
+                    'class' => $inputClass,
+                    'placeholder' => "Full name",
+                ],
+            ])
+            ->add('emergencyContactPhone', TelType::class, [
+                'label' => "Emergency contact phone (optional)",
+                'required' => false,
+                'label_attr' => ['class' => $labelClass],
+                'attr' => [
+                    'class' => $inputClass,
+                    'placeholder' => "+216 XX XXX XXX",
+                ],
+            ])
+            ->add('medicalNotes', TextareaType::class, [
+                'label' => "Medical notes (optional)",
+                'required' => false,
+                'label_attr' => ['class' => $labelClass],
+                'attr' => [
+                    'class' => "mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+                    'rows' => 4,
+                    'placeholder' => "Allergies, asthma, etc.",
                 ],
             ])
             ->add('notes', TextareaType::class, [
-                'label' => "Remarques (optionnel)",
+                'label' => "Additional notes (optional)",
                 'required' => false,
-                'attr' => ['rows' => 3, 'placeholder' => "Infos utiles, autorisations..."],
-                'constraints' => [
-                    new Assert\Length(['max' => 2000]),
+                'label_attr' => ['class' => $labelClass],
+                'attr' => [
+                    'class' => "mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+                    'rows' => 4,
+                    'placeholder' => "Any extra information for the school.",
                 ],
-            ])
-        ;
-
-        // ✅ Règles “intelligentes” : urgence (nom <-> téléphone)
-        $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
-            $form = $event->getForm();
-            /** @var EventRegistration $data */
-            $data = $event->getData();
-
-            $name = trim((string) $data->getEmergencyContactName());
-            $phone = trim((string) $data->getEmergencyContactPhone());
-
-            if ($name !== '' && $phone === '') {
-                $form->get('emergencyContactPhone')->addError(new FormError("Le téléphone du contact d'urgence est obligatoire."));
-            }
-            if ($phone !== '' && $name === '') {
-                $form->get('emergencyContactName')->addError(new FormError("Le nom du contact d'urgence est obligatoire."));
-            }
-        });
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

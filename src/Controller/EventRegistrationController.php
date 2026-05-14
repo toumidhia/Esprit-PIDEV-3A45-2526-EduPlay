@@ -22,12 +22,33 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class EventRegistrationController extends AbstractController
 {
     #[Route('/events/{id}/register', name: 'front_event_register', methods: ['GET','POST'])]
-    public function register(SchoolEvent $event, Request $request, EntityManagerInterface $em, QrCodeService $qrCodeService): Response
-    {
+    public function register(
+        SchoolEvent $event,
+        Request $request,
+        EntityManagerInterface $em,
+        QrCodeService $qrCodeService
+    ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         if (!$this->isGranted('ROLE_PARENT')) {
             throw $this->createAccessDeniedException("Seuls les parents peuvent inscrire un enfant.");
+        }
+
+        // ✅ Check capacité (serveur)
+        $capacity = $event->getCapacity(); // null = illimité
+        if ($capacity !== null) {
+            $currentCount = (int) $em->createQueryBuilder()
+                ->select('COUNT(r.id)')
+                ->from(EventRegistration::class, 'r')
+                ->where('r.event = :event')
+                ->setParameter('event', $event)
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            if ($currentCount >= $capacity) {
+                $this->addFlash('error', "Cet événement est complet. Plus de places disponibles.");
+                return $this->redirectToRoute('front_event_show', ['id' => $event->getId()]);
+            }
         }
 
         $parentEntity = $this->getOrCreateParentEntity($em);
@@ -36,14 +57,28 @@ class EventRegistrationController extends AbstractController
         $registration->setEvent($event);
         $registration->setParent($parentEntity);
         $registration->setRegisteredAt(new \DateTimeImmutable());
-        $registration->setStatus(EventRegistration::STATUS_PENDING);
 
         $form = $this->createForm(EventRegistrationType::class, $registration);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            $child = trim((string) $registration->getChildFullName());
+            // ✅ re-check capacité au submit (anti course condition)
+            $capacity = $event->getCapacity();
+            if ($capacity !== null) {
+                $currentCount = (int) $em->createQueryBuilder()
+                    ->select('COUNT(r.id)')
+                    ->from(EventRegistration::class, 'r')
+                    ->where('r.event = :event')
+                    ->setParameter('event', $event)
+                    ->getQuery()
+                    ->getSingleScalarResult();
 
+                if ($currentCount >= $capacity) {
+                    $form->addError(new FormError("Cet événement est complet. Plus de places disponibles."));
+                }
+            }
+
+            $child = trim((string) $registration->getChildFullName());
             if ($child === '') {
                 $form->addError(new FormError("Le nom de l'enfant est obligatoire."));
             } else {
@@ -52,7 +87,6 @@ class EventRegistrationController extends AbstractController
                     'parent' => $parentEntity,
                     'childFullName' => $child,
                 ]);
-
                 if ($exists) {
                     $form->addError(new FormError("Cet enfant est déjà inscrit à cet événement."));
                 }
@@ -63,13 +97,13 @@ class EventRegistrationController extends AbstractController
             $em->persist($registration);
             $em->flush();
 
-            // ✅ GÉNÉRATION DU QR CODE
+            // ✅ QR code
             $uniqueCode = $qrCodeService->generateUniqueCode($registration);
             $registration->setTicketQrCode($uniqueCode);
-            
+
             $qrCodePath = $qrCodeService->generateTicketQrCode($registration);
             $registration->setQrCodePath($qrCodePath);
-            
+
             $em->flush();
 
             $this->addFlash('success', "Inscription enregistrée ✅ Votre ticket est disponible dans 'Mes inscriptions'.");
@@ -98,15 +132,10 @@ class EventRegistrationController extends AbstractController
             ->setParameter('parent', $parentEntity)
             ->orderBy('r.registeredAt', 'DESC');
 
-        $query = $qb->getQuery();
-        
-        $page = $request->query->getInt('page', 1);
-        $limit = 5;
-        
         $pagination = $paginator->paginate(
-            $query,
-            $page,
-            $limit
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            5
         );
 
         return $this->render('FrontOffice/Parent/event/registration/index.html.twig', [

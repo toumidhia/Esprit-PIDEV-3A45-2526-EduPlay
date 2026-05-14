@@ -3,6 +3,7 @@
 
 namespace App\Controller;
 
+use App\Entity\EventRegistration;
 use App\Entity\SchoolEvent;
 use App\Service\RecommendationEventService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -85,8 +86,9 @@ class EventController extends AbstractController
     }
 
     #[Route('/events/{id}', name: 'front_event_show', methods: ['GET'])]
-    public function show(SchoolEvent $event): Response
+    public function show(SchoolEvent $event, EntityManagerInterface $em): Response
     {
+        // ✅ ressources
         $resources = $event->getResources()->toArray();
 
         usort($resources, function ($a, $b) {
@@ -95,9 +97,21 @@ class EventController extends AbstractController
             return $tb <=> $ta;
         });
 
+        // ✅ capacité / complet
+        $capacity = $event->getCapacity(); // int|null
+        $registeredCount = (int) $em->getRepository(EventRegistration::class)->count([
+            'event' => $event
+        ]);
+
+        $remaining = $capacity === null ? null : max(0, $capacity - $registeredCount);
+        $isFull = ($remaining !== null && $remaining <= 0);
+
         return $this->render('FrontOffice/Parent/event/show.html.twig', [
             'event' => $event,
             'resources' => $resources,
+            'registeredCount' => $registeredCount,
+            'remaining' => $remaining,
+            'isFull' => $isFull,
         ]);
     }
 }

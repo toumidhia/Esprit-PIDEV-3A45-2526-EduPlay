@@ -20,28 +20,28 @@ class SchoolEvent
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre est obligatoire.")]
-    private string $title;
+    private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "La description est obligatoire.")]
-    private string $description;
+    private ?string $description = null;
 
-    #[ORM\Column(type: 'datetime')]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotNull(message: "La date de début est obligatoire.")]
     #[Assert\GreaterThanOrEqual('today', message: "La date de début ne doit pas être passée.")]
-    private \DateTimeInterface $startDate;
+    private ?\DateTimeInterface $startDate = null;
 
-    #[ORM\Column(type: 'datetime')]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotNull(message: "La date de fin est obligatoire.")]
     #[Assert\GreaterThanOrEqual(
         propertyPath: 'startDate',
         message: 'La date de fin doit être supérieure ou égale à la date de début.'
     )]
-    private \DateTimeInterface $endDate;
+    private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le lieu est obligatoire.")]
-    private string $location;
+    private ?string $location = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imagePath = null;
@@ -49,15 +49,14 @@ class SchoolEvent
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
-    /**
-     * @var Collection<int, EventResource>
-     */
+    // ✅ NOUVEAU : capacité
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Assert\Positive(message: "La capacité doit être un nombre positif.")]
+    private ?int $capacity = null;
+
     #[ORM\OneToMany(targetEntity: EventResource::class, mappedBy: 'event', orphanRemoval: true)]
     private Collection $resources;
 
-    /**
-     * @var Collection<int, EventRegistration>
-     */
     #[ORM\OneToMany(targetEntity: EventRegistration::class, mappedBy: 'event', orphanRemoval: true)]
     private Collection $registrations;
 
@@ -76,19 +75,19 @@ class SchoolEvent
 
     public function getId(): ?int { return $this->id; }
 
-    public function getTitle(): string { return $this->title; }
+    public function getTitle(): ?string { return $this->title; }
     public function setTitle(string $title): static { $this->title = $title; return $this; }
 
-    public function getDescription(): string { return $this->description; }
+    public function getDescription(): ?string { return $this->description; }
     public function setDescription(string $description): static { $this->description = $description; return $this; }
 
-    public function getStartDate(): \DateTimeInterface { return $this->startDate; }
+    public function getStartDate(): ?\DateTimeInterface { return $this->startDate; }
     public function setStartDate(\DateTimeInterface $startDate): static { $this->startDate = $startDate; return $this; }
 
-    public function getEndDate(): \DateTimeInterface { return $this->endDate; }
+    public function getEndDate(): ?\DateTimeInterface { return $this->endDate; }
     public function setEndDate(\DateTimeInterface $endDate): static { $this->endDate = $endDate; return $this; }
 
-    public function getLocation(): string { return $this->location; }
+    public function getLocation(): ?string { return $this->location; }
     public function setLocation(string $location): static { $this->location = $location; return $this; }
 
     public function getImagePath(): ?string { return $this->imagePath; }
@@ -96,6 +95,9 @@ class SchoolEvent
 
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
+
+    public function getCapacity(): ?int { return $this->capacity; }
+    public function setCapacity(?int $capacity): static { $this->capacity = $capacity; return $this; }
 
     public function getLatitude(): ?string { return $this->latitude; }
     public function setLatitude(?string $latitude): static { $this->latitude = $latitude; return $this; }
@@ -118,12 +120,9 @@ class SchoolEvent
     public function removeResource(EventResource $resource): static
     {
         if ($this->resources->removeElement($resource)) {
-            // ✅ CORRIGÉ : on ne passe pas null, on vérifie que l'événement est bien celui-ci avant de retirer
+            // ✅ si EventResource.event est nullable, on met null
             if ($resource->getEvent() === $this) {
-                $resource->setEvent($this); // en réalité, on devrait avoir une méthode pour dissocier
-                // Dans EventResource, il faudrait une méthode setEvent(null) mais la propriété n'est pas nullable
-                // Donc on ne peut pas vraiment dissocier complètement
-                // Solution : on garde la relation mais on laisse le removeElement gérer la suppression
+                $resource->setEvent(null);
             }
         }
         return $this;
@@ -144,9 +143,8 @@ class SchoolEvent
     public function removeRegistration(EventRegistration $registration): static
     {
         if ($this->registrations->removeElement($registration)) {
-            // ✅ CORRIGÉ : même problème
             if ($registration->getEvent() === $this) {
-                $registration->setEvent($this);
+                $registration->setEvent(null);
             }
         }
         return $this;

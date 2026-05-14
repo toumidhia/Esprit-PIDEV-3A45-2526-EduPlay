@@ -1,4 +1,5 @@
 <?php
+// src/Entity/EventResource.php
 
 namespace App\Entity;
 
@@ -9,19 +10,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EventResourceRepository::class)]
-//#[Assert\Expression(
-  //  "this.getType() != 'LINK' or (this.getUrl() != null and this.getUrl() != '')",
-  //  message: "Pour une ressource de type LINK, l'URL est obligatoire."
-//)]
-//#[Assert\Expression(
- //   "this.getType() != 'PDF' or (this.getFilePath() != null and this.getFilePath() != '')",
-   // message: "Pour une ressource de type PDF, le fichier est obligatoire."
-//)]
-//#[Assert\Expression(
-  //  "(['CHECKLIST','PLANNING'] contains this.getType()) == false or (this.getContext() != null and this.getContext() != '')",
-    //message: "Pour CHECKLIST/PLANNING, le champ contenu (texte) est obligatoire."
-//)]
-
 class EventResource
 {
     #[ORM\Id]
@@ -30,10 +18,10 @@ class EventResource
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $type = null;
+    private string $type;  // plus de ?
 
     #[ORM\Column(length: 255)]
-    private ?string $title = null;
+    private string $title; // plus de ?
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $context = null;
@@ -45,18 +33,23 @@ class EventResource
     private ?string $url = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt; // plus de ?
 
     #[ORM\ManyToOne(inversedBy: 'resources')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?SchoolEvent $event = null;
+    private SchoolEvent $event; // plus de ?
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -68,7 +61,7 @@ class EventResource
         return $this;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -85,7 +78,7 @@ class EventResource
         return $this->context;
     }
 
-    public function setContext(string $context): static
+    public function setContext(?string $context): static
     {
         $this->context = $context;
 
@@ -116,7 +109,7 @@ class EventResource
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
@@ -128,22 +121,21 @@ class EventResource
         return $this;
     }
 
-    public function getEvent(): ?SchoolEvent
+    public function getEvent(): SchoolEvent
     {
         return $this->event;
     }
 
-    public function setEvent(?SchoolEvent $event): static
+    public function setEvent(SchoolEvent $event): static
     {
         $this->event = $event;
 
         return $this;
     }
 
-
-
-
-    //#[Assert\Callback]
+    /**
+     * @Assert\Callback
+     */
     public function validate(ExecutionContextInterface $context, mixed $payload): void
     {
         $type = $this->getType();
@@ -172,5 +164,4 @@ class EventResource
             }
         }
     }
-
 }

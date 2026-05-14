@@ -41,7 +41,7 @@
 
 ## Contrôle d’accès (à configurer dans security.yaml)
 - `/admin/*` → **ROLE_ADMIN**
-- `/teacher/*` → **ROLE_TEACHER**
+- `/teacher/*` → **ROLE_ENSEIGNANT**
 - Shop / commande → **ROLE_PARENT** ou **ROLE_USER**
 
 ---

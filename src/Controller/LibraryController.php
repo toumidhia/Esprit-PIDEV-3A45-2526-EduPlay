@@ -136,7 +136,7 @@ final class LibraryController extends AbstractController
         }
         
         // Compléter avec des espaces
-        $bar .= str_repeat('░', 10 - (int) ceil($percentage / 10));
+        $bar .= str_repeat('░', (int) (10 - ceil($percentage / 10)));
         
         return $bar;
     }
@@ -159,7 +159,8 @@ public function adminIndex(Request $request, LibraryRepository $libraryRepositor
         $data = $form->getData();
         
         // Si c'est le bouton "Réinitialiser"
-        if ($form->get('reset')->isClicked()) { // @phpstan-ignore-line
+        $resetButton = $form->get('reset');
+        if ($resetButton instanceof \Symfony\Component\Form\SubmitButton && $resetButton->isClicked()) {
             return $this->redirectToRoute('admin_library_index');
         }
         

@@ -11,6 +11,8 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use SensitiveParameter;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(
@@ -21,7 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[UniqueEntity(
     fields: ['username'],
     message: 'Cet identifiant est déjà utilisé, veuillez en choisir un autre.',
-    groups: ['Default', 'enfant_creation'] // ✅ actif pour la création d'enfant
+    groups: ['Default', 'enfant_creation']
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -32,11 +34,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le prénom est obligatoire.', groups: ['Default', 'enfant_creation'])]
-    private ?string $firstName = null;
+    private string $firstName = '';
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le nom est obligatoire.', groups: ['Default', 'enfant_creation'])]
-    private ?string $lastName = null;
+    private string $lastName = '';
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $birthDate = null;
@@ -61,19 +63,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $password = null;
+    private string $password = '';
 
     #[ORM\Column(length: 255)]
-    private ?string $type = null;
+    private string $type = 'parent';
 
+    /** @var array<string> */
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
     #[ORM\Column]
-    private ?bool $active = true;
+    private bool $active = false;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
+    private \DateTimeInterface $createdAt;
 
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $telephone = null;
@@ -87,22 +90,45 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $niveau = null;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $facialEmbedding = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $lastLoginIp = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $lastLoginCountry = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $lastLoginCity = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastLoginAt = null;
+
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'enfants')]
-    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?User $parent = null;
 
-    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class, cascade: ['persist', 'remove'])]
+    /** @var Collection<int, User> */
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
     private Collection $enfants;
 
+    /** @var Collection<int, Course> */
     #[ORM\OneToMany(targetEntity: Course::class, mappedBy: 'teacherId', orphanRemoval: true)]
     private Collection $courses;
 
+    /** @var Collection<int, Commande> */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Commande::class, orphanRemoval: true)]
+    private Collection $commandes;
+
+    /** @var Collection<int, EventRegistration> */
     #[ORM\OneToMany(targetEntity: EventRegistration::class, mappedBy: 'parent')]
     private Collection $eventRegistrations;
 
     public function __construct()
     {
         $this->courses = new ArrayCollection();
+        $this->commandes = new ArrayCollection();
         $this->eventRegistrations = new ArrayCollection();
         $this->enfants = new ArrayCollection();
         $this->createdAt = new \DateTime();
@@ -116,7 +142,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->id;
     }
 
-    public function getFirstName(): ?string
+    public function getFirstName(): string
     {
         return $this->firstName;
     }
@@ -127,7 +153,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getLastName(): ?string
+    public function getLastName(): string
     {
         return $this->lastName;
     }
@@ -171,18 +197,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPassword(): ?string
+    public function getPassword(): string
     {
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(#[SensitiveParameter] string $password): static
     {
         $this->password = $password;
         return $this;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -205,6 +231,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @return array<string>
+     */
     public function getRoles(): array
     {
         $roles = $this->roles;
@@ -212,13 +241,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
+    /**
+     * @param array<string> $roles
+     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
         return $this;
     }
 
-    public function isActive(): ?bool
+    public function isActive(): bool
     {
         return $this->active;
     }
@@ -229,7 +261,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
     }
@@ -284,6 +316,63 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getFacialEmbedding(): ?string
+    {
+        return $this->facialEmbedding;
+    }
+
+    public function setFacialEmbedding(?string $facialEmbedding): static
+    {
+        $this->facialEmbedding = $facialEmbedding;
+        return $this;
+    }
+
+    // ==================== MÉTHODES DE GÉOLOCALISATION ====================
+
+    public function getLastLoginIp(): ?string
+    {
+        return $this->lastLoginIp;
+    }
+
+    public function setLastLoginIp(?string $lastLoginIp): static
+    {
+        $this->lastLoginIp = $lastLoginIp;
+        return $this;
+    }
+
+    public function getLastLoginCountry(): ?string
+    {
+        return $this->lastLoginCountry;
+    }
+
+    public function setLastLoginCountry(?string $lastLoginCountry): static
+    {
+        $this->lastLoginCountry = $lastLoginCountry;
+        return $this;
+    }
+
+    public function getLastLoginCity(): ?string
+    {
+        return $this->lastLoginCity;
+    }
+
+    public function setLastLoginCity(?string $lastLoginCity): static
+    {
+        $this->lastLoginCity = $lastLoginCity;
+        return $this;
+    }
+
+    public function getLastLoginAt(): ?\DateTimeInterface
+    {
+        return $this->lastLoginAt;
+    }
+
+    public function setLastLoginAt(?\DateTimeInterface $lastLoginAt): static
+    {
+        $this->lastLoginAt = $lastLoginAt;
+        return $this;
+    }
+
     // ==================== RELATION PARENT-ENFANT ====================
 
     public function getParent(): ?self
@@ -297,6 +386,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @return Collection<int, User>
+     */
     public function getEnfants(): Collection
     {
         return $this->enfants;
@@ -323,6 +415,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     // ==================== RELATION COURS ====================
 
+    /**
+     * @return Collection<int, Course>
+     */
     public function getCourses(): Collection
     {
         return $this->courses;
@@ -347,8 +442,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    // ==================== RELATION COMMANDE ====================
+
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
+    {
+        return $this->commandes;
+    }
+
+    public function addCommande(Commande $commande): static
+    {
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes->add($commande);
+            $commande->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommande(Commande $commande): static
+    {
+        if ($this->commandes->removeElement($commande)) {
+            if ($commande->getUser() === $this) {
+                $commande->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
     // ==================== RELATION EVENT REGISTRATIONS ====================
 
+    /**
+     * @return Collection<int, EventRegistration>
+     */
     public function getEventRegistrations(): Collection
     {
         return $this->eventRegistrations;
@@ -399,10 +528,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     // ==================== MÉTHODES DE VÉRIFICATION DE RÔLE ====================
 
-    public function isAdmin(): bool      { return $this->type === 'admin'; }
-    public function isEnseignant(): bool { return $this->type === 'enseignant'; }
-    public function isParent(): bool     { return $this->type === 'parent'; }
-    public function isEnfant(): bool     { return $this->type === 'enfant'; }
-    public function isTeacher(): bool    { return $this->isEnseignant(); }
-    public function isKid(): bool        { return $this->isEnfant(); }
+    public function isAdmin(): bool
+    {
+        return $this->type === 'admin';
+    }
+
+    public function isEnseignant(): bool
+    {
+        return $this->type === 'enseignant';
+    }
+
+    public function isParent(): bool
+    {
+        return $this->type === 'parent';
+    }
+
+    public function isEnfant(): bool
+    {
+        return $this->type === 'enfant';
+    }
+
+    public function isTeacher(): bool
+    {
+        return $this->isEnseignant();
+    }
+
+    public function isKid(): bool
+    {
+        return $this->isEnfant();
+    }
 }

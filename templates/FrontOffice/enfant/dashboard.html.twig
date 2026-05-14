@@ -2,21 +2,9 @@
 
 {% block title %}Dashboard Enfant - Eduplay{% endblock %}
 
-{% block body %}
+{% block content %}
 <div class="bg-gray-50 min-h-screen flex flex-col">
 
-    <!-- Header -->
-    <header class="bg-white shadow">
-        <div class="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-gray-900">
-                Bienvenue {{ enfant.firstName }} 👋
-            </h1>
-            <a href="{{ path('app_logout') }}"
-               class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
-                Déconnexion
-            </a>
-        </div>
-    </header>
 
     <!-- Main Content -->
     <main class="flex-1 max-w-7xl mx-auto px-4 py-10">

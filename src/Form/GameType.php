@@ -56,6 +56,9 @@ class GameType extends AbstractType
     'empty_data' => '',
 ])
 
+
+
+
 ->add('idLevel', EntityType::class, [
     'class' => Level::class,
     'choice_label' => 'name',

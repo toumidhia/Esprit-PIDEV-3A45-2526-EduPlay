@@ -6,6 +6,7 @@ namespace App\Repository;
 use App\Entity\Library;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 class LibraryRepository extends ServiceEntityRepository
 {
@@ -147,13 +148,17 @@ class LibraryRepository extends ServiceEntityRepository
      */
     public function findTopLibrariesByResourceCount(int $limit = 5): array
     {
-        return $this->createQueryBuilder('l')
+        $qb = $this->createQueryBuilder('l')
             ->leftJoin('l.resources', 'r')
             ->select('l.name', 'l.id', 'COUNT(r.id) as resourceCount')
             ->groupBy('l.id')
-            ->orderBy('resourceCount', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
+            ->orderBy('resourceCount', 'DESC');
+
+        $query = $qb->getQuery();
+        $query->setMaxResults($limit);
+
+        $paginator = new Paginator($query, false);
+
+        return iterator_to_array($paginator);
     }
 }

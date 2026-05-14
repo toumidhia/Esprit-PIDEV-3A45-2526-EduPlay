@@ -37,13 +37,13 @@ class Resource
     #[Assert\NotBlank(message: "L'auteur est requis")]
     #[Assert\Length(
         min: 2,
-        max: 20,
+        max: 100,
         minMessage: "Le nom de l'auteur doit contenir au moins {{ limit }} caractères",
         maxMessage: "Le nom de l'auteur ne peut pas dépasser {{ limit }} caractères"
     )]
     #[Assert\Regex(
-        pattern: '/^[a-zA-ZÀ-ÿ\s\-]+$/u',
-        message: "Le nom de l'auteur ne peut contenir que des lettres, espaces et tirets"
+        pattern: '/^[a-zA-ZÀ-ÿ\s\-\.\',]+$/u',
+        message: "Le nom de l'auteur ne peut contenir que des lettres, espaces, tirets, points, virgules et apostrophes"
     )]
     private string $author;
 

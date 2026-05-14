@@ -6,6 +6,7 @@ use App\Entity\Game;
 use App\Form\GameType;
 use App\Repository\GameRepository;
 use App\Service\GameNotificationMailer;
+use App\Service\AiGameSummaryService;
 use App\Repository\LevelRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,6 +16,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use App\Repository\FavoriteRepository;
+
 
 
 
@@ -81,8 +85,15 @@ public function new(Request $request, EntityManagerInterface $em, SluggerInterfa
             $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
             $safeFilename = $slugger->slug($originalFilename);
             $tempFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+            
+            /** @var string $uploadDir */
+$uploadDir = $this->getParameter('upload_tmp_directory_games');
 
-            $imageFile->move($this->getParameter('upload_tmp_directory_games'), $tempFilename);
+if (empty($uploadDir)) {
+    throw new \LogicException('Le paramètre "upload_tmp_directory_games" doit être une chaîne non vide.');
+}
+
+$imageFile->move($uploadDir, $tempFilename);
 
             $postData['imageTemp'] = $tempFilename;
             $request->request->set('game', $postData);
@@ -108,8 +119,12 @@ public function new(Request $request, EntityManagerInterface $em, SluggerInterfa
 
         // ✅ si l'utilisateur n’a pas re-upload -> on prend temp
         if ($tempFilename) {
-            $tmpPath   = $this->getParameter('upload_tmp_directory_games').'/'.$tempFilename;
-            $finalPath = $this->getParameter('upload_directory').'/'.$tempFilename;
+            /** @var string $uploadTmpDir */
+            $uploadTmpDir = $this->getParameter('upload_tmp_directory_games');
+            /** @var string $uploadDir */
+            $uploadDir = $this->getParameter('upload_directory');
+            $tmpPath   = $uploadTmpDir.'/'.$tempFilename;
+            $finalPath = $uploadDir.'/'.$tempFilename;
 
             if (file_exists($tmpPath)) {
                 @rename($tmpPath, $finalPath);
@@ -157,20 +172,27 @@ public function edit(Request $request, Game $game, EntityManagerInterface $em, S
             $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
             $safeFilename = $slugger->slug($originalFilename);
             $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+            
+            /** @var string $uploadDir */
+$uploadDir = $this->getParameter('upload_directory');
+if (empty($uploadDir)) {
+    throw new \LogicException('Le paramètre "upload_directory" doit être une chaîne non vide.');
+}
 
-            $imageFile->move($this->getParameter('upload_directory'), $newFilename);
+            $imageFile->move($uploadDir, $newFilename);
             $game->setImage($newFilename);
 
             // supprimer l'ancienne image (si existe)
             if ($oldImage) {
-                $oldPath = $this->getParameter('upload_directory').'/'.$oldImage;
+                
+                $oldPath =$uploadDir.'/'.$oldImage;
                 if (file_exists($oldPath)) {
                     @unlink($oldPath);
                 }
             }
         } else {
             // si pas de nouvelle image uploadée, garder l'ancienne
-            $game->setImage($oldImage);
+            $game->setImage($oldImage ?? '');
         }
 
         $em->flush();
@@ -217,26 +239,47 @@ public function edit(Request $request, Game $game, EntityManagerInterface $em, S
 public function frontIndex(
     Request $request,
     GameRepository $gameRepository,
-    LevelRepository $levelRepository
-): Response
-{
-    $filters = [
-        'search' => $request->query->get('search', ''),
-        'type' => $request->query->get('type', ''),
-        'difficulty' => $request->query->get('difficulty', ''),
-    ];
+    LevelRepository $levelRepository,
+    PaginatorInterface $paginator,FavoriteRepository $favoriteRepository
+): Response {
+   $filters = [
+    'search' => $request->query->get('search', ''),
+    'type' => $request->query->get('type', ''),
+    'difficulty' => $request->query->get('difficulty', ''),
+    'favoritesOnly' => $request->query->get('favoritesOnly', ''), // ✅ AJOUTER ICI
+];
 
     $sortBy = $request->query->get('sort', 'id');
     $sortOrder = $request->query->get('order', 'DESC');
 
-    $birthDate = $this->getUser()->getBirthDate();
+   /** @var \App\Entity\User|null $user */
+   $user = $this->getUser(); // ✅ AJOUTER CETTE LIGNE
+
+$birthDate = $user?->getBirthDate();
 $age = $birthDate ? $birthDate->diff(new \DateTimeImmutable())->y : null;
 
-$games = $gameRepository->findPlayableForAge($age, $filters, $sortBy, $sortOrder);
+    // ✅ on récupère QueryBuilder
+    $qb = $gameRepository->findPlayableForAgeQB($age, $filters, $sortBy, $sortOrder, $user);
+
+    // ✅ pagination
+    $games = $paginator->paginate(
+        $qb,
+        $request->query->getInt('page', 1),
+        6 // nombre de jeux par page
+    );
+    $favoriteIds = [];
+if ($this->getUser()) {
+    $favorites = $favoriteRepository->findBy(['user' => $this->getUser()]);
+    $favoriteIds = array_map(
+    fn($f) => $f->getGame()?->getId(), // l'opérateur "?->" retourne null si getGame() est null
+    $favorites
+);
+}
 
     if ($request->isXmlHttpRequest()) {
         return $this->render('FrontOffice/enfant/game/_grid.html.twig', [
             'games' => $games,
+            'favoriteIds' => $favoriteIds,
         ]);
     }
 
@@ -247,13 +290,31 @@ $games = $gameRepository->findPlayableForAge($age, $filters, $sortBy, $sortOrder
         'filters' => $filters,
         'sortBy' => $sortBy,
         'sortOrder' => $sortOrder,
+        'favoriteIds' => $favoriteIds,
     ]);
 }
+
+
 #[Route('/game/{id}', name: 'front_game_show_front', methods: ['GET'])]
-public function frontShow(Game $game): Response
+public function frontShow(Game $game, AiGameSummaryService $ai): Response
 {
+    /** @var \App\Entity\User|null $user */
+    $user = $this->getUser();
+    $birthDate = $user?->getBirthDate();
+    $age = $birthDate ? $birthDate->diff(new \DateTimeImmutable())->y : null;
+
+    // garde-fou: si age inconnu, on affiche la description normale
+    $aiSummary = null;
+
+    if ($age !== null) {
+        $aiSummary = $ai->summarizeForAge((string) $game->getDescription(), $age);
+        
+    }
+
     return $this->render('FrontOffice/enfant/game/show.html.twig', [
         'game' => $game,
+        'aiSummary' => $aiSummary,
+        'age' => $age,
     ]);
 }
 
@@ -266,6 +327,13 @@ public function frontShow(Game $game): Response
         ]);
     }
 
+
+
+
+
+
+
+    
 
 
 

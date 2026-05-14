@@ -1,5 +1,4 @@
 <?php
-// src/Service/EmailService.php
 
 namespace App\Service;
 
@@ -13,11 +12,11 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class EmailService
 {
-    private $mailer;
-    private $logger;
-    private $adminEmail;
-    private $router;
-    private $adminName;
+    private MailerInterface $mailer;
+    private LoggerInterface $logger;
+    private string $adminEmail;
+    private UrlGeneratorInterface $router;
+    private string $adminName;
 
     public function __construct(
         MailerInterface $mailer,
@@ -34,28 +33,21 @@ class EmailService
     }
 
     /**
-     * Envoie une notification aux parents pour un nouveau cours
-     */
-    /**
-     * Envoie une notification aux parents pour un nouveau cours
-     * VERSION ULTRA SIMPLE - Envoie uniquement à saadliwassieo@gmail.com
+     * @param array<User> $parents
      */
     public function sendNewCourseNotification(Course $course, array $parents): void
     {
         $this->logger->info('=== ENVOI EMAIL DE TEST ===');
 
-        // Générer l'URL du cours
         $courseUrl = $this->router->generate('app_course_index', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $teacher = $course->getTeacherId();
 
         try {
-            // Créer un parent factice avec vos informations
             $fakeParent = new User();
             $fakeParent->setEmail('saadliwassieo@gmail.com');
             $fakeParent->setFirstName('Wassim');
             $fakeParent->setLastName('Saadli');
 
-            // Envoyer UNIQUEMENT à vous, IGNORER la liste des parents
             $email = (new TemplatedEmail())
                 ->from(new Address($this->adminEmail, $this->adminName))
                 ->to('saadliwassieo@gmail.com')
@@ -79,10 +71,6 @@ class EmailService
         $this->logger->info('=== FIN ENVOI EMAIL DE TEST ===');
     }
 
-
-    /**
-     * Envoie une notification à un parent spécifique
-     */
     public function sendCourseNotificationToParent(Course $course, User $parent): void
     {
         try {
@@ -114,13 +102,9 @@ class EmailService
         }
     }
 
-    /**
-     * Test de connexion SMTP
-     */
     public function testConnection(): bool
     {
         try {
-            // Tenter d'envoyer un email de test à l'administrateur
             $email = (new TemplatedEmail())
                 ->from(new Address($this->adminEmail, 'EduPlay'))
                 ->to(new Address($this->adminEmail, 'Admin'))

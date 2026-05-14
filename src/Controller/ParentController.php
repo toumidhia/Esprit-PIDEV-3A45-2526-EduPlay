@@ -27,17 +27,12 @@ class ParentController extends AbstractController
         /** @var User $parent */
         $parent = $this->getUser();
 
-        // Check if user is logged in and is a parent
-        if (!$parent) {
-            $this->addFlash('error', 'Vous devez être connecté pour accéder à cette page.');
-            return $this->redirectToRoute('app_login');
-        }
 
         $enfants = $parent->getEnfants();
 
         return $this->render('FrontOffice/parent/base_parent.html.twig', [
             'parent' => $parent,
-            'enfants' => $enfants,
+            'enfants' => $enfants = $userRepository->findBy(['parent' => $parent]),
         ]);
     }
 
@@ -143,10 +138,6 @@ class ParentController extends AbstractController
     {
         /** @var User $parent */
         $parent = $this->getUser();
-
-        if (!$parent || $parent->getType() !== 'parent') {
-            return $this->redirectToRoute('app_login');
-        }
 
         $commandes = $parent->getCommandes()->toArray();
         usort($commandes, static fn ($a, $b) => ($b->getDateCommande() ?? new \DateTime()) <=> ($a->getDateCommande() ?? new \DateTime()));

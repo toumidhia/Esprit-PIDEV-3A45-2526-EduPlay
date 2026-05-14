@@ -12,6 +12,12 @@
                 Bienvenue {{ parent.firstName }} !
             </h1>
             <div class="flex gap-4">
+                {# 🔴 CORRECTION : Ajout du paramètre id #}
+                <a href="{{ path('app_face_register')}}"
+                   class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-red-600">
+                    Enregistrer la reconnaissance faciale
+                </a>
+
                 <a href="{{ path('app_parent_enfant_new') }}"
                    class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">
                     Ajouter un enfant
@@ -99,20 +105,24 @@
                             {% endif %}
                         </div>
 
-                        <form method="post"
-                              action="{{ path('app_parent_enfant_delete', {id: enfant.id}) }}"
-                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce compte ?');">
-                            <input type="hidden" name="_token"
-                                   value="{{ csrf_token('delete' ~ enfant.id) }}">
-                            <button type="submit"
-                                    class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600">
-                                Supprimer
-                            </button>
-                            <a href="{{ path('app_parent_enfant_edit', {id: enfant.id}) }}"
-                                    class="w-full mb-2 inline-block text-center bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600">
+                        <div class="space-y-2">
+                    
+                            <a href="{{ path('app_parent_enfant_edit', {'id': enfant.id}) }}"
+                               class="w-full mb-2 inline-block text-center bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600">
                                 Modifier
                             </a>
-                        </form>
+                            
+                            <form method="post"
+                                  action="{{ path('app_parent_enfant_delete', {'id': enfant.id}) }}"
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce compte ?');">
+                                <input type="hidden" name="_token"
+                                       value="{{ csrf_token('delete' ~ enfant.id) }}">
+                                <button type="submit"
+                                        class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 {% endfor %}
             </div>

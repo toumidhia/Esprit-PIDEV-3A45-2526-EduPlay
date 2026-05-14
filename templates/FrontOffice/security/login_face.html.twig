@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion par visage - EduPlay</title>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .video-container {
+            position: relative;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: #f0f0f0;
+            min-height: 480px;
+        }
+        
+        #video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .video-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #f44336;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status-dot.active {
+            background: #4CAF50;
+            animation: none;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        #status {
+            margin: 20px 0;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #666;
+            border: 2px solid #ddd;
+        }
+        
+        .btn-outline:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .user-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .user-info.show {
+            display: block;
+        }
+        
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3em;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .user-name {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .user-type {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 1em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .type-enfant {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .type-parent {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .type-admin {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .confidence-bar {
+            width: 100%;
+            height: 15px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .confidence-text {
+            font-size: 1.1em;
+            color: #666;
+            margin: 10px 0;
+        }
+        
+        .redirect-message {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            color: #333;
+            font-size: 1em;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            font-size: 0.8em;
+            color: #666;
+            text-align: left;
+            max-height: 200px;
+            overflow: auto;
+            display: none;
+        }
+        
+        .debug-info.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👤 Connexion par visage</h1>
+        <p class="subtitle">Regardez la caméra pour vous connecter automatiquement</p>
+        
+        <div class="video-container">
+            <video id="video" autoplay playsinline></video>
+            <div class="video-overlay">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="videoStatus">Initialisation...</span>
+            </div>
+        </div>
+        
+        <div id="status" class="status-info">
+            <span>⏳ Préparation de la caméra...</span>
+        </div>
+        
+        <div class="btn-group">
+            <button id="loginBtn" class="btn btn-primary" disabled>
+                <span>🔍</span>
+                <span>Détecter mon visage</span>
+            </button>
+            <a href="{{ path('app_login') }}" class="btn btn-outline">
+                <span>⌨️</span>
+                <span>Connexion par mot de passe</span>
+            </a>
+        </div>
+        
+        <div id="userInfo" class="user-info">
+            <div class="user-avatar" id="userAvatar">?</div>
+            <div class="user-name" id="userName"></div>
+            <div class="user-type" id="userType"></div>
+            <div class="confidence-bar">
+                <div class="confidence-fill" id="confidenceBar"></div>
+            </div>
+            <div class="confidence-text" id="confidenceText"></div>
+            <div class="redirect-message" id="redirectMessage">
+                <span class="spinner"></span>
+                Connexion en cours...
+            </div>
+        </div>
+        
+        <div id="debugInfo" class="debug-info">
+            <strong>Debug Info:</strong>
+            <pre id="debugContent"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const DEBUG = true; // Mettre à false en production
+        
+        // Éléments DOM
+        const video = document.getElementById('video');
+        const loginBtn = document.getElementById('loginBtn');
+        const statusDiv = document.getElementById('status');
+        const statusDot = document.getElementById('statusDot');
+        const videoStatus = document.getElementById('videoStatus');
+        const userInfo = document.getElementById('userInfo');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        const userType = document.getElementById('userType');
+        const confidenceBar = document.getElementById('confidenceBar');
+        const confidenceText = document.getElementById('confidenceText');
+        const redirectMessage = document.getElementById('redirectMessage');
+        const debugInfo = document.getElementById('debugInfo');
+        const debugContent = document.getElementById('debugContent');
+        
+        // État
+        let isModelLoaded = false;
+        let isVideoReady = false;
+        let detectionInterval = null;
+        let isLoggingIn = false;
+
+        // Fonction de debug
+        function logDebug(message, data = null) {
+            if (!DEBUG) return;
+            console.log('[Face Login]', message, data || '');
+            const timestamp = new Date().toLocaleTimeString();
+            debugContent.textContent += `[${timestamp}] ${message} ${data ? JSON.stringify(data, null, 2) : ''}\n`;
+            debugInfo.classList.add('show');
+        }
+
+        // Chargement des modèles
+        async function loadModels() {
+            try {
+                updateStatus('Chargement des modèles...', 'loading');
+                logDebug('Chargement des modèles face-api.js');
+                
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+                    faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+                    faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+                ]);
+                
+                isModelLoaded = true;
+                logDebug('Modèles chargés avec succès');
+                updateStatus('Modèles chargés, démarrage de la caméra...', 'info');
+                startVideo();
+            } catch (error) {
+                logDebug('Erreur chargement modèles', error);
+                updateStatus('❌ Erreur de chargement des modèles', 'error');
+                videoStatus.textContent = 'Erreur';
+            }
+        }
+
+        // Démarrage vidéo
+        function startVideo() {
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    facingMode: 'user'
+                } 
+            })
+            .then(stream => {
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    isVideoReady = true;
+                    videoStatus.textContent = 'Prêt';
+                    statusDot.classList.add('active');
+                    
+                    if (isModelLoaded) {
+                        loginBtn.disabled = false;
+                        updateStatus('✅ Prêt ! Cliquez sur "Détecter"', 'success');
+                        logDebug('Caméra prête');
+                        
+                        // Détection automatique après 2 secondes
+                        setTimeout(autoDetect, 2000);
+                    }
+                };
+            })
+            .catch(err => {
+                logDebug('Erreur caméra', err);
+                updateStatus('❌ Erreur d\'accès à la caméra', 'error');
+                videoStatus.textContent = 'Erreur caméra';
+            });
+        }
+
+        // Détection automatique
+        function autoDetect() {
+            if (!isModelLoaded || !isVideoReady || isLoggingIn) return;
+            logDebug('Détection automatique déclenchée');
+            detectAndLogin();
+        }
+
+        // Détection et connexion
+        async function detectAndLogin() {
+            if (isLoggingIn) {
+                logDebug('Connexion déjà en cours, ignoré');
+                return;
+            }
+
+            if (!isModelLoaded || !isVideoReady) {
+                updateStatus('Initialisation...', 'loading');
+                return;
+            }
+
+            isLoggingIn = true;
+            loginBtn.disabled = true;
+
+            try {
+                updateStatus('Analyse du visage...', 'loading');
+                logDebug('Détection du visage...');
+
+                const detection = await faceapi
+                    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({
+                        inputSize: 512,
+                        scoreThreshold: 0.5
+                    }))
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+
+                if (detection) {
+                    logDebug('Visage détecté', { 
+                        confidence: detection.detection.score,
+                        landmarks: detection.landmarks.positions.length 
+                    });
+                    
+                    const embedding = Array.from(detection.descriptor);
+                    
+                    updateStatus('Vérification avec le serveur...', 'loading');
+                    
+                    const response = await fetch('/api/face/login', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ embedding: embedding })
+                    });
+                    
+                    const data = await response.json();
+                    logDebug('Réponse serveur', data);
+                    
+                    if (data.success) {
+                        // Afficher les infos utilisateur
+                        const displayName = data.username || data.firstName || 'Utilisateur';
+                        userAvatar.textContent = displayName.charAt(0).toUpperCase();
+                        userName.textContent = displayName;
+                        
+                        // Type d'utilisateur
+                        let typeText = '';
+                        switch(data.type) {
+                            case 'admin':
+                                typeText = '👑 Administrateur';
+                                userType.className = 'user-type type-admin';
+                                break;
+                            case 'parent':
+                                typeText = '👨‍👩 Parent';
+                                userType.className = 'user-type type-parent';
+                                break;
+                            default:
+                                typeText = '👶 Enfant';
+                                userType.className = 'user-type type-enfant';
+                        }
+                        userType.textContent = typeText;
+                        
+                        // Barre de confiance
+                        const confidence = data.confidence || 0;
+                        confidenceBar.style.width = confidence + '%';
+                        confidenceText.textContent = `Confiance: ${confidence}%`;
+                        
+                        // Afficher les infos
+                        userInfo.classList.add('show');
+                        
+                        updateStatus('✅ Visage reconnu !', 'success');
+                        logDebug('Connexion réussie, redirection...');
+                        
+                        // Redirection après 2 secondes
+                        setTimeout(() => {
+                            window.location.href = '/login/face/confirm/' + data.userId;
+                        }, 2000);
+                    } else {
+                        logDebug('Visage non reconnu', data);
+                        updateStatus('❌ ' + (data.message || 'Visage non reconnu'), 'error');
+                        
+                        // Réessai automatique
+                        setTimeout(() => {
+                            isLoggingIn = false;
+                            loginBtn.disabled = false;
+                            autoDetect();
+                        }, 3000);
+                    }
+                } else {
+                    logDebug('Aucun visage détecté dans l\'image');
+                    updateStatus('❌ Aucun visage détecté', 'error');
+                    
+                    setTimeout(() => {
+                        isLoggingIn = false;
+                        loginBtn.disabled = false;
+                        autoDetect();
+                    }, 2000);
+                }
+            } catch (error) {
+                logDebug('Erreur', error);
+                updateStatus('❌ Erreur: ' + error.message, 'error');
+                
+                setTimeout(() => {
+                    isLoggingIn = false;
+                    loginBtn.disabled = false;
+                }, 2000);
+            }
+        }
+
+        // Mise à jour du statut
+        function updateStatus(message, type = 'info') {
+            statusDiv.innerHTML = `<span>${message}</span>`;
+            statusDiv.className = `status-${type}`;
+        }
+
+        // Event listeners
+        loginBtn.addEventListener('click', () => {
+            logDebug('Clic sur bouton détection');
+            detectAndLogin();
+        });
+
+        // Nettoyage
+        window.addEventListener('beforeunload', () => {
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            if (detectionInterval) {
+                clearInterval(detectionInterval);
+            }
+        });
+
+        // Démarrer
+        loadModels();
+    </script>
+</body>
+</html>

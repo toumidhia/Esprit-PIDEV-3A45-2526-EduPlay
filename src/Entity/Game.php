@@ -6,6 +6,7 @@ use App\Repository\GameRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
+
 #[ORM\Entity(repositoryClass: GameRepository::class)]
 class Game
 {
@@ -14,7 +15,7 @@ class Game
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255 ,nullable: true)]
     #[Assert\NotBlank(message: 'Game name is required.')]
     #[Assert\Length(min: 3, minMessage: 'Minimum 3 characters required.')]
     #[Assert\Regex(
@@ -24,11 +25,11 @@ class Game
     private ?string $name = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true )]
     #[Assert\NotNull(message: 'Please select a level.')]
     private ?Level $idLevel = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Assert\NotBlank(message: 'Game type is required.')]
     #[Assert\Regex(
         pattern: '/^[\p{L}\s]+$/u',
@@ -36,7 +37,7 @@ class Game
     )]
     private ?string $type = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Assert\NotBlank(message: 'Description is required.')]
     #[Assert\Length(min: 5, minMessage: 'Minimum 5 characters required.')]
     #[Assert\Regex(

@@ -11,13 +11,18 @@ parameters:
     # Paramètres pour les emails
     app.admin_email: 'noreply@eduplay.com'
     app.admin_name: 'EduPlay'
-
+    event_resources_dir: '%kernel.project_dir%/public/uploads/event-resources'
     upload_directory: '%kernel.project_dir%/public/uploads/games'
     upload_tmp_directory_games: '%kernel.project_dir%/public/uploads/tmp'
     event_images_dir: '%kernel.project_dir%/public/uploads/events'
     uploads_directory: '%kernel.project_dir%/public/uploads'
     uploads_path: '/uploads'
     dfs_directory: '%kernel.project_dir%/public/pdfs'
+
+
+    #ai pour game
+    openai.api_key: '%env(OPENAI_API_KEY)%'
+    openai.model: '%env(OPENAI_MODEL)%'
 
 services:
     # default configuration for services in *this* file
@@ -28,6 +33,11 @@ services:
             # Liaison des paramètres aux arguments des services
             string $adminEmail: '%app.admin_email%'
             string $adminName: '%app.admin_name%'
+            
+            #api ai pour game 
+            string $openaiApiKey: '%env(OPENAI_API_KEY)%'
+            string $openaiModel: '%env(OPENAI_MODEL)%'
+    
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -70,3 +80,28 @@ services:
     App\Service\BookRecommendationChatbotService:
         arguments:
             $groqApiKey: '%env(GROQ_API_KEY)%'
+
+
+    App\Calendar\EventProvider:
+        tags:
+            - { name: kernel.event_subscriber }
+
+    App\Service\AI\GeminiClient:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
+    
+    App\Service\AI\ChecklistGenerator:
+        arguments:
+            $geminiClient: '@App\Service\AI\GeminiClient'
+    
+    App\Service\AI\PlanningGenerator:
+        arguments:
+            $geminiClient: '@App\Service\AI\GeminiClient'
+
+    App\Service\QrCodeService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\GeolocationService:
+        arguments:
+            $abstractApiKey: '%env(ABSTRACT_API_KEY)%'

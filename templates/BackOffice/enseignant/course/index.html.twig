@@ -1,8 +1,8 @@
-{% extends 'BackOffice/enseignant/Partials/container.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block title %}Liste des Cours - EduPlay{% endblock %}
 
-{% block content %}
+{% block body %}
 {# Charger Tailwind comme dans le template Game #}
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
@@ -52,7 +52,7 @@ tailwind.config = {
             </p>
         </div>
 
-        {% if is_granted('ROLE_TEACHER') %}
+        {% if is_granted('ROLE_ENSEIGNANT') %}
             <a href="{{ path('app_course_new') }}" class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-transform shadow-lg">
                 <span class="material-symbols-outlined">add_circle</span>
                 Nouveau Cours
@@ -192,7 +192,7 @@ tailwind.config = {
                                             {% endif %}
                                         {% endif %}
 
-                                        {% if is_granted('ROLE_TEACHER') and course.teacherId and course.teacherId.id == app.user.id and course.status == 'pending' %}
+                                        {% if is_granted('ROLE_ENSEIGNANT') and course.teacherId and course.teacherId.id == app.user.id and course.status == 'pending' %}
                                             <a href="{{ path('app_course_edit', {'id': course.id}) }}" 
                                                class="p-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition" 
                                                title="Modifier">
@@ -200,7 +200,7 @@ tailwind.config = {
                                             </a>
                                         {% endif %}
 
-                                        {% if is_granted('ROLE_ADMIN') or (is_granted('ROLE_TEACHER') and course.teacherId and course.teacherId.id == app.user.id and course.status == 'pending') %}
+                                        {% if is_granted('ROLE_ADMIN') or (is_granted('ROLE_ENSEIGNANT') and course.teacherId and course.teacherId.id == app.user.id and course.status == 'pending') %}
                                             <form method="post" action="{{ path('app_course_delete', {'id': course.id}) }}" class="inline">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ course.id) }}">
                                                 <button type="submit" class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition" 

@@ -12,8 +12,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/shop')]
+#[IsGranted('ROLE_USER')]
 class CommandeFrontController extends AbstractController
 {
     public function __construct(
@@ -22,6 +24,26 @@ class CommandeFrontController extends AbstractController
         private UserRepository $userRepository,
         private CommandeRepository $commandeRepository,
     ) {
+    }
+
+    #[Route('/parent/commandes', name: 'app_commande_front_index', methods: ['GET'])]
+    public function index(CommandeRepository $commandeRepository): Response
+    {
+        if ($this->isGranted('ROLE_ENFANT')) {
+            throw $this->createAccessDeniedException('Les enfants ne peuvent pas accéder aux commandes.');
+        }
+
+        // Assuming you want to display orders for the current user (parent)
+        $user = $this->getUser();
+        if (!$user || !$user instanceof \App\Entity\User || $user->getType() !== 'parent') {
+            throw $this->createAccessDeniedException('Seuls les parents peuvent accéder à cette page.');
+        }
+
+        $commandes = $commandeRepository->findBy(['user' => $user], ['dateCommande' => 'DESC']);
+
+        return $this->render('FrontOffice/parent/commande/index.html.twig', [
+            'commandes' => $commandes,
+        ]);
     }
 
     #[Route('/{id}/commander', name: 'app_front_commande_new', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]

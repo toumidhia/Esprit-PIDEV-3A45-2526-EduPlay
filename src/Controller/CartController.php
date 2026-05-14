@@ -9,8 +9,10 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\ProductRepository;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/cart')]
+#[IsGranted('ROLE_USER')]
 class CartController extends AbstractController
 {
     #[Route('/add/{id}', name: 'app_front_cart_add', methods: ['POST'])]

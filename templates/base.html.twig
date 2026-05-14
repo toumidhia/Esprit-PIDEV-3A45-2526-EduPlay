@@ -7,7 +7,7 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
@@ -47,197 +47,12 @@
 <div class="blob bg-accent-yellow w-72 h-72 bottom-0 left-1/4"></div>
 <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
 <!-- Navigation Bar -->
-<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#dbe1e6] dark:border-gray-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-6 md:px-20 lg:px-40 py-4 sticky top-0 z-50">
-<div class="flex items-center gap-3">
-<div class="size-10 bg-primary rounded-full flex items-center justify-center text-white">
-<span class="material-symbols-outlined text-2xl">rocket_launch</span>
-</div>
-<h2 class="text-2xl font-extrabold tracking-tight">main EduPlay</h2>
-</div>
-<nav class="hidden md:flex items-center gap-8">
-<a class="text-sm font-bold hover:text-primary transition-colors" href="#">Games</a>
-<a class="text-sm font-bold hover:text-primary transition-colors" href="#">Library</a>
-<a class="text-sm font-bold hover:text-primary transition-colors" href="#">Shop</a>
-<a class="text-sm font-bold hover:text-primary transition-colors" href="#">For Teachers</a>
-<a class="text-sm font-bold hover:text-primary transition-colors" href="#">For Parents</a>
-</nav>
-<div class="flex items-center gap-4">
-                {% if app.user %}
-                    <div class="flex items-center gap-3">
-                        <span class="hidden sm:flex text-sm font-bold">{{ app.user.fullName }}</span>
-                        <a href="{{ path('app_dashboard') }}" class="flex items-center justify-center overflow-hidden rounded-full h-11 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30 hover:scale-105 transition-transform">
-                            Dashboard
-                        </a>
-                        <a href="{{ path('app_logout') }}" class="hidden sm:flex text-sm font-bold px-4 py-2 hover:text-primary transition-colors">
-                            Déconnexion
-                        </a>
-                    </div>
-                {% else %}
-                    <a href="{{ path('app_register') }}" class="hidden sm:flex text-sm font-bold px-4 py-2 hover:text-primary transition-colors">
-                        Sign Up
-                    </a>
-                    <a href="{{ path('app_login') }}" class="flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-11 px-6 bg-primary text-white text-sm font-bold leading-normal shadow-lg shadow-primary/30 hover:scale-105 transition-transform">
-                        Login
-                    </a>
-                {% endif %}
-            </div>
-</header>
+{% include 'Partials/_navbar.html.twig' %}
 <main class="flex-1">
-<!-- Hero Section -->
-<section class="px-6 md:px-20 lg:px-40 py-12 md:py-24">
-<div class="flex flex-col lg:flex-row items-center gap-12 max-w-[1280px] mx-auto">
-<div class="flex flex-col gap-8 flex-1">
-<div class="flex flex-col gap-4">
-<span class="bg-primary/20 text-primary font-bold px-4 py-1 rounded-full w-fit text-sm">Welcome to EduPlay ✨</span>
-<h1 class="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-[-0.04em]">
-                                Learn, Play, and <span class="text-primary">Grow</span> Every Day!
-                            </h1>
-<p class="text-lg md:text-xl text-[#617989] dark:text-gray-400 font-medium max-w-[500px] leading-relaxed">
-                                The all-in-one platform for curious kids, supportive parents, and creative teachers.
-                            </p>
-</div>
-<div class="flex flex-wrap gap-4">
-<button class="flex min-w-[200px] cursor-pointer items-center justify-center rounded-full h-14 px-8 bg-accent-yellow text-[#111518] text-lg font-extrabold shadow-xl shadow-accent-yellow/20 hover:scale-105 transition-all">
-<span>Start Playing Now</span>
-</button>
-<button class="flex items-center gap-2 font-bold px-6 h-14 rounded-full border-2 border-primary/20 hover:bg-primary/5 transition-colors">
-<span class="material-symbols-outlined">play_circle</span>
-                                See How it Works
-                            </button>
-</div>
-</div>
-<div class="flex-1 w-full">
-<div class="relative w-full aspect-square md:aspect-video lg:aspect-square bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-2xl border-8 border-white dark:border-gray-900 group">
-<div class="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent-pink/20 z-0"></div>
-<img alt="Education" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Happy children playing with educational tablets in a modern classroom" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZCQH6FNyxXsPsOb2NzNVSE7YcUwa1a3WWJDZPKpR5JgVh4e0Om2IxaKtgl3cQ5YOnLVzO_j-Om1lFUEGIGnpRrwTRp3EgNXjgSlXvudpt-pJbRPdiWdD6RYbA8xiPIRfVXR5RVWG6e0Csu5a1qcRSVfPhAqOEU1x3AhOYr9scOkCxVTvl4luUuJECxTLVlPoIc-lwPSTUEKl8dkPiB0kjG9KHhSL769fpDyvpPpgs8WkBKWT7ej8h3a-XPNgtPidku2-x0tdOH8kT"/>
-<div class="absolute bottom-6 left-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-4 rounded-lg flex items-center gap-3 shadow-lg">
-<div class="bg-accent-yellow p-2 rounded-full">
-<span class="material-symbols-outlined text-white">star</span>
-</div>
-<div>
-<p class="font-bold text-sm">50,000+ Kids</p>
-<p class="text-xs text-[#617989]">Active Learners Today</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Cards Grid (Category Section) -->
-<section class="px-6 md:px-20 lg:px-40 py-16 bg-white dark:bg-background-dark/40">
-<div class="max-w-[1280px] mx-auto">
-<div class="flex flex-col md:flex-row justify-between items-end mb-10 px-4">
-<div class="flex flex-col gap-2">
-<h2 class="text-3xl font-extrabold tracking-tight">Explore the Play Zone</h2>
-<p class="text-[#617989] dark:text-gray-400 font-medium">Click a world to start your journey</p>
-</div>
-<button class="text-primary font-bold flex items-center gap-2 hover:underline">
-                            View all categories <span class="material-symbols-outlined">arrow_forward</span>
-</button>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-<!-- Play Zone Card -->
-<div class="group relative overflow-hidden bg-primary rounded-xl aspect-[4/5] p-8 flex flex-col justify-between cursor-pointer shadow-2xl shadow-primary/20 hover:-translate-y-2 transition-transform duration-300">
-<div class="absolute -right-10 -top-10 bg-white/10 w-40 h-40 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
-<div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-md">
-<span class="material-symbols-outlined text-white text-3xl">sports_esports</span>
-</div>
-<div class="text-white z-10">
-<h3 class="text-3xl font-extrabold mb-2">Play Zone</h3>
-<p class="text-white/80 font-medium mb-6">100+ Educational Games curated for ages 4-12.</p>
-<span class="inline-flex items-center justify-center bg-white text-primary font-extrabold px-6 py-3 rounded-full text-sm">
-                                    Jump In
-                                </span>
-</div>
-</div>
-<!-- Book Nook Card -->
-<div class="group relative overflow-hidden bg-accent-pink rounded-xl aspect-[4/5] p-8 flex flex-col justify-between cursor-pointer shadow-2xl shadow-accent-pink/20 hover:-translate-y-2 transition-transform duration-300">
-<div class="absolute -right-10 -top-10 bg-white/10 w-40 h-40 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
-<div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-md">
-<span class="material-symbols-outlined text-white text-3xl">menu_book</span>
-</div>
-<div class="text-white z-10">
-<h3 class="text-3xl font-extrabold mb-2">Book Nook</h3>
-<p class="text-white/80 font-medium mb-6">Interactive stories and narrated books for early readers.</p>
-<span class="inline-flex items-center justify-center bg-white text-accent-pink font-extrabold px-6 py-3 rounded-full text-sm">
-                                    Read Now
-                                </span>
-</div>
-</div>
-<!-- Toy Store Card -->
-<div class="group relative overflow-hidden bg-accent-yellow rounded-xl aspect-[4/5] p-8 flex flex-col justify-between cursor-pointer shadow-2xl shadow-accent-yellow/20 hover:-translate-y-2 transition-transform duration-300">
-<div class="absolute -right-10 -top-10 bg-white/10 w-40 h-40 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
-<div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-md">
-<span class="material-symbols-outlined text-white text-3xl">shopping_basket</span>
-</div>
-<div class="text-[#111518] z-10">
-<h3 class="text-3xl font-extrabold mb-2">Toy Store</h3>
-<p class="text-[#111518]/70 font-medium mb-6">STEM kits and physical learning tools for home.</p>
-<span class="inline-flex items-center justify-center bg-white text-[#111518] font-extrabold px-6 py-3 rounded-full text-sm">
-                                    Shop Kids
-                                </span>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Features Section -->
-<section class="px-6 md:px-20 lg:px-40 py-24">
-<div class="max-w-[1280px] mx-auto">
-<div class="text-center flex flex-col gap-4 mb-16 items-center">
-<h2 class="text-4xl md:text-5xl font-extrabold tracking-tight">Why EduPlay?</h2>
-<p class="text-lg text-[#617989] dark:text-gray-400 font-medium max-w-[600px]">
-                            Designed for safety, curriculum alignment, and pure fun. Join thousands of educators and parents.
-                        </p>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-<div class="bg-white dark:bg-gray-800 p-10 rounded-xl border border-[#dbe1e6] dark:border-gray-700 hover:shadow-xl transition-all">
-<div class="bg-primary/10 text-primary w-14 h-14 rounded-full flex items-center justify-center mb-6">
-<span class="material-symbols-outlined text-3xl">shield</span>
-</div>
-<h3 class="text-xl font-extrabold mb-3">Safety First</h3>
-<p class="text-[#617989] dark:text-gray-400 leading-relaxed font-medium">
-                                A completely secure, ad-free environment for children to explore without worry.
-                            </p>
-</div>
-<div class="bg-white dark:bg-gray-800 p-10 rounded-xl border border-[#dbe1e6] dark:border-gray-700 hover:shadow-xl transition-all">
-<div class="bg-accent-pink/10 text-accent-pink w-14 h-14 rounded-full flex items-center justify-center mb-6">
-<span class="material-symbols-outlined text-3xl">school</span>
-</div>
-<h3 class="text-xl font-extrabold mb-3">Teacher Approved</h3>
-<p class="text-[#617989] dark:text-gray-400 leading-relaxed font-medium">
-                                Content created by educational experts and aligned with global school standards.
-                            </p>
-</div>
-<div class="bg-white dark:bg-gray-800 p-10 rounded-xl border border-[#dbe1e6] dark:border-gray-700 hover:shadow-xl transition-all">
-<div class="bg-accent-yellow/10 text-accent-yellow w-14 h-14 rounded-full flex items-center justify-center mb-6">
-<span class="material-symbols-outlined text-3xl">sentiment_satisfied</span>
-</div>
-<h3 class="text-xl font-extrabold mb-3">Fun Guaranteed</h3>
-<p class="text-[#617989] dark:text-gray-400 leading-relaxed font-medium">
-                                High-engagement activities that keep kids motivated and excited about learning.
-                            </p>
-</div>
-</div>
-</div>
-</section>
-<!-- Newsletter/CTA Section -->
-<section class="px-6 md:px-20 lg:px-40 py-20">
-<div class="max-w-[1280px] mx-auto bg-primary rounded-xl p-8 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden relative">
-<div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-<div class="flex flex-col gap-4 z-10 max-w-[500px]">
-<h2 class="text-4xl font-extrabold text-white">Join the EduPlay Community!</h2>
-<p class="text-white/80 font-medium">Get weekly learning tips and exclusive game early-access delivered to your inbox.</p>
-</div>
-<div class="w-full md:w-auto flex flex-col sm:flex-row gap-4 z-10">
-<input class="w-full sm:min-w-[300px] h-14 px-6 rounded-full border-none focus:ring-4 focus:ring-accent-yellow/50 text-[#111518]" placeholder="Parent or teacher email" type="email"/>
-<button class="h-14 px-10 rounded-full bg-accent-yellow text-[#111518] font-extrabold shadow-lg hover:scale-105 transition-transform whitespace-nowrap">
-                            Subscribe
-                        </button>
-</div>
-</div>
-</section>
+    {% block body %}{% endblock %}
 </main>
+
+{% block footer %}
 <!-- Footer -->
 <footer class="bg-white dark:bg-background-dark border-t border-[#dbe1e6] dark:border-gray-800 px-6 md:px-20 lg:px-40 py-16">
 <div class="max-w-[1280px] mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
@@ -293,5 +108,7 @@
 <p class="text-xs text-[#617989]">© 2024 EduPlay Educational Media. All rights reserved.</p>
 </div>
 </footer>
+{% endblock %}
 </div>
+    {% block javascripts %}{% endblock %}
 </body></html>

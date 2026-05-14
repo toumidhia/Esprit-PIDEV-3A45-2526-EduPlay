@@ -23,7 +23,7 @@ class DashboardRedirectController extends AbstractController
         }
         
         if ($user->isEnseignant()) {
-            return $this->redirectToRoute('app_enseignant_dashboard');
+            return $this->redirectToRoute('teacher_game_index');
         }
         
         if ($user->isParent()) {
@@ -31,7 +31,7 @@ class DashboardRedirectController extends AbstractController
         }
         
         if ($user->isEnfant()) {
-            return $this->redirectToRoute('app_enfant_dashboard');
+            return $this->redirectToRoute('front_games');
         }
 
         return $this->redirectToRoute('app_home');

@@ -12,7 +12,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 class DashboardController extends AbstractController
 {
-    #[Route('/dashboard', name: 'app_dashboard', methods: ['GET'])]
+    #[Route('/admin/dashboard', name: 'app_admin_dashboard', methods: ['GET'])]
     public function index(
         CourseRepository $courseRepository,
         SeanceRepository $seanceRepository
@@ -51,9 +51,12 @@ class DashboardController extends AbstractController
     /**
      * Helper method to get the main role for template rendering
      */
+    /**
+     * @param array<string> $roles
+     */
     private function getMainRole(array $roles): string
     {
-        $priorityRoles = ['ROLE_ADMIN', 'ROLE_TEACHER', 'ROLE_PARENT', 'ROLE_KID', 'ROLE_USER'];
+        $priorityRoles = ['ROLE_ADMIN', 'ROLE_ENSEIGNANT', 'ROLE_PARENT', 'ROLE_ENFANT', 'ROLE_USER'];
 
         foreach ($priorityRoles as $priorityRole) {
             if (in_array($priorityRole, $roles)) {

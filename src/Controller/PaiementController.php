@@ -3,30 +3,53 @@
 namespace App\Controller;
 
 use App\Entity\Commande;
+use App\Entity\User; // Import crucial pour corriger l'erreur de PHPDoc
 use App\Service\StripePaymentService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RequestStack; // Pour remplacer le $this->get()
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_USER')]
 class PaiementController extends AbstractController
 {
-    #[Route('/paiement/{id}', name: 'app_paiement', methods: ['POST'])]
-    public function processPaiement(Commande $commande, StripePaymentService $stripePaymentService): Response
+    #[Route('/paiement', name: 'app_paiement_index')]
+    public function index(): Response
     {
-        // Ensure the user is the owner of the commande
+        if ($this->isGranted('ROLE_ENFANT')) {
+            throw $this->createAccessDeniedException('Les enfants ne peuvent pas effectuer de paiement.');
+        }
+        return $this->json(['message' => 'Access granted to payment section.']);
+    }
+
+    #[Route('/paiement/{id}', name: 'app_paiement', methods: ['POST'])]
+    public function processPaiement(
+        Commande $commande, 
+        StripePaymentService $stripePaymentService,
+        RequestStack $requestStack // Injection directe recommandée
+    ): Response {
+        if ($this->isGranted('ROLE_ENFANT')) {
+            throw $this->createAccessDeniedException('Les enfants ne peuvent pas effectuer de paiement.');
+        }
+
         /** @var User $user */
         $user = $this->getUser();
         if ($commande->getUser() !== $user) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas accéder à cette commande.');
         }
 
-        // Ensure the request is properly handled
-        $requestContent = json_decode($this->get('request_stack')->getCurrentRequest()->getContent(), true);
+        // Correction du $this->get() par l'usage du RequestStack injecté
+        $currentRequest = $requestStack->getCurrentRequest();
+        if (!$currentRequest) {
+            return $this->json(['error' => 'No request found'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $requestContent = json_decode($currentRequest->getContent(), true);
         if (!$requestContent) {
             return $this->json(['error' => 'Invalid request data'], Response::HTTP_BAD_REQUEST);
         }
 
-        // Create a payment intent
         $paymentIntent = $stripePaymentService->createPaymentIntent(
             $commande->getTotalAmount(),
             'usd',
@@ -49,7 +72,7 @@ class PaiementController extends AbstractController
 
         return $this->render('FrontOffice/parent/paiement.html.twig', [
             'commande' => $commande,
-            'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'],
+            'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'] ?? '',
         ]);
     }
 }

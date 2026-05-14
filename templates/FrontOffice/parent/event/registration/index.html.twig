@@ -1,6 +1,6 @@
 {% extends 'FrontOffice/parent/Partials/container.html.twig' %}
 
-{% block title %}Mes inscriptions{% endblock %}
+{% block title %}Mes inscriptions - EduPlay{% endblock %}
 
 {% block content %}
 <section class="px-6 md:px-20 lg:px-40 py-12">
@@ -8,44 +8,142 @@
 
     <div class="flex items-end justify-between gap-6 mb-10">
       <div>
-        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Mes inscriptions</h1>
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">📋 Mes inscriptions</h1>
         <p class="text-[#617989] dark:text-gray-400 font-medium mt-2">
-          Liste de tes inscriptions aux événements.
+          Suivez vos inscriptions aux événements
         </p>
       </div>
       <a href="{{ path('front_event_index') }}"
-         class="px-5 py-3 rounded-full bg-black/5 dark:bg-white/10 font-bold hover:scale-105 transition-transform">
-        ← Retour événements
+         class="px-5 py-3 rounded-full bg-black/5 dark:bg-white/10 font-bold hover:scale-105 transition-transform inline-flex items-center gap-2">
+        <span class="material-symbols-outlined text-base">arrow_back</span>
+        Retour événements
       </a>
     </div>
 
     <div class="bg-white/80 dark:bg-white/5 border border-[#dbe1e6] dark:border-gray-800 rounded-2xl p-6">
       {% if registrations is empty %}
-        <p class="font-bold">Aucune inscription.</p>
+        <div class="text-center py-8">
+          <span class="material-symbols-outlined text-5xl text-gray-400 mb-4">event_busy</span>
+          <p class="font-bold text-gray-600">Aucune inscription pour le moment</p>
+          <p class="text-sm text-gray-500 mt-2">Découvrez nos événements et inscrivez vos enfants !</p>
+          <a href="{{ path('front_event_index') }}" 
+             class="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-full hover:bg-primary/80 transition">
+            Voir les événements
+          </a>
+        </div>
       {% else %}
         <div class="space-y-4">
           {% for r in registrations %}
-            <div class="p-4 rounded-xl bg-black/5 dark:bg-white/10 flex items-start justify-between gap-4">
-              <div>
-                <div class="font-extrabold">{{ r.event.title }}</div>
-                <div class="text-sm font-bold text-[#617989] dark:text-gray-400">
-                  Enfant : {{ r.childFullName }}
+            <div class="p-4 rounded-xl bg-black/5 dark:bg-white/10 flex items-start justify-between gap-4 hover:bg-black/10 dark:hover:bg-white/20 transition">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-1">
+                  <span class="font-extrabold text-lg">{{ r.event.title }}</span>
+                  
+                  {# Statut #}
+                  {% set status = r.status|default('PENDING') %}
+                  {% if status == 'PENDING' %}
+                    <span class="text-xs font-bold px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">En attente</span>
+                  {% elseif status == 'APPROVED' %}
+                    <span class="text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700">Confirmé</span>
+                  {% elseif status == 'CANCELLED' %}
+                    <span class="text-xs font-bold px-2 py-1 rounded-full bg-red-100 text-red-700">Annulé</span>
+                  {% endif %}
                 </div>
-                <div class="text-sm font-bold mt-1">
-                  📅 {{ r.event.startDate|date('d/m/Y H:i') }} → {{ r.event.endDate|date('d/m/Y H:i') }}
+                
+                <div class="text-sm font-bold text-[#617989] dark:text-gray-400">
+                  👤 Enfant : {{ r.childFullName }}
+                </div>
+                
+                <div class="text-sm font-bold mt-2 flex flex-wrap gap-4">
+                  <span class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-base text-primary">event</span>
+                    {{ r.event.startDate|date('d/m/Y H:i') }}
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-base text-primary">schedule</span>
+                    {{ r.event.endDate|date('d/m/Y H:i') }}
+                  </span>
+                  {% if r.event.location %}
+                    <span class="flex items-center gap-1">
+                      <span class="material-symbols-outlined text-base text-primary">location_on</span>
+                      {{ r.event.location }}
+                    </span>
+                  {% endif %}
                 </div>
               </div>
 
-              <form method="post"
-                    action="{{ path('front_registration_cancel', {id: r.id}) }}"
-                    onsubmit="return confirm('Annuler cette inscription ?');">
-                <input type="hidden" name="_token" value="{{ csrf_token('cancel_registration_' ~ r.id) }}">
-                <button class="px-5 py-2 rounded-full bg-black/10 dark:bg-white/10 font-bold hover:scale-105 transition-transform">
-                  Annuler
-                </button>
-              </form>
+              <div class="flex items-center gap-2">
+              
+                {# BOUTON TICKET - NOUVEAU #}
+                <a href="{{ path('front_ticket_show', {id: r.id}) }}" 
+                   class="p-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/20 transition"
+                   title="Voir mon ticket">
+                  <span class="material-symbols-outlined text-base">confirmation_number</span>
+                </a>
+              
+                {# ✅ Menu déroulant calendrier #}
+                <div class="relative"
+                     onmouseenter="this.querySelector('.calendar-menu').classList.remove('hidden')"
+                     onmouseleave="this.querySelector('.calendar-menu').classList.add('hidden')">
+                  <button class="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition"
+                          title="Ajouter à mon calendrier">
+                    <span class="material-symbols-outlined text-base">calendar_month</span>
+                  </button>
+                  
+                  {# Dropdown avec options #}
+                  <div class="calendar-menu absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 hidden z-50">
+                    <div class="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
+                      Ajouter à :
+                    </div>
+                    <a href="{{ path('event_calendar_google', {id: r.event.id}) }}" 
+                       class="block px-4 py-2 hover:bg-blue-50 text-sm"
+                       target="_blank"
+                       onclick="event.stopPropagation()">
+                      <span class="text-blue-600 mr-2">📅</span>
+                      Google Calendar
+                    </a>
+                    <a href="{{ path('event_calendar_outlook', {id: r.event.id}) }}" 
+                       class="block px-4 py-2 hover:bg-blue-50 text-sm"
+                       target="_blank"
+                       onclick="event.stopPropagation()">
+                      <span class="text-blue-600 mr-2">📧</span>
+                      Outlook
+                    </a>
+                    <a href="{{ path('event_calendar_ics', {id: r.event.id}) }}" 
+                       class="block px-4 py-2 hover:bg-blue-50 text-sm"
+                       onclick="event.stopPropagation()">
+                      <span class="text-blue-600 mr-2">📂</span>
+                      Fichier .ics
+                      <span class="block text-xs text-gray-400">(à ouvrir manuellement)</span>
+                    </a>
+                  </div>
+                </div>
+
+                {# BOUTON ANNULATION #}
+                <form method="post"
+                      action="{{ path('front_registration_cancel', {id: r.id}) }}"
+                      onsubmit="return confirm('Annuler cette inscription ?');">
+                  <input type="hidden" name="_token" value="{{ csrf_token('cancel_registration_' ~ r.id) }}">
+                  <button class="p-2 rounded-full bg-red-500/10 text-red-600 hover:bg-red-500/20 transition"
+                          title="Annuler l'inscription">
+                    <span class="material-symbols-outlined text-base">cancel</span>
+                  </button>
+                </form>
+              </div>
             </div>
           {% endfor %}
+        </div>
+
+        {# PAGINATION #}
+        {% if pagination.getTotalItemCount > pagination.getItemNumberPerPage %}
+        <div class="mt-8 flex justify-center">
+          {{ knp_pagination_render(pagination) }}
+        </div>
+        {% endif %}
+
+        {# Compteur #}
+        <div class="mt-4 text-center text-sm text-gray-500">
+          {{ pagination.getTotalItemCount }} inscription(s) au total
         </div>
       {% endif %}
     </div>
